@@ -1,0 +1,199 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+  <!-- Total Orders -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-teal-600 text-xl lg:text-2xl">shopping_cart</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Total Orders</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-lg">more_vert</span>
+      </button>
+    </div>
+    <div class="space-y-1">
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">12,250</p>
+      <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
+    </div>
+  </div>
+
+  <!-- Pending Orders -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-red-600 text-xl lg:text-2xl">pending</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Pending Orders</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-lg">more_vert</span>
+      </button>
+    </div>
+    <div class="space-y-1">
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">560</p>
+      <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
+    </div>
+  </div>
+
+  <!-- Total Users -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-blue-600 text-xl lg:text-2xl">group</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Total Users</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-lg">more_vert</span>
+      </button>
+    </div>
+    <div class="space-y-1">
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">12,250</p>
+      <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
+    </div>
+  </div>
+
+  <!-- Total Revenue -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-green-600 text-xl lg:text-2xl">payments</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Total Revenue</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-lg">more_vert</span>
+      </button>
+    </div>
+    <div class="space-y-1">
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">₦12,250</p>
+      <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
+    </div>
+  </div>
+</div>
+
+<!-- Sales Chart & Notifications -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+  <!-- Sales Details Chart -->
+  <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div>
+        <h2 class="text-base lg:text-lg font-semibold text-gray-900">Sales Details</h2>
+        <p class="text-xs lg:text-sm text-green-600">+12% this month</p>
+      </div>
+      <select class="px-3 lg:px-4 py-2 border border-gray-300 rounded-lg text-xs lg:text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+        <option>March</option>
+        <option>April</option>
+        <option>May</option>
+      </select>
+    </div>
+    <!-- Placeholder for chart -->
+    <div class="h-48 lg:h-64 bg-gradient-to-r from-teal-50 to-teal-100 rounded-lg flex items-center justify-center">
+      <p class="text-sm text-gray-500">Chart will be added here</p>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-4 lg:mb-6">
+      <h2 class="text-base lg:text-lg font-semibold text-gray-900">Notifications</h2>
+      <a href="#" class="text-xs lg:text-sm text-teal-600 hover:text-teal-700">See more</a>
+    </div>
+    <div class="space-y-3 lg:space-y-4">
+      {% for i in "12345" %}
+      <div class="flex items-start gap-2 lg:gap-3">
+        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex-shrink-0"></div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs lg:text-sm text-gray-900">Moni Yahwehson has paid for Optishield</p>
+          <p class="text-xs text-gray-500 mt-1">Thursday 4:20pm</p>
+        </div>
+        <span class="text-xs text-gray-400 whitespace-nowrap">3h ago</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Top Selling Products -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+  <h2 class="text-base lg:text-lg font-semibold text-gray-900 mb-4 lg:mb-6">Top Selling Products</h2>
+  
+  <!-- Mobile Card View -->
+  <div class="block lg:hidden space-y-4">
+    <div class="border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 bg-teal-100 rounded-lg flex-shrink-0"></div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-900">Wholeshield Arthoshield</p>
+          <p class="text-xs text-gray-500">Omega-3, Curcumin</p>
+        </div>
+        <button class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined text-lg">more_vert</span>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div><span class="text-gray-500">SKU:</span> <span class="font-medium">#WA4859604</span></div>
+        <div><span class="text-gray-500">Sold:</span> <span class="text-green-600 font-medium">1,200</span></div>
+        <div><span class="text-gray-500">Left:</span> <span class="text-red-600 font-medium">200</span></div>
+        <div><span class="text-gray-500">Added:</span> <span>10 Mar 2025</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop Table View -->
+  <div class="hidden lg:block overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">
+            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
+          </th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">Product</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">SKU Number</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">Units Sold</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">Units Left</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">Date Added</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-600">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-4 px-4">
+            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
+          </td>
+          <td class="py-4 px-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-teal-100 rounded-lg flex-shrink-0"></div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">Wholeshield Arthoshield</p>
+                <p class="text-xs text-gray-500">Omega-3, Curcumin</p>
+              </div>
+            </div>
+          </td>
+          <td class="py-4 px-4 text-sm text-gray-700">#WA4859604</td>
+          <td class="py-4 px-4 text-sm text-green-600">1,200</td>
+          <td class="py-4 px-4 text-sm text-red-600">200</td>
+          <td class="py-4 px-4 text-sm text-gray-700">10th Mar 2025</td>
+          <td class="py-4 px-4">
+            <button class="text-gray-400 hover:text-gray-600">
+              <span class="material-symbols-outlined text-lg">more_vert</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

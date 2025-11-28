@@ -1,0 +1,31 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+  <!-- Filters -->
+  <div class="flex flex-wrap items-center gap-2 mb-4">
+    <button class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs">All <span class="ml-1 bg-gray-200 rounded px-1">12</span></button>
+    <button class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs">Restock <span class="ml-1 bg-gray-200 rounded px-1">6</span></button>
+    <button class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs">Transactions <span class="ml-1 bg-gray-200 rounded px-1">6</span></button>
+    <button class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs">Orders <span class="ml-1 bg-gray-200 rounded px-1">6</span></button>
+  </div>
+
+  <!-- Notification List -->
+  <div class="space-y-3 lg:space-y-4">
+    {% for i in "123456789" %}
+    <div class="flex items-start gap-3 bg-gray-50 rounded-lg p-3">
+      <div class="w-9 h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex-shrink-0"></div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm text-gray-900">Moni Yahwehson has ordered and paid for Optishield</p>
+        <p class="text-xs text-gray-500 mt-0.5">Thursday 4:20pm</p>
+      </div>
+      <span class="text-xs text-gray-400 whitespace-nowrap">3 hours ago</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "admin_dashboard/login_base.html" %}
+{% load static %}
+
+{% block title %}Admin Sign In{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+  <div class="flex justify-center mb-6">
+    <img src="{% static 'images/wholeshield-logo.svg' %}" alt="Logo" class="h-10" />
+  </div>
+
+  <h1 class="text-2xl font-semibold text-center">Sign In</h1>
+  <p class="text-sm text-gray-600 text-center mt-1">Please enter your details to login</p>
+
+  {% if messages %}
+    {% for message in messages %}
+    <div class="mt-4 rounded-md bg-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-50 border border-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-200 p-3 text-sm text-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-700">
+      {{ message }}
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" class="mt-6 space-y-4">
+    {% csrf_token %}
+    
+    {% if form.non_field_errors %}
+    <div class="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div>
+      <label for="id_email" class="block text-sm font-medium text-gray-700">Email</label>
+      <div class="mt-1 flex items-center gap-2 rounded-lg border border-teal-300 px-3 py-2 bg-gray-50 {% if form.email.errors %}border-red-500{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M4 4h16v16H4z" stroke-width="1.5" />
+          <path d="M4 7l8 6 8-6" stroke-width="1.5" />
+        </svg>
+        {{ form.email }}
+      </div>
+      {% if form.email.errors %}
+      <p class="mt-1 text-xs text-red-600">{{ form.email.errors|striptags }}</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <label for="id_password" class="block text-sm font-medium text-gray-700">Password</label>
+      <div class="mt-1 flex items-center gap-2 rounded-lg border border-teal-300 px-3 py-2 bg-gray-50 {% if form.password.errors %}border-red-500{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M7 10V8a5 5 0 0110 0v2" stroke-width="1.5" />
+          <rect x="5" y="10" width="14" height="10" rx="2" stroke-width="1.5" />
+        </svg>
+        {{ form.password }}
+      </div>
+      {% if form.password.errors %}
+      <p class="mt-1 text-xs text-red-600">{{ form.password.errors|striptags }}</p>
+      {% endif %}
+    </div>
+
+    <div class="flex items-center justify-between text-sm">
+      <label class="inline-flex items-center gap-2 select-none">
+        {{ form.remember_me }}
+        <span>Remember me</span>
+      </label>
+      <a href="{% url 'forgot_password' %}" class="text-teal-600 hover:text-teal-700">Forgot Password?</a>
+    </div>
+
+    <button
+      type="submit"
+      class="w-full rounded-lg bg-teal-500 text-white py-3 font-medium hover:bg-teal-600 transition-colors"
+    >
+      Sign In
+    </button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{% block title %}Admin Sign In{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {% tailwind_css %}
+  </head>
+  <body class="min-h-screen bg-black text-slate-900">
+    <main class="min-h-screen flex items-center justify-center">
+      {% block content %}
+      
+      {% endblock %}
+    </main>
+
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+  </body>
+</html>

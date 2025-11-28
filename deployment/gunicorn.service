@@ -1,0 +1,20 @@
+[Unit]
+Description=Gunicorn daemon for wholeearn-ecom shop
+After=network.target
+
+[Service]
+User=your_vps_username
+Group=www-data
+WorkingDirectory=/home/your_vps_username/shop_app/current
+Environment="PATH=/home/your_vps_username/shop_app/venv/bin"
+EnvironmentFile=/home/your_vps_username/shop_app/.env
+ExecStart=/home/your_vps_username/shop_app/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/home/your_vps_username/shop_app/gunicorn.sock \
+    --access-logfile /home/your_vps_username/shop_app/logs/access.log \
+    --error-logfile /home/your_vps_username/shop_app/logs/error.log \
+    --log-level info \
+    core.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,109 @@
+{% extends "admin_dashboard/login_base.html" %}
+{% load static %}
+
+{% block title %}Enter OTP Code{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+  <div class="flex justify-center mb-6">
+    <img src="{% static 'images/wholeshield-logo.svg' %}" alt="Logo" class="h-10" />
+  </div>
+
+  <h1 class="text-2xl font-semibold text-center">Enter OTP Code</h1>
+  <p class="text-sm text-gray-600 text-center mt-1">We sent a code to <strong>{{ email }}</strong></p>
+
+  {% if messages %}
+    {% for message in messages %}
+    <div class="mt-4 rounded-md bg-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-50 border border-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-200 p-3 text-sm text-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-700">
+      {{ message }}
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" class="mt-6 space-y-4" id="otpForm">
+    {% csrf_token %}
+
+    <div class="flex justify-center gap-2">
+      {{ form.otp_1 }}
+      {{ form.otp_2 }}
+      {{ form.otp_3 }}
+      {{ form.otp_4 }}
+      {{ form.otp_5 }}
+      {{ form.otp_6 }}
+    </div>
+
+    <div class="text-center">
+      <p class="text-sm text-gray-600">
+        Didn't get a code? 
+        <a href="{% url 'resend_otp' %}" class="text-teal-600 hover:text-teal-700">Click here to resend</a>
+      </p>
+    </div>
+
+    <button
+      type="submit"
+      class="w-full rounded-lg bg-teal-500 text-white py-3 font-medium hover:bg-teal-600 transition-colors"
+    >
+      Continue
+    </button>
+  </form>
+</div>
+
+<style>
+  .otp-input {
+    width: 48px;
+    height: 48px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    border: 2px solid #5eead4;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    outline: none;
+  }
+  .otp-input:focus {
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  }
+</style>
+
+<script>
+  // Auto-focus and navigation between OTP inputs
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.otp-input');
+    
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', function(e) {
+        if (e.target.value.length === 1 && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+      
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+      
+      // Handle paste
+      input.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text');
+        const digits = pastedData.replace(/\D/g, '').split('');
+        
+        digits.forEach((digit, i) => {
+          if (index + i < inputs.length) {
+            inputs[index + i].value = digit;
+          }
+        });
+        
+        if (index + digits.length < inputs.length) {
+          inputs[index + digits.length].focus();
+        }
+      });
+    });
+    
+    // Focus first input
+    inputs[0].focus();
+  });
+</script>
+{% endblock %}

@@ -1,7 +1,14 @@
 from django import forms
 from django.contrib.auth import authenticate
 from users.models import User
+from .models import Category, Product
+from django.forms.widgets import ClearableFileInput
 
+
+
+
+class MultipleFileInput(ClearableFileInput):
+    allow_multiple_selected = True
 
 class AdminLoginForm(forms.Form):
     email = forms.EmailField(
@@ -121,3 +128,55 @@ class ResetPasswordForm(forms.Form):
                 raise forms.ValidationError("Password must be at least 8 characters long.")
 
         return cleaned_data
+    
+
+
+
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'placeholder': 'Category name'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg resize-none',
+                'rows': 4,
+                'placeholder': 'Description (optional)'
+            })
+        }
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name','description','category','price','discount','stock',
+                 'additional_info']
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'description': forms.Textarea(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','rows':6}),
+            'category': forms.Select(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01'}),
+            'discount': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0','max':'100'}),
+            'stock': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0'}),
+            'additional_info': forms.Textarea(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','rows':4}),
+        }
+
+
+class ProductImageForm(forms.Form):
+    images = forms.FileField(
+        widget=MultipleFileInput(attrs={"multiple": True}),
+        required=False
+    )
+
+    def clean_images(self):
+        images = self.files.getlist('images')
+        # Remove the required validation - images are optional
+        for image in images:
+            if image.size > 5 * 1024 * 1024:  # 5MB limit
+                raise forms.ValidationError("Each image must be less than 5MB.")
+        return images

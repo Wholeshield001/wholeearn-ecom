@@ -61,8 +61,8 @@ UNFOLD = {
 
 
     "SITE_LOGO": {
-        "light": lambda request: static("images/"),  # light mode
-        "dark": lambda request: static("images/"),  # dark mode
+        "light": lambda request: static("images/wholeShield.png"),  # light mode
+        "dark": lambda request: static("images/wholeShield.png"),  # dark mode
     },
 
     "COLORS": {
@@ -162,7 +162,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    BASE_DIR / 'theme' / 'static',
+    BASE_DIR / 'core' / 'static',
 ]
 
 # Media files

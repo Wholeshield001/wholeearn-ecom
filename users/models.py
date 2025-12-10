@@ -25,13 +25,13 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     ADMINISTRATOR = 'administrator'
     WHOLESALER = 'wholesaler'
-    RETAILER = 'retailer'
+    DISTRIBUTOR = 'distributor'
     CUSTOMER = 'customer'
 
     ROLE_CHOICES = [
         (ADMINISTRATOR, 'Administrator'),
         (WHOLESALER, 'Wholesaler'),
-        (RETAILER, 'Retailer'),
+        (DISTRIBUTOR, 'Distributor'),
         (CUSTOMER, 'Customer'),
     ]
 
@@ -42,7 +42,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=20, blank=True, null=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, blank=True, null=True)
     is_verified_kyc = models.BooleanField(default=False, blank=True, null=True)
-    is_verifier = models.BooleanField(default=False, blank=True, null=True)
     is_active = models.BooleanField(default=True, blank=True, null=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)

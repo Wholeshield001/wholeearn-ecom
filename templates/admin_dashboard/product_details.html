@@ -1,0 +1,428 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+{% block page_title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<!-- Header with Navigation -->
+<div class="flex items-center justify-between mb-6">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'admin_products' %}" class="text-teal-600 hover:text-teal-700">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">{{ product.name }}</h1>
+      <p class="text-sm text-gray-600 mt-1">SKU: {{ product.sku|default:"N/A" }}</p>
+    </div>
+  </div>
+</div>
+
+<div x-data="{ editMode: false }" class="space-y-6">
+  <!-- Action Buttons -->
+  <div class="flex items-center gap-3 mb-6">
+    <button 
+      @click="editMode = !editMode"
+      class="px-4 py-2 text-teal-600 rounded-lg text-sm font-medium hover:bg-teal-50 flex items-center gap-2 transition-colors border border-teal-200"
+    >
+      <span class="material-symbols-outlined text-base" x-text="editMode ? 'close' : 'edit'"></span>
+      <span x-text="editMode ? 'Cancel' : 'Edit'"></span>
+    </button>
+    <button class="px-4 py-2 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 flex items-center gap-2 transition-colors border border-red-200">
+      <span class="material-symbols-outlined text-base">delete</span>
+      Delete
+    </button>
+  </div>
+
+  <!-- Product Images & Basic Info -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Images Section (Left) -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Main Product Image -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Product Images</h2>
+        
+        <!-- Main Image Display -->
+        <div class="mb-6">
+          <div class="w-full h-80 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-4">
+            {% if product.thumbnail and product.thumbnail.image %}
+              <img id="mainImage" src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+            {% elif product.images.first %}
+              <img id="mainImage" src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+            {% else %}
+              <span class="material-symbols-outlined text-gray-300 text-6xl">image</span>
+            {% endif %}
+          </div>
+
+          <!-- Thumbnail Selection -->
+          <form method="POST" id="thumbnailForm" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="set_thumbnail_id" id="thumbnailIdInput">
+          </form>
+
+          <div class="grid grid-cols-4 gap-3">
+            {% for image in product.images.all %}
+            <div 
+              class="relative cursor-pointer rounded-lg border-2 overflow-hidden transition-all hover:border-teal-600"
+              data-image-id="{{ image.id }}"
+              onclick="document.getElementById('mainImage').src = this.querySelector('img').src"
+            >
+              <img src="{{ image.image.url }}" alt="Thumbnail" class="w-full h-20 object-cover">
+              {% if image.is_thumbnail %}
+              <div class="absolute top-1 right-1 bg-teal-600 text-white px-2 py-1 text-xs font-medium rounded">
+                Primary
+              </div>
+              {% endif %}
+
+              <!-- Edit Mode: Set as Thumbnail and Delete Buttons -->
+              <div x-show="editMode" class="absolute inset-0 bg-black/50 flex items-end gap-1 p-2 opacity-0 hover:opacity-100 transition-opacity" style="display: none;">
+                <button
+                  type="button"
+                  @click.prevent="setThumbnail('{{ image.id }}')"
+                  class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium py-1 rounded flex items-center justify-center gap-1"
+                  title="Set as primary thumbnail"
+                >
+                  <span class="material-symbols-outlined text-sm">check</span>
+                  Set
+                </button>
+                <button
+                  type="button"
+                  @click.prevent="deleteImage('{{ image.id }}')"
+                  class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium py-1 rounded flex items-center justify-center gap-1"
+                  title="Delete this image"
+                >
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                  Del
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Edit Mode: Add New Images -->
+        <div x-show="editMode" class="pt-6 border-t border-gray-200" style="display: none;">
+          <h3 class="font-semibold text-gray-900 mb-4">Add More Images</h3>
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-600 hover:bg-teal-50 transition-colors">
+            <input 
+              type="file" 
+              id="newImages"
+              name="new_images"
+              multiple 
+              accept="image/*" 
+              class="hidden"
+              onchange="document.getElementById('fileCount').textContent = this.files.length"
+            >
+            <label for="newImages" class="cursor-pointer">
+              <span class="material-symbols-outlined text-gray-400 text-4xl block mb-2">cloud_upload</span>
+              <p class="text-sm text-gray-600">
+                <span class="font-medium text-teal-600">Click to upload</span> or drag and drop
+              </p>
+              <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB each</p>
+              <p class="text-xs text-teal-600 font-medium mt-2" id="fileCount"></p>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Details Form -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-6">Product Information</h2>
+        
+        <form method="POST" enctype="multipart/form-data" class="space-y-6" id="productForm">
+          {% csrf_token %}
+
+          <!-- Product Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+            <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900">
+              {{ product.name }}
+            </div>
+            <input 
+              type="text" 
+              name="name" 
+              value="{{ product.name }}"
+              x-show="editMode"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Product name"
+              style="display: none;"
+            >
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900 text-sm whitespace-pre-wrap">
+              {{ product.description|default:"No description" }}
+            </div>
+            <textarea 
+              name="description"
+              x-show="editMode"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+              rows="5"
+              placeholder="Product description"
+              style="display: none;"
+            >{{ product.description }}</textarea>
+          </div>
+
+          <!-- Additional Info -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Additional Information</label>
+            <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900 text-sm whitespace-pre-wrap">
+              {{ product.additional_info|default:"No additional info" }}
+            </div>
+            <textarea 
+              name="additional_info"
+              x-show="editMode"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+              rows="4"
+              placeholder="Additional information"
+              style="display: none;"
+            >{{ product.additional_info }}</textarea>
+          </div>
+
+          <!-- Category -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900">
+              {{ product.category.name|default:"Uncategorized" }}
+            </div>
+            <select 
+              name="category"
+              x-show="editMode"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              style="display: none;"
+            >
+              <option value="">Select a category</option>
+              {% for category in categories %}
+              <option value="{{ category.id }}" {% if product.category.id == category.id %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Grid: Price, Discount, Stock -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Price -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Price (₦)</label>
+              <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900 font-semibold">
+                ₦{{ product.price|floatformat:2 }}
+              </div>
+              <input 
+                type="number" 
+                name="price" 
+                value="{{ product.price }}"
+                x-show="editMode"
+                step="0.01"
+                min="0"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                placeholder="0.00"
+                style="display: none;"
+              >
+            </div>
+
+            <!-- Discount -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Discount (%)</label>
+              <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900">
+                {% if product.discount %}{{ product.discount }}%{% else %}No discount{% endif %}
+              </div>
+              <input 
+                type="number" 
+                name="discount" 
+                value="{{ product.discount }}"
+                x-show="editMode"
+                min="0"
+                max="100"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                placeholder="0"
+                style="display: none;"
+              >
+            </div>
+
+            <!-- Stock -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
+              <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900">
+                {{ product.stock }} units
+              </div>
+              <input 
+                type="number" 
+                name="stock" 
+                value="{{ product.stock }}"
+                x-show="editMode"
+                min="0"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                placeholder="0"
+                style="display: none;"
+              >
+            </div>
+          </div>
+
+          <!-- SKU -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">SKU</label>
+            <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900 font-mono">
+              {{ product.sku|default:"N/A" }}
+            </div>
+            <input 
+              type="text" 
+              name="sku" 
+              value="{{ product.sku }}"
+              x-show="editMode"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="SKU-12345"
+              style="display: none;"
+            >
+          </div>
+
+          <!-- Submit Button -->
+          <div x-show="editMode" class="flex gap-3 pt-6 border-t border-gray-200" style="display: none;">
+            <button 
+              type="submit" 
+              class="flex-1 px-4 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
+            >
+              Save Changes
+            </button>
+            <button 
+              type="button"
+              @click="editMode = false"
+              class="flex-1 px-4 py-3 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: Stats -->
+    <div class="space-y-6">
+      <!-- Stock Status -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-sm font-semibold text-gray-900 mb-4">Stock Status</h3>
+        <div class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm text-gray-600">Available</span>
+              <span class="text-2xl font-bold text-teal-600">{{ product.stock }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                class="bg-teal-600 h-2 rounded-full transition-all" 
+                style="width: {% if product.stock > 0 %}{% if product.stock > 100 %}100{% else %}{{ product.stock }}{% endif %}%{% else %}0%{% endif %}"
+              ></div>
+            </div>
+          </div>
+          {% if product.stock <= 10 %}
+          <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-xs text-red-700 font-medium">⚠️ Low stock warning</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Pricing Summary -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-sm font-semibold text-gray-900 mb-4">Pricing</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm text-gray-600">Regular Price</span>
+            <span class="font-semibold text-gray-900">₦{{ product.price|floatformat:2 }}</span>
+          </div>
+          {% if product.discount %}
+          <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm text-gray-600">Discount</span>
+            <span class="font-semibold text-red-600">-{{ product.discount }}%</span>
+          </div>
+          <div class="flex justify-between items-center py-2 bg-teal-50 px-3 rounded-lg">
+            <span class="text-sm font-semibold text-gray-900">Final Price</span>
+            <span class="text-lg font-bold text-teal-600">
+              ₦{{ product.price|floatformat:2 }}
+            </span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Product Metadata -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-sm font-semibold text-gray-900 mb-4">Details</h3>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-600">Category</span>
+            <span class="font-medium text-gray-900">{{ product.category.name|default:"—" }}</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-600">SKU</span>
+            <span class="font-medium text-gray-900 font-mono">{{ product.sku|default:"—" }}</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-600">Created</span>
+            <span class="font-medium text-gray-900">{{ product.created_at|date:"d M Y" }}</span>
+          </div>
+          <div class="flex justify-between py-2">
+            <span class="text-gray-600">Updated</span>
+            <span class="font-medium text-gray-900">{{ product.updated_at|date:"d M Y" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setThumbnail(imageId) {
+    // Make AJAX call to set thumbnail
+    fetch('{% url "edit_product" product.id %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: 'set_thumbnail_id=' + imageId
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Reload page to show updated thumbnail
+        location.reload();
+      } else {
+        alert('Error setting thumbnail: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error setting thumbnail');
+    });
+  }
+
+  function deleteImage(imageId) {
+    if (confirm('Are you sure you want to delete this image?')) {
+      fetch('{% url "edit_product" product.id %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: 'delete_image_id=' + imageId
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Reload page to show updated images
+          location.reload();
+        } else {
+          alert('Error deleting image: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error deleting image');
+      });
+    }
+  }
+</script>
+{% endblock %}

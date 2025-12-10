@@ -9,11 +9,23 @@
     {% tailwind_css %}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
+      [x-cloak]{display:none!important}
+      dialog::backdrop{background: rgba(0,0,0,.5)}
+      .dropdown-fixed{position:fixed; z-index:1000}
       .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
       @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
       @keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
       .toast-enter{animation:slideIn .25s ease-out}
       .toast-exit{animation:slideOut .25s ease-in}
+      dialog[open]{
+        position: fixed;
+        inset: 50% auto auto 50%;
+        transform: translate(-50%,-50%);
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: 12px;
+      }
     </style>
   </head>
   <body class="bg-[#E5E5E5]">
@@ -30,8 +42,8 @@
           <h1 class="text-lg lg:text-xl font-semibold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h1>
           <div class="flex items-center gap-2 lg:gap-4">
             <a href="{% url 'admin_notifications' %}" class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-                <span class="material-symbols-outlined">notifications</span>
-                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
             <div class="flex items-center gap-2 lg:gap-3">
               <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold text-sm lg:text-base">
@@ -84,5 +96,18 @@
       function dismissToast(btn){const t=btn.closest('[data-toast]');t.classList.remove('toast-enter');t.classList.add('toast-exit');setTimeout(()=>t.remove(),250);}
       document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('[data-toast]').forEach(t=>{setTimeout(()=>{t.classList.add('toast-exit');setTimeout(()=>t.remove(),250);},2000);});});
     </script>
+    
+    <!-- Debug: Check if Alpine loads -->
+    <script>
+      console.log('Loading Alpine from:', '{% static "js/alpine.min.js" %}');
+      window.addEventListener('alpine:init', () => {
+        console.log('✅ Alpine.js initialized successfully!');
+      });
+    </script>
+    
+    <script src="{% static 'js/alpine.min.js' %}" defer></script>
+    <script src="{% static 'js/htmx.min.js' %}" defer></script>
+    
+    
   </body>
 </html>

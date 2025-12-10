@@ -139,8 +139,38 @@
             <span class="px-2 py-1 rounded-full text-xs bg-green-50 text-green-700">Active</span>
           </td>
           <td class="py-3 px-4 text-gray-700">90,000</td>
-          <td class="py-3 px-4">
-            <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+          <td class="py-3 px-4 relative">
+            <div
+              x-data="{
+                open:false, width:200, pos:{top:0,left:0},
+                place() {
+                  const r = this.$refs.btn.getBoundingClientRect();
+                  const left = Math.min(r.right - this.width, window.innerWidth - this.width - 8);
+                  const top  = Math.min(r.bottom + 4, window.innerHeight - 8);
+                  this.pos = { top, left };
+                }
+              }"
+              class="relative"
+            >
+              <button x-ref="btn" @click="open=!open; $nextTick(()=>place())" class="text-gray-400 hover:text-gray-600" :aria-expanded="open">
+                <span class="material-symbols-outlined text-lg">more_vert</span>
+              </button>
+
+              <div x-cloak x-show="open" x-transition @click.outside="open=false" @keydown.escape.window="open=false"
+                  class="dropdown-fixed bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                  :style="`top:${pos.top}px;left:${pos.left}px;width:${width}px`">
+                <a href="" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <span class="material-symbols-outlined text-blue-600 text-base">visibility</span> View Details
+                </a>
+                <a href="" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <span class="material-symbols-outlined text-green-600 text-base">edit</span> Edit
+                </a>
+                <button hx-delete="" hx-confirm="Delete this retailer?"
+                        class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                  <span class="material-symbols-outlined text-base">delete</span> Delete
+                </button>
+              </div>
+            </div>
           </td>
         </tr>
         {% endfor %}
@@ -148,4 +178,8 @@
     </table>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+
 {% endblock %}

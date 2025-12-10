@@ -1,0 +1,20 @@
+<form 
+  hx-post="{% if category %}{% url 'edit_category' category.id %}{% else %}{% url 'add_category' %}{% endif %}"
+  hx-target="#category-form-container"
+  class="space-y-4">
+  {% csrf_token %}
+  <div>
+    <label class="block text-sm font-medium mb-2">Category Name</label>
+    {{ form.name }}
+    {% for err in form.name.errors %}<p class="text-sm text-red-600 mt-1">{{ err }}</p>{% endfor %}
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-2">Description</label>
+    {{ form.description }}
+    {% for err in form.description.errors %}<p class="text-sm text-red-600 mt-1">{{ err }}</p>{% endfor %}
+  </div>
+  <div class="flex gap-3 pt-2">
+    <button type="button" onclick="this.closest('dialog')?.close()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">Cancel</button>
+    <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg">Save</button>
+  </div>
+</form>

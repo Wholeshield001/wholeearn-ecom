@@ -21,7 +21,7 @@
       </button>
     </div>
     <div class="space-y-1">
-      <p class="text-2xl lg:text-3xl font-bold text-gray-900">12,250</p>
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_orders }}</p>
       <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
     </div>
   </div>
@@ -40,7 +40,7 @@
       </button>
     </div>
     <div class="space-y-1">
-      <p class="text-2xl lg:text-3xl font-bold text-gray-900">560</p>
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ pending_orders }}</p>
       <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
     </div>
   </div>
@@ -59,7 +59,7 @@
       </button>
     </div>
     <div class="space-y-1">
-      <p class="text-2xl lg:text-3xl font-bold text-gray-900">12,250</p>
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_users }}</p>
       <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
     </div>
   </div>
@@ -78,7 +78,7 @@
       </button>
     </div>
     <div class="space-y-1">
-      <p class="text-2xl lg:text-3xl font-bold text-gray-900">₦12,250</p>
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">₦{{ total_revenue }}</p>
       <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
     </div>
   </div>
@@ -86,22 +86,27 @@
 
 <!-- Sales Chart & Notifications -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
-  <!-- Sales Details Chart -->
+  <!-- Sales Chart -->
   <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
         <h2 class="text-base lg:text-lg font-semibold text-gray-900">Sales Details</h2>
         <p class="text-xs lg:text-sm text-green-600">+12% this month</p>
       </div>
-      <select class="px-3 lg:px-4 py-2 border border-gray-300 rounded-lg text-xs lg:text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-        <option>March</option>
-        <option>April</option>
-        <option>May</option>
-      </select>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-teal-500 rounded-full"></div>
+          <span class="text-xs font-medium text-gray-600">2025</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-gray-900 rounded-full"></div>
+          <span class="text-xs font-medium text-gray-600">2024</span>
+        </div>
+      </div>
     </div>
-    <!-- Placeholder for chart -->
-    <div class="h-48 lg:h-64 bg-gradient-to-r from-teal-50 to-teal-100 rounded-lg flex items-center justify-center">
-      <p class="text-sm text-gray-500">Chart will be added here</p>
+    <!-- Chart Container -->
+    <div class="w-full h-48 lg:h-64">
+      <canvas id="dashboardSalesChart"></canvas>
     </div>
   </div>
 
@@ -109,7 +114,7 @@
   <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
     <div class="flex items-center justify-between mb-4 lg:mb-6">
       <h2 class="text-base lg:text-lg font-semibold text-gray-900">Notifications</h2>
-      <a href="#" class="text-xs lg:text-sm text-teal-600 hover:text-teal-700">See more</a>
+      <a href="{% url 'admin_notifications' %}" class="text-xs lg:text-sm text-teal-600 hover:text-teal-700">See more</a>
     </div>
     <div class="space-y-3 lg:space-y-4">
       {% for i in "12345" %}
@@ -126,12 +131,26 @@
   </div>
 </div>
 
+<!-- Revenue Trend Chart -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 mb-6 lg:mb-8">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-base lg:text-lg font-semibold text-gray-900">Revenue Trend</h2>
+      <p class="text-xs lg:text-sm text-gray-600">Last 7 days</p>
+    </div>
+  </div>
+  <div class="w-full h-48 lg:h-64">
+    <canvas id="dashboardRevenueChart"></canvas>
+  </div>
+</div>
+
 <!-- Top Selling Products -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
   <h2 class="text-base lg:text-lg font-semibold text-gray-900 mb-4 lg:mb-6">Top Selling Products</h2>
   
   <!-- Mobile Card View -->
   <div class="block lg:hidden space-y-4">
+    {% for i in "1234" %}
     <div class="border border-gray-200 rounded-lg p-4">
       <div class="flex items-center gap-3 mb-3">
         <div class="w-12 h-12 bg-teal-100 rounded-lg flex-shrink-0"></div>
@@ -150,6 +169,7 @@
         <div><span class="text-gray-500">Added:</span> <span>10 Mar 2025</span></div>
       </div>
     </div>
+    {% endfor %}
   </div>
 
   <!-- Desktop Table View -->
@@ -169,6 +189,7 @@
         </tr>
       </thead>
       <tbody>
+        {% for i in "1234" %}
         <tr class="border-b border-gray-100 hover:bg-gray-50">
           <td class="py-4 px-4">
             <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
@@ -192,8 +213,151 @@
             </button>
           </td>
         </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Dashboard Sales Chart
+  const dashboardSalesCtx = document.getElementById('dashboardSalesChart').getContext('2d');
+  new Chart(dashboardSalesCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      datasets: [
+        {
+          label: '2025',
+          data: [65, 59, 80, 81, 56, 55, 40, 70, 75, 85, 90, 95],
+          backgroundColor: '#14b8a6',
+          borderRadius: 4,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8,
+        },
+        {
+          label: '2024',
+          data: [75, 25, 25, 75, 50, 100, 100, 25, 50, 50, 25, 50],
+          backgroundColor: '#1f2937',
+          borderRadius: 4,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          padding: 12,
+          titleFont: { size: 14 },
+          bodyFont: { size: 13 },
+          cornerRadius: 6,
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            font: { size: 12 },
+            color: '#9ca3af',
+          },
+          grid: {
+            drawBorder: false,
+            color: '#e5e7eb',
+          }
+        },
+        x: {
+          ticks: {
+            font: { size: 12 },
+            color: '#9ca3af',
+          },
+          grid: {
+            display: false,
+            drawBorder: false,
+          }
+        }
+      }
+    }
+  });
+
+  // Dashboard Revenue Trend Chart
+  const dashboardRevenueCtx = document.getElementById('dashboardRevenueChart').getContext('2d');
+  new Chart(dashboardRevenueCtx, {
+    type: 'line',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [
+        {
+          label: 'Revenue',
+          data: [12000, 15000, 10000, 18000, 22000, 19000, 25000],
+          borderColor: '#14b8a6',
+          backgroundColor: 'rgba(20, 184, 166, 0.1)',
+          borderWidth: 3,
+          pointRadius: 5,
+          pointBackgroundColor: '#14b8a6',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          tension: 0.4,
+          fill: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          padding: 12,
+          titleFont: { size: 14 },
+          bodyFont: { size: 13 },
+          cornerRadius: 6,
+          callbacks: {
+            label: function(context) {
+              return '₦' + context.parsed.y.toLocaleString();
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            font: { size: 12 },
+            color: '#9ca3af',
+            callback: function(value) {
+              return '₦' + (value / 1000).toFixed(0) + 'k';
+            }
+          },
+          grid: {
+            drawBorder: false,
+            color: '#e5e7eb',
+          }
+        },
+        x: {
+          ticks: {
+            font: { size: 12 },
+            color: '#9ca3af',
+          },
+          grid: {
+            display: false,
+            drawBorder: false,
+          }
+        }
+      }
+    }
+  });
+</script>
 {% endblock %}

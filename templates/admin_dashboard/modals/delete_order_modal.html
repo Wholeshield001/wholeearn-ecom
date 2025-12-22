@@ -1,0 +1,96 @@
+<dialog id="orderDeleteModal" class="rounded-xl shadow-lg max-w-md w-full">
+  <div class="bg-white rounded-xl p-6 space-y-5">
+    <div class="flex items-start justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">Delete Order</h2>
+        <p class="text-sm text-gray-600 mt-1">This action cannot be undone.</p>
+      </div>
+      <button type="button" class="text-gray-400 hover:text-gray-600" data-cancel>
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-sm text-red-700">
+        Are you sure you want to delete order <span class="font-semibold" data-order-id>#</span>? This will remove all associated data.
+      </p>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="button" class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300" data-cancel>
+        Cancel
+      </button>
+      <button type="button" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700" data-confirm>
+        Delete Order
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  (function() {
+    const modal = document.getElementById('orderDeleteModal');
+    if (!modal) return;
+
+    const orderIdEl = modal.querySelector('[data-order-id]');
+    const confirmBtn = modal.querySelector('[data-confirm]');
+    const cancelBtns = modal.querySelectorAll('[data-cancel]');
+    let ctx = { url: null, orderId: null };
+
+    function getCsrfToken() {
+      const match = document.cookie.match(/csrftoken=([^;]+)/);
+      if (match) return match[1];
+      const input = document.querySelector('[name=csrfmiddlewaretoken]');
+      return input ? input.value : '';
+    }
+
+    window.openOrderDeleteModal = function(opts) {
+      ctx = {
+        url: opts?.url || null,
+        orderId: opts?.orderId || null
+      };
+      if (orderIdEl) orderIdEl.textContent = opts?.orderId || '?';
+      modal.showModal();
+    };
+
+    function resetConfirm() {
+      if (confirmBtn?.dataset.label) confirmBtn.textContent = confirmBtn.dataset.label;
+      confirmBtn?.removeAttribute('disabled');
+    }
+
+    async function handleDelete() {
+      if (!ctx.url) return;
+      if (confirmBtn) {
+        confirmBtn.dataset.label = confirmBtn.dataset.label || confirmBtn.textContent;
+        confirmBtn.textContent = 'Deleting...';
+        confirmBtn.setAttribute('disabled', 'true');
+      }
+      try {
+        const resp = await fetch(ctx.url, {
+          method: 'DELETE',
+          headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await resp.json();
+        if (data.success) {
+          modal.close();
+          window.location.href = '/admin-dashboard/orders/';
+        } else {
+          alert(data.message || 'Failed to delete order');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error deleting order');
+      } finally {
+        resetConfirm();
+        ctx = { url: null, orderId: null };
+      }
+    }
+
+    confirmBtn?.addEventListener('click', handleDelete);
+    cancelBtns.forEach(btn => btn.addEventListener('click', () => modal.close()));
+    modal.addEventListener('close', () => {
+      resetConfirm();
+      ctx = { url: null, orderId: null };
+    });
+  })();
+</script>

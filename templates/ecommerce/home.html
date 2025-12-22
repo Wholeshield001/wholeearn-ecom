@@ -1,0 +1,303 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}WholeShield | Welcome{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="relative overflow-hidden min-h-[80vh] bg-white reveal opacity-0 translate-y-3">
+  <!-- Decorative edge bottles with hover reveal -->
+  <div class="hidden md:block absolute left-0 top-20 w-[35vw] max-w-[480px] group pointer-events-auto z-0">
+    <img src="{% static 'images/Arthorshield.png' %}"
+         alt="Arthorshield bottle"
+         class="opacity-15 blur-[2px] transition-all duration-300 ease-out select-none pointer-events-none group-hover:opacity-90 group-hover:blur-0 group-hover:scale-105 group-hover:drop-shadow-2xl" />
+  </div>
+  <div class="hidden md:block absolute right-0 top-24 w-[35vw] max-w-[480px] group pointer-events-auto z-0">
+    <img src="{% static 'images/Reposhield.png' %}"
+         alt="Reposhield bottle"
+         class="opacity-15 blur-[2px] transition-all duration-300 ease-out select-none pointer-events-none group-hover:opacity-90 group-hover:blur-0 group-hover:scale-105 group-hover:drop-shadow-2xl" />
+  </div>
+
+  <!-- Center hero content -->
+  <div class="max-w-6xl mx-auto px-4 pt-8 pb-16 sm:pt-12 sm:pb-20 text-center relative z-10">
+    <!-- Top product image -->
+    <img src="{% static 'images/Magnesium.png' %}"
+         alt="Magnesium bottle"
+         class="mx-auto h-32 sm:h-40 md:h-44 opacity-90 drop-shadow-lg select-none pointer-events-none mb-6" />
+    
+    <h1 class="mt-2 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
+      <span class="text-[#ec3183]">Welcome to the </span>
+      <span class="text-[#31dec4] italic">whole</span><br class="sm:hidden" />
+      <span class="text-[#ec3183]"> side of life!</span>
+    </h1>
+
+    <div class="mt-8 sm:mt-10">
+      <a href="#"
+         class="inline-flex items-center justify-center rounded-full px-8 sm:px-10 py-3 sm:py-3.5 text-white font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-shadow"
+         style="background: linear-gradient(90deg, #ec3183 0%, #31dec4 100%);">
+        Complete Your Whole Health
+      </a>
+    </div>
+
+    <!-- Bottom decorative element (half circle) -->
+    <div class="mt-12 sm:mt-16 relative">
+      <div class="absolute left-1/2 transform -translate-x-1/2 w-64 h-32 sm:w-80 sm:h-40 bg-gradient-to-b from-yellow-100 to-yellow-50 rounded-t-full opacity-60"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Shop Bestsellers Section -->
+<section class="py-16 sm:py-20 bg-white reveal opacity-0 translate-y-3">
+  <div class="max-w-7xl mx-auto px-4">
+    <!-- Section Header -->
+    <div class="flex items-center justify-between pb-12">
+      <h2 class="text-2xl sm:text-3xl font-bold text-[#ec3183]">Shop Bestsellers</h2>
+      <a href="{% url 'products' %}" class="text-[#ec3183] hover:opacity-80 font-medium">Shop All</a>
+    </div>
+    <!-- Products Grid -->
+    {% if bestsellers %}
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+        {% for product in bestsellers %}
+          <a href="{% url 'product-detail' product.id %}" class="group block">
+            <div class="aspect-[3/4] rounded-xl overflow-hidden bg-white shadow border border-pink-100">
+              {% if product.thumbnail and product.thumbnail.image %}
+                <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+              {% elif product.images.first %}
+                <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+              {% else %}
+                <img src="{% static 'images/Arthorshield.png' %}" alt="{{ product.name|default:'Product' }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+              {% endif %}
+            </div>
+            <div class="mt-3">
+              <p class="text-[#ec3183] font-semibold">{{ product.name|default:'Product' }}</p>
+              <p class="text-[#ec3183] opacity-80">{{ product.category.name|default:'Category' }}</p>
+              <p class="mt-1 text-[#ec3183] font-medium">
+                {% if product.price %}${{ product.price }}{% else %}—{% endif %}
+              </p>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <!-- Placeholder cards -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+        {% for i in "1234" %}
+          <div class="group">
+            <div class="aspect-[3/4] rounded-xl overflow-hidden bg-white shadow border border-pink-100">
+              <img src="{% static 'images/Arthorshield.png' %}" alt="Arthorshield" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+            </div>
+            <div class="mt-3">
+              <p class="text-[#ec3183] font-semibold">Arthorshield</p>
+              <p class="text-[#ec3183] opacity-80">Joint Health</p>
+              <p class="mt-1 text-[#ec3183] font-medium">$33</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Trust & Certifications Section -->
+<section class="py-16 sm:py-20 bg-white reveal opacity-0 translate-y-3">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-8 sm:gap-12">
+      <!-- Vegan Friendly -->
+      <div class="text-center">
+        <div class="flex justify-center mb-4">
+          <span class="text-5xl sm:text-6xl text-[#ec3183]">🌱</span>
+        </div>
+        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">Vegan-Friendly</p>
+      </div>
+
+      <!-- Clean Label -->
+      <div class="text-center">
+        <div class="flex justify-center mb-4">
+          <span class="text-5xl sm:text-6xl text-[#ec3183]">✓</span>
+        </div>
+        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">Clean Label<br />No Artificial Additives</p>
+      </div>
+
+      <!-- Science Backed -->
+      <div class="text-center">
+        <div class="flex justify-center mb-4">
+          <span class="text-5xl sm:text-6xl text-[#ec3183]">🔬</span>
+        </div>
+        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">Science Backed<br />Active Ingredients</p>
+      </div>
+
+      <!-- NAFDAC & EU -->
+      <div class="text-center">
+        <div class="flex justify-center mb-4">
+          <span class="text-5xl sm:text-6xl text-[#ec3183]">✓</span>
+        </div>
+        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">NAFDAC & EU -GMP<br />Compliance</p>
+      </div>
+
+      <!-- 100% Traceable -->
+      <div class="text-center">
+        <div class="flex justify-center mb-4">
+          <span class="text-5xl sm:text-6xl text-[#ec3183]">◉</span>
+        </div>
+        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">100% Traceable</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Philosophy Section -->
+<section class="py-16 sm:py-24 bg-gray-50 reveal opacity-0 translate-y-3">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <!-- Left: Product Image -->
+      <div class="flex justify-center md:justify-start">
+        <img src="{% static 'images/Carton.png' %}"
+             alt="WholeShield Products"
+             class="h-64 sm:h-80 md:h-96 drop-shadow-xl" />
+      </div>
+
+      <!-- Right: Philosophy Text -->
+      <div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#ec3183] mb-6">
+          Our Philosophy:<br />Catching The Wellness Bug.
+        </h2>
+        <p class="text-base sm:text-lg text-[#ed3e8b] leading-relaxed">
+          We believe that true health isn't about simply avoiding sickness; it's about actively pursuing a state of total, vibrant well-being.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Maximum Protection Section -->
+<section class="py-16 sm:py-24 bg-white reveal opacity-0 translate-y-3">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <!-- Left: Text Content -->
+      <div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#ec3183] mb-6">
+          Maximum Protection:<br />Your Daily Dose of WholeShielding
+        </h2>
+        <p class="text-base sm:text-lg text-[#ed3e8b] leading-relaxed">
+          Every capsule, tablet, and softgel in this collection is an investment in your long-term vitality. Consider this your daily upgrade—everything you need, nothing you don't.
+        </p>
+      </div>
+
+      <!-- Right: Product Image -->
+      <div class="flex justify-center md:justify-end">
+        <img src="{% static 'images/Pills.png' %}"
+             alt="WholeShield Capsules"
+             class="h-64 sm:h-80 md:h-96 drop-shadow-xl" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Embrace Total Well-Being Section -->
+<section class="py-16 sm:py-24 bg-gray-50 reveal opacity-0 translate-y-3">
+  <div class="max-w-7xl mx-auto px-4">
+    <!-- Section Header -->
+    <div class="mb-12">
+      <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#ec3183] mb-4">
+        Embrace Total Well-Being
+      </h2>
+      <p class="text-base sm:text-lg text-[#ed3e8b]">
+        Explore the Curated Collections Designed to Shield Your Health.
+      </p>
+    </div>
+
+    <!-- 3-Column Image Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+      <!-- Card 1 -->
+      <div class="group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+        <img src="{% static 'images/Arthorshield.png' %}"
+             alt="Eye Health Collection"
+             class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105" />
+      </div>
+
+      <!-- Card 2 -->
+      <div class="group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+        <img src="{% static 'images/Magnesium.png' %}"
+             alt="Wellness & Vitality"
+             class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105" />
+      </div>
+
+      <!-- Card 3 -->
+      <div class="group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+        <img src="{% static 'images/Reposhield.png' %}"
+             alt="Mental Clarity"
+             class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105" />
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Join The Whole Crew Section -->
+<section class="py-16 sm:py-20 bg-white text-center reveal opacity-0 translate-y-3">
+  <div class="max-w-3xl mx-auto px-4">
+    <h2 class="text-3xl sm:text-4xl font-bold text-[#ec3183] mb-3">
+      Join The Whole Crew
+    </h2>
+    <p class="text-base sm:text-lg text-[#ed3e8b] mb-8">
+      Help Us Shield More Communities.
+    </p>
+    <div>
+      <a href="{% url 'signup' %}"
+         class="inline-flex items-center justify-center rounded-full px-6 sm:px-8 py-3 text-white font-semibold shadow-md hover:shadow-lg transition-shadow"
+         style="background: linear-gradient(90deg, #ec3183 0%, #31dec4 100%);">
+        Come on in
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-16 sm:py-20 bg-gray-50 reveal opacity-0 translate-y-3">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 items-center">
+      <div>
+        <h3 class="text-2xl sm:3xl font-bold text-[#ec3183] mb-2">
+          No half-baked updates
+        </h3>
+        <p class="text-sm sm:text-base text-[#ec3183]">
+          just the whole scoop.
+        </p>
+      </div>
+      <form class="w-full">
+        <div class="flex items-stretch bg-white rounded-full shadow-sm border border-pink-100 overflow-hidden">
+          <input type="email"
+                 name="email"
+                 required
+                 placeholder="Enter your email"
+                 class="flex-1 px-4 sm:px-5 py-3 text-sm sm:text-base outline-none" />
+          <button type="submit"
+                  class="px-4 sm:px-6 text-sm sm:text-base font-semibold text-[#ec3183] hover:opacity-80 transition-opacity">
+            Subscribe
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function() {
+    const Els = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.classList.remove('opacity-0', 'translate-y-3');
+          el.classList.add('transition', 'duration-700');
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.1 });
+    Els.forEach(el => io.observe(el));
+  })();
+</script>
+{% endblock %}

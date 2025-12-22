@@ -1,0 +1,105 @@
+<div id="cartDrawer" class="hidden fixed inset-0 z-50">
+  <!-- Backdrop -->
+  <div id="cartBackdrop" class="fixed inset-0 bg-black/40 opacity-0 transition-opacity duration-200"></div>
+
+  <!-- Drawer Panel -->
+  <aside id="cartPanel" class="fixed top-0 right-0 h-screen w-full sm:w-[420px] bg-white shadow-2xl flex flex-col transition-transform duration-300 translate-x-full">
+    <div class="flex items-center justify-between border-b border-gray-200 p-4 flex-shrink-0">
+      <h2 class="text-lg font-semibold text-[#ec3183]">Your Cart</h2>
+      <button id="closeCartBtn" class="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="Close cart">
+        <span class="material-symbols-outlined text-[#ec3183]">close</span>
+      </button>
+    </div>
+
+    <!-- Cart Items Section -->
+    <div id="cartItems" class="flex-1 overflow-y-auto p-4 space-y-4">
+      {% include 'partials/ecommerce/cart_items.html' %}
+    </div>
+
+    <!-- Checkout Section -->
+    <div class="border-t border-gray-200 p-4 space-y-3 flex-shrink-0">
+      {% if cart_items %}
+        <div id="cartTotals" class="space-y-2 text-sm">
+          <div class="flex justify-between text-gray-700"><span>Subtotal</span><span class="text-[#ec3183] font-semibold">${{ cart_total }}</span></div>
+          <div class="flex justify-between text-gray-700"><span>Shipping</span><span class="text-green-600 font-semibold">Free</span></div>
+          <div class="flex justify-between text-gray-700"><span>Tax</span><span class="text-[#ec3183]">$0.00</span></div>
+          <div class="flex justify-between font-semibold border-t border-gray-200 pt-2 text-gray-900"><span>Total</span><span class="text-[#ec3183]">${{ cart_total }}</span></div>
+        </div>
+        <a href="{% url 'checkout' %}" class="w-full px-4 py-3 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white rounded-lg font-medium hover:shadow-lg transition-shadow block text-center">
+          Proceed to Checkout
+        </a>
+      {% else %}
+        <div class="text-center py-4">
+          <p class="text-gray-600 text-sm">Add items to your cart to proceed</p>
+          <a href="{% url 'products' %}" class="w-full mt-3 px-4 py-3 border-2 border-[#ec3183] text-[#ec3183] rounded-lg font-medium hover:bg-pink-50 transition-colors block text-center text-sm">
+            Start Shopping
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const cartDrawer = document.getElementById('cartDrawer');
+    const cartBackdrop = document.getElementById('cartBackdrop');
+    const cartPanel = document.getElementById('cartPanel');
+    const openCartBtn = document.getElementById('openCartBtn');
+    const closeCartBtn = document.getElementById('closeCartBtn');
+
+    function refreshCart() {
+      if (!window.htmx) return;
+      htmx.ajax('GET', '{% url "get-cart-drawer" %}', {
+        target: '#cartItems',
+        swap: 'innerHTML'
+      });
+    }
+
+    function openCart() {
+      cartDrawer.classList.remove('hidden');
+      // Trigger reflow to enable transition
+      cartDrawer.offsetHeight;
+      cartBackdrop.classList.remove('opacity-0');
+      cartPanel.classList.remove('translate-x-full');
+      document.body.classList.add('overflow-hidden');
+      refreshCart();
+    }
+
+    function closeCart() {
+      cartBackdrop.classList.add('opacity-0');
+      cartPanel.classList.add('translate-x-full');
+      setTimeout(() => {
+        if (cartDrawer.classList.contains('hidden') === false) {
+          cartDrawer.classList.add('hidden');
+        }
+      }, 300);
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    if (openCartBtn) {
+      openCartBtn.addEventListener('click', openCart);
+    }
+    if (closeCartBtn) {
+      closeCartBtn.addEventListener('click', closeCart);
+    }
+    if (cartBackdrop) {
+      cartBackdrop.addEventListener('click', closeCart);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !cartDrawer.classList.contains('hidden')) {
+        closeCart();
+      }
+    });
+
+    // Auto-open cart if cart=open parameter is present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('cart') === 'open') {
+      openCart();
+      // Remove the parameter from URL without reload
+      const newUrl = window.location.pathname + window.location.search.replace(/[?&]cart=open/, '').replace(/^&/, '?');
+      window.history.replaceState({}, '', newUrl || window.location.pathname);
+    }
+  });
+</script>

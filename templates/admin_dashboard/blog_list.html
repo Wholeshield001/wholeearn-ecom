@@ -1,0 +1,76 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Blog{% endblock %}
+{% block page_title %}Blog{% endblock %}
+
+{% block content %}
+<!-- Filter Bar -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+    <a href="?status=all" class="px-4 py-2 text-sm font-medium rounded-md transition-colors {% if active_status == 'all' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+      All <span class="ml-1.5 px-1.5 py-0.5 text-xs rounded {% if active_status == 'all' %}bg-white{% else %}bg-gray-100{% endif %}">{{ total }}</span>
+    </a>
+    <a href="?status=published" class="px-4 py-2 text-sm font-medium rounded-md transition-colors {% if active_status == 'published' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+      Publish <span class="ml-1.5 px-1.5 py-0.5 text-xs rounded {% if active_status == 'published' %}bg-white{% else %}bg-gray-100{% endif %}">{{ published }}</span>
+    </a>
+    <a href="?status=drafts" class="px-4 py-2 text-sm font-medium rounded-md transition-colors {% if active_status == 'drafts' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+      Drafts <span class="ml-1.5 px-1.5 py-0.5 text-xs rounded {% if active_status == 'drafts' %}bg-white{% else %}bg-gray-100{% endif %}">{{ drafts }}</span>
+    </a>
+  </div>
+  
+  <div class="flex items-center gap-2">
+    <button class="px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">cloud_download</span>
+      Export
+    </button>
+    <a href="{% url 'admin_blog_add' %}" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">add</span>
+      Add New Article
+    </a>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% for post in posts %}
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="aspect-[4/3] bg-gray-100">
+      {% if post.cover_image %}
+        <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full h-full object-cover">
+      {% else %}
+        <div class="w-full h-full flex items-center justify-center text-gray-400">No Cover Image</div>
+      {% endif %}
+    </div>
+    <div class="p-4">
+      <h3 class="text-sm font-semibold text-gray-900 mb-1">{{ post.title }}</h3>
+      <p class="text-xs text-gray-500 mb-3">{{ post.category.name|default:"No Category" }}</p>
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-gray-500">{{ post.created_at|date:"d M Y" }}</div>
+        <div class="flex items-center gap-2">
+          {% if post.is_published %}
+            <span class="px-2 py-1 rounded-full bg-teal-100 text-teal-800 text-xs">Published</span>
+          {% else %}
+            <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">Draft</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="mt-4 flex items-center gap-3">
+        <a href="{% url 'admin_blog_edit' post.id %}" class="px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-800 hover:bg-gray-200">Edit</a>
+        <form action="{% url 'admin_blog_toggle_publish' post.id %}" method="post" class="inline">
+          {% csrf_token %}
+          <button type="submit" class="px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-800 hover:bg-gray-200">
+            {% if post.is_published %}Unpublish{% else %}Publish{% endif %}
+          </button>
+        </form>
+        <form action="{% url 'admin_blog_delete' post.id %}" method="post" class="inline" onsubmit="return confirm('Delete this article?');">
+          {% csrf_token %}
+          <button type="submit" class="px-3 py-2 bg-red-100 rounded-lg text-sm text-red-800 hover:bg-red-200">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <div class="col-span-full text-center text-gray-500">No articles yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

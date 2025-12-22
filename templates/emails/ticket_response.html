@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Response</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(90deg, #ec3183 0%, #31dec4 100%); color: #ffffff; padding: 30px 20px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 30px 20px; }
+    .ticket-box { background: #f0fdf4; border-left: 4px solid #14b8a6; padding: 15px; margin: 20px 0; border-radius: 4px; }
+    .ticket-id { font-size: 18px; font-weight: bold; color: #ec3183; margin-bottom: 10px; }
+    .response-box { background: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0; }
+    .footer { background: #f4f4f4; padding: 20px; text-center; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Update on Your Support Ticket</h1>
+    </div>
+    
+    <div class="content">
+      <p>Hi {{ user.first_name|default:"there" }},</p>
+      
+      <p>We have an update on your support ticket.</p>
+      
+      <div class="ticket-box">
+        <div class="ticket-id">Ticket #{{ ticket.id|slice:":8" }}</div>
+        <p><strong>Subject:</strong> {{ ticket.title }}</p>
+        <p><strong>Status:</strong> {{ ticket.get_status_display }}</p>
+      </div>
+      
+      <p><strong>Response from our team:</strong></p>
+      <div class="response-box">
+        {{ ticket.admin_response|linebreaks }}
+      </div>
+      
+      <p>If you have any additional questions, please feel free to reply to this email.</p>
+      
+      <p>Best regards,<br>WholeShield Support Team</p>
+    </div>
+    
+    <div class="footer">
+      <p>&copy; {{ "now"|date:"Y" }} WholeShield. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

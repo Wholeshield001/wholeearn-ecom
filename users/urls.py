@@ -1,0 +1,36 @@
+from django.urls import path
+from .views import (
+    signup,
+    verify_otp,
+    resend_otp,
+    login,
+    logout,
+    dashboard,
+    profile,
+    change_password,
+    password_reset_request,
+    password_reset_verify,
+    password_reset_new,
+    create_ticket,
+    view_tickets,
+    ticket_detail,
+    order_history,
+)
+
+urlpatterns = [
+    path('signup/', signup, name='signup'),
+    path('verify-otp/', verify_otp, name='verify-otp'),
+    path('resend-otp/', resend_otp, name='resend-otp'),
+    path('login/', login, name='login'),
+    path('logout/', logout, name='logout'),
+    path('dashboard/', dashboard, name='user-dashboard'),
+    path('profile/', profile, name='profile'),
+    path('change-password/', change_password, name='change-password'),
+    path('password-reset/', password_reset_request, name='password-reset-request'),
+    path('password-reset/verify/', password_reset_verify, name='password-reset-verify'),
+    path('password-reset/new/', password_reset_new, name='password-reset-new'),
+    path('create-ticket/', create_ticket, name='create-ticket'),
+    path('tickets/', view_tickets, name='view-tickets'),
+    path('tickets/<uuid:ticket_id>/', ticket_detail, name='ticket-detail'),
+    path('order-history/', order_history, name='order-history'),
+]

@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth import authenticate
 from users.models import User
-from .models import Category, Product
+from .models import Category, Product, BlogPost, BlogCategory
 from django.forms.widgets import ClearableFileInput
+from django_ckeditor_5.widgets import CKEditor5Widget
 
 
 
@@ -151,18 +152,33 @@ class CategoryForm(forms.ModelForm):
         }
 
 
+class BlogCategoryForm(forms.ModelForm):
+    class Meta:
+        model = BlogCategory
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'placeholder': 'Category name'
+            }),
+        }
+
+
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['name','description','category','price','discount','stock',
-                 'additional_info']
+                 'is_male', 'is_female', 'is_general', 'additional_info']
         widgets = {
             'name': forms.TextInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
-            'description': forms.Textarea(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','rows':6}),
+            'description': CKEditor5Widget(attrs={'class':'django_ckeditor_5'}, config_name='default'),
             'category': forms.Select(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
             'price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01'}),
             'discount': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0','max':'100'}),
             'stock': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0'}),
+            'is_male': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
+            'is_female': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
+            'is_general': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
             'additional_info': forms.Textarea(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','rows':4}),
         }
 
@@ -180,3 +196,25 @@ class ProductImageForm(forms.Form):
             if image.size > 5 * 1024 * 1024:  # 5MB limit
                 raise forms.ValidationError("Each image must be less than 5MB.")
         return images
+
+
+class BlogPostForm(forms.ModelForm):
+    class Meta:
+        model = BlogPost
+        fields = ['title', 'content', 'category', 'cover_image', 'is_published', 'parent']
+        widgets = {
+            'content': CKEditor5Widget(attrs={'class': 'django_ckeditor_5'}, config_name='extends'),
+            'title': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'category': forms.Select(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'form': 'blog-form'}),
+            'parent': forms.Select(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'form': 'blog-form'}),
+            'is_published': forms.CheckboxInput(attrs={'class': 'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
+            'cover_image': forms.FileInput(attrs={'class': 'w-full', 'form': 'blog-form'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].queryset = BlogCategory.objects.all().order_by('name')
+        self.fields['category'].required = False
+        self.fields['parent'].queryset = BlogPost.objects.all().order_by('title')
+        self.fields['parent'].required = False
+        self.fields['is_published'].required = False

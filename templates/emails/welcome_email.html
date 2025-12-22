@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial, sans-serif; color: #111;">
+    <h2 style="color:#ec3183;">Welcome to WholeShield!</h2>
+    <p>Hello {{ user.first_name|default:user.email }},</p>
+    <p>We're excited to have you on board. Your email has been successfully verified and your account is now active.</p>
+    <p>You can log in anytime to manage your profile and shop our products.</p>
+    <p>Thanks,<br/>The {{ site_name }} team</p>
+  </body>
+</html>

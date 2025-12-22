@@ -155,19 +155,14 @@
                 :style="`top:${pos.top}px;left:${pos.left}px;width:${width}px`"
                 style="display:none;"
               >
-                <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                  <span class="material-symbols-outlined text-blue-600 text-base">visibility</span>
-                  View Details
-                </a>
+                
                 <a href="{% url 'edit_product' product.id %}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                   <span class="material-symbols-outlined text-blue-600 text-base">visibility</span>
                   View Details
                 </a>
-                <button 
-                  hx-delete="{% url 'delete_product' product.id %}"
-                  hx-confirm="Are you sure you want to delete this product?"
-                  hx-target="#product-row-{{ product.id }}"
-                  hx-swap="outerHTML swap:0.5s"
+                <button
+                  type="button"
+                  @click.prevent="open=false; openProductDeleteModal({ url: '{% url 'delete_product' product.id %}', name: '{{ product.name }}', rowId: 'product-row-{{ product.id }}' });"
                   class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                 >
                   <span class="material-symbols-outlined text-base">delete</span>
@@ -186,4 +181,5 @@
     </table>
   </div>
 </div>
+{% include "admin_dashboard/modals/delete_product_modal.html" %}
 {% endblock %}

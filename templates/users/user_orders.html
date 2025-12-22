@@ -1,0 +1,146 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}My Orders - WholeShield{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+  <div class="bg-gradient-to-r from-[#ec3183] to-[#d12a73] text-white py-8">
+    <div class="max-w-7xl mx-auto px-4">
+      <h1 class="text-3xl font-bold">My Orders</h1>
+      <p class="text-white/80 mt-2">Track and view your order history</p>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    {% if orders %}
+      <div class="space-y-4" id="orderList" data-current-page="{{ page_obj.number }}" data-total-pages="{{ page_obj.paginator.num_pages }}">
+        {% for order in orders %}
+          <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition opacity-0 translate-y-3 will-change-transform">
+            <a href="{% url 'order-detail' order.id %}" class="block p-6">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <p class="text-sm text-gray-500">Order #{{ order.id|slice:":8" }}</p>
+                  <p class="text-sm text-gray-500 mt-1">{{ order.created_at|date:"M d, Y" }}</p>
+                </div>
+                <div class="text-right">
+                  {% if order.status == 'pending' %}
+                    <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold">Pending</span>
+                  {% elif order.status == 'processing' %}
+                    <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">Processing</span>
+                  {% elif order.status == 'shipped' %}
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">Shipped</span>
+                  {% elif order.status == 'delivered' %}
+                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">Delivered</span>
+                  {% else %}
+                    <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">Cancelled</span>
+                  {% endif %}
+                  <p class="text-lg font-bold text-[#ec3183] mt-2">₦{{ order.total_amount|floatformat:2 }}</p>
+                </div>
+              </div>
+
+              <div class="border-t pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p class="text-sm text-gray-500">Items</p>
+                    <p class="font-semibold">{{ order.items.count }} item{{ order.items.count|pluralize }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Payment</p>
+                    {% if order.payment_status == 'completed' %}
+                      <p class="font-semibold text-green-600">Paid</p>
+                    {% else %}
+                      <p class="font-semibold text-orange-600">{{ order.payment_status|title }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+                {% if order.tracking_number %}
+                  <div class="mt-4">
+                    <p class="text-sm text-gray-500">Tracking Number</p>
+                    <p class="font-mono text-sm font-semibold">{{ order.tracking_number }}</p>
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+      <div id="ordersLoader" class="flex justify-center items-center py-6 hidden">
+        <div class="animate-spin h-6 w-6 border-2 border-pink-300 border-t-transparent rounded-full"></div>
+        <span class="ml-2 text-sm text-[#ec3183]">Loading more...</span>
+      </div>
+      <div id="ordersSentinel" class="h-8"></div>
+    {% else %}
+      <div class="bg-white rounded-xl shadow-sm p-12 text-center">
+        <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+        <h3 class="text-xl font-bold text-gray-700 mb-2">No orders yet</h3>
+        <p class="text-gray-500 mb-6">Start shopping to see your orders here</p>
+        <a href="{% url 'home' %}" class="inline-block px-6 py-3 bg-[#ec3183] text-white font-semibold rounded-lg hover:opacity-90">
+          Browse Products
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function() {
+    const list = document.getElementById('orderList');
+    if (!list) return;
+    const loader = document.getElementById('ordersLoader');
+    const sentinel = document.getElementById('ordersSentinel');
+    let loading = false;
+
+    function fadeInNewCards(container) {
+      const cards = container.querySelectorAll('.opacity-0.translate-y-3');
+      cards.forEach((card, idx) => {
+        setTimeout(() => {
+          card.classList.remove('opacity-0', 'translate-y-3');
+          card.classList.add('transition', 'duration-500');
+        }, idx * 50);
+      });
+    }
+
+    async function loadNextPage() {
+      const current = parseInt(list.dataset.currentPage || '1');
+      const total = parseInt(list.dataset.totalPages || '1');
+      if (loading || current >= total) return;
+      loading = true;
+      loader.classList.remove('hidden');
+      const nextPage = current + 1;
+      const url = `?page=${nextPage}&partial=1`;
+      try {
+        const res = await fetch(url);
+        const html = await res.text();
+        const temp = document.createElement('div');
+        temp.innerHTML = html.trim();
+        const cards = Array.from(temp.children);
+        cards.forEach(card => list.appendChild(card));
+        list.dataset.currentPage = String(nextPage);
+        fadeInNewCards(list);
+      } catch (e) {
+        console.error('Failed to load next orders page', e);
+      } finally {
+        loading = false;
+        loader.classList.add('hidden');
+      }
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          loadNextPage();
+        }
+      });
+    });
+    io.observe(sentinel);
+
+    // Initial fade-in for first batch
+    fadeInNewCards(list);
+  })();
+</script>
+{% endblock %}

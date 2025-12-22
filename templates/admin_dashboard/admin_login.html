@@ -14,7 +14,7 @@
 
   {% if messages %}
     {% for message in messages %}
-    <div class="mt-4 rounded-md bg-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-50 border border-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-200 p-3 text-sm text-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-700">
+    <div class="flash-message mt-4 rounded-md bg-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-50 border border-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-200 p-3 text-sm text-{% if message.tags == 'error' %}red{% else %}blue{% endif %}-700">
       {{ message }}
     </div>
     {% endfor %}

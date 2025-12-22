@@ -1,0 +1,115 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}WholeShield - Shop{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% tailwind_css %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+      [x-cloak]{display:none!important}
+      .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+      .no-scroll{overflow:hidden}
+      @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+      @keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+      .toast-enter{animation:slideIn .25s ease-out}
+      .toast-exit{animation:slideOut .25s ease-in}
+    </style>
+  </head>
+  <body class="bg-white text-gray-900">
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
+      {% include 'partials/ecommerce/navbar.html' %}
+    </header>
+
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full"></div>
+
+    <main id="mainContent">
+      {% block content %}{% endblock %}
+    </main>
+
+    {% include 'partials/ecommerce/cart.html' %}
+
+    {% include 'partials/ecommerce/footer.html' %}
+
+    <script>
+      function showToast(type, message) {
+        const container = document.getElementById('toastContainer');
+        if (!container) { alert(message); return; }
+        const base = 'toast-enter rounded-lg shadow-lg p-4 flex items-start gap-3';
+        const palette = type==='success'?'bg-teal-50 border border-teal-200':type==='error'?'bg-red-50 border border-red-200':'bg-blue-50 border border-blue-200';
+        const icon = type==='success'?'check_circle':type==='error'?'error':'info';
+        const textColor = type==='success'?'text-teal-700':type==='error'?'text-red-700':'text-blue-700';
+        const closeColor = type==='success'?'text-teal-400 hover:text-teal-600':type==='error'?'text-red-400 hover:text-red-600':'text-blue-400 hover:text-blue-600';
+        const toast = document.createElement('div');
+        toast.className = `${base} ${palette}`;
+        toast.setAttribute('data-toast','');
+        toast.innerHTML = `
+          <div class="flex-shrink-0"><span class="material-symbols-outlined text-lg">${icon}</span></div>
+          <p class="text-sm ${textColor} flex-1">${message}</p>
+          <button class="flex-shrink-0 ${closeColor}" type="button"><span class="material-symbols-outlined text-lg">close</span></button>
+        `;
+        toast.querySelector('button')?.addEventListener('click', () => { toast.classList.add('toast-exit'); setTimeout(()=>toast.remove(),250); });
+        container.appendChild(toast);
+        setTimeout(() => { toast.classList.add('toast-exit'); setTimeout(()=>toast.remove(),250); }, 2500);
+      }
+
+      // HTMX + CSRF + Cart badge updater
+      document.addEventListener('DOMContentLoaded', function() {
+        // CSRF setup for HTMX
+        function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+        const csrftoken = getCookie('csrftoken');
+        if (window.htmx && csrftoken) {
+          htmx.config.headers = Object.assign({}, htmx.config.headers || {}, { 'X-CSRFToken': csrftoken });
+        }
+
+        // Update cart badge from HTMX JSON responses (for add to cart)
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+          try {
+            const xhr = evt.detail.xhr;
+            const contentType = xhr.getResponseHeader('Content-Type') || '';
+            if (contentType.includes('application/json')) {
+              const data = JSON.parse(xhr.responseText || '{}');
+              if (typeof data.item_count !== 'undefined') {
+                const badge = document.getElementById('cartItemCountBadge');
+                if (badge) {
+                  badge.textContent = data.item_count;
+                  if (data.item_count > 0) {
+                    badge.classList.remove('hidden');
+                  } else {
+                    badge.classList.add('hidden');
+                  }
+                }
+              }
+              if (data.message) {
+                showToast(data.success ? 'success' : 'error', data.message);
+              }
+              // Reset quantity input on product detail page
+              const qtyInput = document.getElementById('quantity');
+              if (qtyInput && data.success) {
+                qtyInput.value = 1;
+              }
+            }
+          } catch(e) { console.error('Badge update error:', e); }
+        });
+
+        // Auto-dismiss server-rendered flash messages after 3 seconds
+        const flashes = document.querySelectorAll('.flash-message');
+        flashes.forEach(el => {
+          setTimeout(() => {
+            el.classList.add('transition-opacity', 'opacity-0');
+            setTimeout(() => { el.remove(); }, 300);
+          }, 3000);
+        });
+      });
+    </script>
+
+    <script src="{% static 'js/alpine.min.js' %}" defer></script>
+    <script src="{% static 'js/htmx.min.js' %}" defer></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

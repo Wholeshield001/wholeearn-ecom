@@ -1,0 +1,127 @@
+{% extends 'ecommerce_base.html' %}
+{% load static %}
+
+{% block title %}Blog - WholeShield{% endblock %}
+
+{% block content %}
+<!-- Hero Banner -->
+<div class="w-full h-[400px] relative overflow-hidden mb-12">
+  <img src="{% static 'images/blog.png' %}" alt="Daily Wellness" class="w-full h-full object-cover">
+  <div class="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent"></div>
+</div>
+
+<!-- Category Tabs -->
+<div class="container mx-auto px-4 mb-8">
+  <div class="flex items-center gap-6 border-b border-gray-200 overflow-x-auto">
+    <a href="{% url 'blog' %}" class="pb-3 text-sm font-medium whitespace-nowrap {% if not selected_category %}text-pink-600 border-b-2 border-pink-600{% else %}text-gray-600 hover:text-pink-600{% endif %}">
+      All
+    </a>
+    {% for category in categories %}
+    <a href="?category={{ category.slug }}" class="pb-3 text-sm font-medium whitespace-nowrap {% if selected_category.id == category.id %}text-pink-600 border-b-2 border-pink-600{% else %}text-gray-600 hover:text-pink-600{% endif %}">
+      {{ category.name }}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Blog Posts Grid with Infinite Scroll -->
+<div class="container mx-auto px-4 mb-16">
+  <div id="blogGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% include 'partials/ecommerce/blog_cards.html' with posts=posts %}
+  </div>
+  <div id="blogSentinel" class="mt-8 flex items-center justify-center">
+    <div id="blogLoader" class="hidden items-center gap-2 text-gray-500"><span class="material-symbols-outlined animate-spin">progress_activity</span> Loading more...</div>
+  </div>
+  <noscript>
+    <div class="text-center text-gray-500">Enable JavaScript to load more posts automatically.</div>
+  </noscript>
+</div>
+
+<!-- Newsletter Section -->
+<div class="bg-white border-t border-gray-200 py-16">
+  <div class="container mx-auto px-4">
+    <div class="max-w-2xl mx-auto text-center">
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">No half-baked updates</h2>
+      <p class="text-gray-600 mb-8">just the whole scoop.</p>
+      <form class="flex gap-3 max-w-md mx-auto">
+        <input 
+          type="email" 
+          placeholder="Enter your email" 
+          class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+        >
+        <button type="submit" class="px-6 py-3 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition">
+          Subscribe
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Simple fade-in for newly added cards
+  function animateIn(elements) {
+    elements.forEach(el => {
+      requestAnimationFrame(() => {
+        el.classList.add('opacity-100');
+        el.classList.remove('opacity-0');
+        el.classList.add('translate-y-0');
+        el.classList.remove('translate-y-2');
+      });
+    });
+  }
+
+  (function() {
+    const grid = document.getElementById('blogGrid');
+    const sentinel = document.getElementById('blogSentinel');
+    const loader = document.getElementById('blogLoader');
+    if (!grid || !sentinel) return;
+
+    let currentPage = {{ current_page|default:1 }};
+    const totalPages = {{ total_pages|default:1 }};
+    let loading = false;
+
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('category') || '';
+
+    const io = new IntersectionObserver(async (entries) => {
+      const entry = entries[0];
+      if (!entry.isIntersecting) return;
+      if (loading) return;
+      if (currentPage >= totalPages) {
+        io.disconnect();
+        return;
+      }
+      loading = true;
+      loader?.classList.remove('hidden');
+      try {
+        const nextPage = currentPage + 1;
+        const url = new URL(window.location.origin + window.location.pathname);
+        url.searchParams.set('page', nextPage);
+        if (category) url.searchParams.set('category', category);
+        url.searchParams.set('partial', '1');
+        const resp = await fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const html = await resp.text();
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        const newCards = Array.from(temp.children);
+        newCards.forEach(card => grid.appendChild(card));
+        animateIn(newCards);
+        currentPage = nextPage;
+        if (currentPage >= totalPages) io.disconnect();
+      } catch (e) {
+        console.error('Failed to load more posts', e);
+        io.disconnect();
+      } finally {
+        loader?.classList.add('hidden');
+        loading = false;
+      }
+    }, { rootMargin: '200px 0px' });
+
+    // Kick off animation for initial cards
+    animateIn(Array.from(grid.querySelectorAll('.will-animate')));
+    io.observe(sentinel);
+  })();
+</script>
+{% endblock %}

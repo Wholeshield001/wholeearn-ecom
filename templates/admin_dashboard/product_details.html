@@ -4,6 +4,10 @@
 {% block title %}{{ product.name }}{% endblock %}
 {% block page_title %}{{ product.name }}{% endblock %}
 
+{% block extra_head %}
+{{ form.media }}
+{% endblock %}
+
 {% block content %}
 <!-- Header with Navigation -->
 <div class="flex items-center justify-between mb-6">
@@ -28,11 +32,20 @@
       <span class="material-symbols-outlined text-base" x-text="editMode ? 'close' : 'edit'"></span>
       <span x-text="editMode ? 'Cancel' : 'Edit'"></span>
     </button>
-    <button class="px-4 py-2 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 flex items-center gap-2 transition-colors border border-red-200">
+    <button 
+      type="button"
+      @click.prevent="open=false; openProductDeleteModal({ url: '{% url 'delete_product' product.id %}', name: '{{ product.name }}', rowId: 'product-row-{{ product.id }}' });"
+      class="px-4 py-2 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 flex items-center gap-2 transition-colors border border-red-200"
+    >
       <span class="material-symbols-outlined text-base">delete</span>
-      Delete
+      Delete Product
     </button>
   </div>
+
+  <!-- Thumbnail Modal -->
+  
+    {% include "admin_dashboard/modals/thumbnail_modal.html" %}
+    {% include "admin_dashboard/modals/delete_image_modal.html" %}
 
   <!-- Product Images & Basic Info -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -55,73 +68,89 @@
           </div>
 
           <!-- Thumbnail Selection -->
-          <form method="POST" id="thumbnailForm" style="display: none;">
-            {% csrf_token %}
-            <input type="hidden" name="set_thumbnail_id" id="thumbnailIdInput">
-          </form>
-
-          <div class="grid grid-cols-4 gap-3">
-            {% for image in product.images.all %}
-            <div 
-              class="relative cursor-pointer rounded-lg border-2 overflow-hidden transition-all hover:border-teal-600"
-              data-image-id="{{ image.id }}"
-              onclick="document.getElementById('mainImage').src = this.querySelector('img').src"
-            >
-              <img src="{{ image.image.url }}" alt="Thumbnail" class="w-full h-20 object-cover">
-              {% if image.is_thumbnail %}
-              <div class="absolute top-1 right-1 bg-teal-600 text-white px-2 py-1 text-xs font-medium rounded">
-                Primary
-              </div>
-              {% endif %}
-
-              <!-- Edit Mode: Set as Thumbnail and Delete Buttons -->
-              <div x-show="editMode" class="absolute inset-0 bg-black/50 flex items-end gap-1 p-2 opacity-0 hover:opacity-100 transition-opacity" style="display: none;">
-                <button
-                  type="button"
-                  @click.prevent="setThumbnail('{{ image.id }}')"
-                  class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium py-1 rounded flex items-center justify-center gap-1"
-                  title="Set as primary thumbnail"
-                >
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-gray-900">Gallery</h3>
+            <div class="grid grid-cols-4 gap-3" id="imageGallery">
+              {% for image in product.images.all %}
+              <div 
+                class="relative cursor-pointer rounded-lg border-2 overflow-hidden transition-all hover:border-teal-600 {% if image.is_thumbnail %}border-teal-600 ring-2 ring-teal-200{% else %}border-gray-300{% endif %}"
+                onclick="document.getElementById('mainImage').src = '{{ image.image.url }}'"
+                id="image-{{ image.id }}"
+              >
+                <img src="{{ image.image.url }}" alt="Thumbnail" class="w-full h-20 object-cover">
+                {% if image.is_thumbnail %}
+                <div class="absolute top-1 right-1 bg-teal-600 text-white px-2 py-1 text-xs font-medium rounded flex items-center gap-1">
                   <span class="material-symbols-outlined text-sm">check</span>
-                  Set
+                  Primary
+                </div>
+                {% endif %}
+
+                <!-- Edit Mode: Set as Thumbnail and Delete Buttons -->
+                <div x-show="editMode" class="absolute inset-0 bg-black/60 flex items-center justify-center gap-1 p-1 opacity-0 hover:opacity-100 transition-opacity" style="display: none;">
+                <button
+                    type="button"
+                    @click="$refs.thumbnailModal.showModal()"
+                    class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium py-1.5 px-1 rounded flex items-center justify-center gap-0.5"
+                    title="Set as primary thumbnail"
+                >
+                    <span class="material-symbols-outlined text-sm">check</span>
+                    <span class="hidden sm:inline">Set</span>
                 </button>
                 <button
-                  type="button"
-                  @click.prevent="deleteImage('{{ image.id }}')"
-                  class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium py-1 rounded flex items-center justify-center gap-1"
-                  title="Delete this image"
+                    type="button"
+                    @click="openDeleteModal('{{ image.id }}', '{{ image.image.url }}')"
+                    class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium py-1.5 px-1 rounded flex items-center justify-center gap-0.5"
+                    title="Delete this image"
                 >
-                  <span class="material-symbols-outlined text-sm">delete</span>
-                  Del
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                    <span class="hidden sm:inline">Del</span>
                 </button>
+                </div>
               </div>
+              {% endfor %}
             </div>
-            {% endfor %}
           </div>
         </div>
 
         <!-- Edit Mode: Add New Images -->
         <div x-show="editMode" class="pt-6 border-t border-gray-200" style="display: none;">
           <h3 class="font-semibold text-gray-900 mb-4">Add More Images</h3>
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-600 hover:bg-teal-50 transition-colors">
-            <input 
-              type="file" 
-              id="newImages"
-              name="new_images"
-              multiple 
-              accept="image/*" 
-              class="hidden"
-              onchange="document.getElementById('fileCount').textContent = this.files.length"
+          <form 
+            @submit.prevent="uploadNewImages()"
+            x-data="{ fileCount: 0, uploading: false }"
+          >
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-600 hover:bg-teal-50 transition-colors">
+              <input 
+                type="file" 
+                id="newImages"
+                name="new_images"
+                multiple 
+                accept="image/*" 
+                class="hidden"
+                @change="fileCount = $event.target.files.length"
+              >
+              <label for="newImages" class="cursor-pointer block">
+                <span class="material-symbols-outlined text-gray-400 text-4xl block mb-2">cloud_upload</span>
+                <p class="text-sm text-gray-600">
+                  <span class="font-medium text-teal-600">Click to upload</span> or drag and drop
+                </p>
+                <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB each</p>
+                <p class="text-xs text-teal-600 font-medium mt-2" x-show="fileCount > 0" x-text="fileCount + ' file(s) selected'"></p>
+              </label>
+            </div>
+            <button 
+              type="submit" 
+              x-show="fileCount > 0"
+              :disabled="uploading"
+              class="mt-3 w-full px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:bg-gray-400"
             >
-            <label for="newImages" class="cursor-pointer">
-              <span class="material-symbols-outlined text-gray-400 text-4xl block mb-2">cloud_upload</span>
-              <p class="text-sm text-gray-600">
-                <span class="font-medium text-teal-600">Click to upload</span> or drag and drop
-              </p>
-              <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB each</p>
-              <p class="text-xs text-teal-600 font-medium mt-2" id="fileCount"></p>
-            </label>
-          </div>
+              <span x-show="!uploading">Upload Images</span>
+              <span x-show="uploading" class="flex items-center gap-2 justify-center">
+                <span class="material-symbols-outlined animate-spin text-sm">refresh</span>
+                Uploading...
+              </span>
+            </button>
+          </form>
         </div>
       </div>
 
@@ -129,7 +158,7 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-6">Product Information</h2>
         
-        <form method="POST" enctype="multipart/form-data" class="space-y-6" id="productForm">
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
           {% csrf_token %}
 
           <!-- Product Name -->
@@ -152,17 +181,19 @@
           <!-- Description -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-            <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900 text-sm whitespace-pre-wrap">
-              {{ product.description|default:"No description" }}
+            <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900 text-sm prose prose-sm max-w-none">
+              {{ product.description|safe|default:"No description" }}
             </div>
-            <textarea 
-              name="description"
-              x-show="editMode"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-              rows="5"
-              placeholder="Product description"
-              style="display: none;"
-            >{{ product.description }}</textarea>
+            <div x-show="editMode" style="display: none;" class="w-full">
+              <style>
+                .django_ckeditor_5 { 
+                  width: 100% !important;
+                  border-radius: 0.5rem;
+                  border: 1px solid #d1d5db;
+                }
+              </style>
+              {{ form.description }}
+            </div>
           </div>
 
           <!-- Additional Info -->
@@ -278,6 +309,67 @@
             >
           </div>
 
+          <!-- Best Seller -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Best Seller</label>
+            <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900">
+              {% if product.is_best_seller %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                  Yes
+                </span>
+              {% else %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  No
+                </span>
+              {% endif %}
+            </div>
+            <div x-show="editMode" style="display: none;" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+              <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded transition-colors">
+                <input type="checkbox" name="is_best_seller" {% if product.is_best_seller %}checked{% endif %} class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
+                <span class="text-sm font-medium text-gray-700">Mark as Best Seller</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Gender Categories -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Gender Categories</label>
+            <div x-show="!editMode" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-900 space-y-1">
+              {% if product.is_male %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
+                  Male
+                </span>
+              {% endif %}
+              {% if product.is_female %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800 mr-2">
+                  Female
+                </span>
+              {% endif %}
+              {% if product.is_general %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mr-2">
+                  General (Unisex)
+                </span>
+              {% endif %}
+              {% if not product.is_male and not product.is_female and not product.is_general %}
+                <span class="text-sm text-gray-500">Not specified</span>
+              {% endif %}
+            </div>
+            <div x-show="editMode" class="space-y-3 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200" style="display: none;">
+              <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded transition-colors">
+                {{ form.is_male }}
+                <span class="text-sm text-gray-700">Male</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded transition-colors">
+                {{ form.is_female }}
+                <span class="text-sm text-gray-700">Female</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 px-3 py-2 rounded transition-colors">
+                {{ form.is_general }}
+                <span class="text-sm text-gray-700">General (Unisex)</span>
+              </label>
+            </div>
+          </div>
+
           <!-- Submit Button -->
           <div x-show="editMode" class="flex gap-3 pt-6 border-t border-gray-200" style="display: none;">
             <button 
@@ -374,55 +466,175 @@
 </div>
 
 <script>
-  function setThumbnail(imageId) {
-    // Make AJAX call to set thumbnail
-    fetch('{% url "edit_product" product.id %}', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-      },
-      body: 'set_thumbnail_id=' + imageId
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Reload page to show updated thumbnail
-        location.reload();
-      } else {
-        alert('Error setting thumbnail: ' + data.message);
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Error setting thumbnail');
-    });
+  let selectedImageIdForDelete = null;
+  let deleteImageModal = null;
+  let deleteImagePreview = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    deleteImageModal = document.querySelector('dialog[x-ref="deleteImageModal"]');
+    deleteImagePreview = deleteImageModal?.querySelector('[data-delete-preview]');
+  });
+
+  function showToast(type, message) {
+    const container = document.getElementById('toastContainer');
+    if (!container) {
+      alert(message);
+      return;
+    }
+
+    const base =
+      'toast-enter rounded-lg shadow-lg p-4 flex items-start gap-3 data-[closing=true]:toast-exit';
+    const palette =
+      type === 'success'
+        ? 'bg-teal-50 border border-teal-200'
+        : type === 'error'
+        ? 'bg-red-50 border border-red-200'
+        : 'bg-blue-50 border border-blue-200';
+    const icon =
+      type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info';
+    const textColor =
+      type === 'success'
+        ? 'text-teal-700'
+        : type === 'error'
+        ? 'text-red-700'
+        : 'text-blue-700';
+    const closeColor =
+      type === 'success'
+        ? 'text-teal-400 hover:text-teal-600'
+        : type === 'error'
+        ? 'text-red-400 hover:text-red-600'
+        : 'text-blue-400 hover:text-blue-600';
+
+    const toast = document.createElement('div');
+    toast.className = `${base} ${palette}`;
+    toast.setAttribute('data-toast', '');
+
+    toast.innerHTML = `
+      <div class="flex-shrink-0">
+        <span class="material-symbols-outlined ${textColor.replace('text-', 'text-')}">${icon}</span>
+      </div>
+      <p class="text-sm ${textColor} flex-1">${message}</p>
+      <button class="flex-shrink-0 ${closeColor}" type="button">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    `;
+
+    const closeBtn = toast.querySelector('button');
+    closeBtn?.addEventListener('click', () => closeToast(toast));
+
+    container.appendChild(toast);
+    setTimeout(() => closeToast(toast), 2500);
+  }
+
+  function closeToast(toast) {
+    if (!toast || toast.dataset.closing) return;
+    toast.dataset.closing = 'true';
+    toast.classList.remove('toast-enter');
+    toast.classList.add('toast-exit');
+    setTimeout(() => toast.remove(), 250);
+  }
+
+  function openDeleteModal(imageId, imageUrl) {
+    selectedImageIdForDelete = imageId;
+    if (deleteImagePreview) {
+      deleteImagePreview.src = imageUrl || '';
+    }
+    deleteImageModal?.showModal();
+  }
+
+  function confirmDeleteImage() {
+    if (!selectedImageIdForDelete) return;
+    deleteImage(selectedImageIdForDelete);
+  }
+
+  function closeDeleteModal() {
+    selectedImageIdForDelete = null;
+    deleteImageModal?.close();
   }
 
   function deleteImage(imageId) {
-    if (confirm('Are you sure you want to delete this image?')) {
-      fetch('{% url "edit_product" product.id %}', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: 'delete_image_id=' + imageId
-      })
+    const url = `/admin-dashboard/products/{{ product.id }}/images/delete/${imageId}/`;
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      }
+    })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // Reload page to show updated images
+          document.getElementById(`image-${imageId}`)?.remove();
+          closeDeleteModal();
           location.reload();
         } else {
-          alert('Error deleting image: ' + data.message);
+          alert('Error: ' + data.message);
         }
       })
       .catch(error => {
         console.error('Error:', error);
         alert('Error deleting image');
       });
+  }
+
+  function setAsThumbnail(imageId) {
+    const url = `/admin-dashboard/products/{{ product.id }}/images/set-thumbnail/${imageId}/`;
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const modal = document.querySelector('dialog[x-ref="thumbnailModal"]');
+          if (modal) modal.close();
+          location.reload();
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error setting thumbnail');
+      });
+  }
+
+  function uploadNewImages() {
+    const fileInput = document.getElementById('newImages');
+    const files = fileInput.files;
+    if (files.length === 0) {
+      showToast('info', 'Please select images first');
+      return;
     }
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append('new_images', files[i]);
+    }
+
+    const url = `/admin-dashboard/products/{{ product.id }}/images/add/`;
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast('success', 'Images uploaded successfully!');
+          setTimeout(() => location.reload(), 700);
+        } else {
+          showToast('error', data.message || 'Error uploading images');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Error uploading images');
+      });
   }
 </script>
+{% include "admin_dashboard/modals/delete_product_modal.html" %}
 {% endblock %}

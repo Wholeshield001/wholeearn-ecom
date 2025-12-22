@@ -1,0 +1,172 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}Shop All - WholeShield{% endblock %}
+
+{% block content %}
+<section class="py-12 px-4 sm:px-6 lg:px-8 bg-white">
+  <div class="max-w-7xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-12">
+      <h1 class="text-4xl sm:text-5xl font-bold text-[#ec3183] mb-3">Shop All</h1>
+      <p class="text-lg text-[#ec3183] opacity-80">Discover our complete collection of premium wellness products</p>
+    </div>
+
+    <!-- Filters and Search Section -->
+    <div class="mb-8 pb-8 border-b border-gray-200">
+      <form method="GET" class="flex flex-col sm:flex-row gap-4 items-end" id="filterForm">
+        <!-- Search -->
+        <div class="flex-1">
+          <label for="search" class="block text-sm font-semibold text-[#ec3183] mb-2">Search</label>
+          <input type="text"
+                 id="search"
+                 name="q"
+                 value="{{ search_query }}"
+                 placeholder="Search products..."
+                 hx-get="{% url 'products' %}"
+                 hx-target="#productsGrid"
+                 hx-swap="outerHTML swap:0.5s"
+                 hx-trigger="keyup changed delay:500ms"
+                 hx-include="[name='category']"
+                 class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500">
+        </div>
+
+        <!-- Category Filter -->
+        <div class="flex-1 sm:flex-none">
+          <label for="category" class="block text-sm font-semibold text-[#ec3183] mb-2">Category</label>
+          <select id="category"
+                  name="category"
+                  hx-get="{% url 'products' %}"
+                  hx-target="#productsGrid"
+                  hx-swap="outerHTML swap:0.5s"
+                  hx-trigger="change"
+                  hx-include="[name='q']"
+                  class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}" {% if selected_category and category.id|stringformat:"s" == selected_category %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Clear Filters -->
+        {% if search_query or selected_category %}
+          <a href="{% url 'products' %}"
+             class="w-full sm:w-auto px-6 py-2 text-center border border-[#ec3183] text-[#ec3183] font-semibold rounded-lg hover:bg-pink-50 transition-colors">
+            Clear
+          </a>
+        {% endif %}
+      </form>
+
+      <!-- Loading Indicator -->
+      <div class="htmx-indicator mt-2 text-xs text-[#ec3183] opacity-70">
+        Searching...
+      </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="mb-6">
+      <p class="text-sm text-[#ec3183] opacity-80">
+        Showing <strong>{{ page_obj.start_index }}-{{ page_obj.end_index }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> products
+      </p>
+    </div>
+
+    <!-- Products Grid - Include Partial -->
+    {% include "partials/ecommerce/products_grid.html" %}
+
+    <!-- Infinite Scroll Sentinel & Loader -->
+    <div id="infiniteLoader" class="flex justify-center items-center py-6 hidden">
+      <div class="animate-spin h-6 w-6 border-2 border-pink-300 border-t-transparent rounded-full"></div>
+      <span class="ml-2 text-sm text-[#ec3183]">Loading more...</span>
+    </div>
+    <div id="infiniteSentinel" class="h-8"></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function() {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+    const loader = document.getElementById('infiniteLoader');
+    const sentinel = document.getElementById('infiniteSentinel');
+    let loading = false;
+
+    function fadeInNewCards(container) {
+      const cards = container.querySelectorAll('.opacity-0.translate-y-3');
+      cards.forEach((card, idx) => {
+        setTimeout(() => {
+          card.classList.remove('opacity-0', 'translate-y-3');
+          card.classList.add('transition', 'duration-500');
+        }, idx * 50);
+      });
+    }
+
+    function getParams() {
+      const url = new URL(window.location.href);
+      const q = url.searchParams.get('q') || document.getElementById('search')?.value || '';
+      const category = url.searchParams.get('category') || document.getElementById('category')?.value || '';
+      const params = new URLSearchParams();
+      if (q) params.set('q', q);
+      if (category) params.set('category', category);
+      return params.toString();
+    }
+
+    async function loadNextPage() {
+      const current = parseInt(grid.dataset.currentPage || '1');
+      const total = parseInt(grid.dataset.totalPages || '1');
+      if (loading || current >= total) return;
+      loading = true;
+      loader.classList.remove('hidden');
+      const nextPage = current + 1;
+      const qs = getParams();
+      const url = `?page=${nextPage}&partial=1${qs ? '&' + qs : ''}`;
+      try {
+        const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const html = await res.text();
+        const temp = document.createElement('div');
+        temp.innerHTML = html.trim();
+        // Append cards
+        const cards = Array.from(temp.children);
+        cards.forEach(card => grid.appendChild(card));
+        // Update page
+        grid.dataset.currentPage = String(nextPage);
+        fadeInNewCards(grid);
+      } catch (e) {
+        console.error('Failed to load next page', e);
+      } finally {
+        loading = false;
+        loader.classList.add('hidden');
+      }
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          loadNextPage();
+        }
+      });
+    });
+    io.observe(sentinel);
+
+    // Initial fade-in for first page
+    fadeInNewCards(grid);
+
+    // Reinitialize after HTMX swaps (filters/search)
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+      if (evt.target && evt.target.id === 'productsGrid') {
+        io.disconnect();
+        // Rebind grid reference
+        const newGrid = document.getElementById('productsGrid');
+        if (newGrid) {
+          fadeInNewCards(newGrid);
+          io.observe(sentinel);
+        }
+      }
+    });
+  })();
+</script>
+{% endblock %}

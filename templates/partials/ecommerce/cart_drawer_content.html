@@ -1,0 +1,12 @@
+{% include 'partials/ecommerce/cart_items.html' %}
+
+<div id="cartTotals" hx-swap-oob="true" class="space-y-2 text-sm">
+  {% if cart_items %}
+    <div class="flex justify-between text-gray-700"><span>Subtotal</span><span class="text-[#ec3183] font-semibold">${{ cart_total }}</span></div>
+    <div class="flex justify-between text-gray-700"><span>Shipping</span><span class="text-green-600 font-semibold">Free</span></div>
+    <div class="flex justify-between text-gray-700"><span>Tax</span><span class="text-[#ec3183]">$0.00</span></div>
+    <div class="flex justify-between font-semibold border-t border-gray-200 pt-2 text-gray-900"><span>Total</span><span class="text-[#ec3183]">${{ cart_total }}</span></div>
+  {% else %}
+    <div class="text-gray-600 text-sm">Your cart is empty.</div>
+  {% endif %}
+</div>

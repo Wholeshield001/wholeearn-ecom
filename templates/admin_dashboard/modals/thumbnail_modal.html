@@ -1,0 +1,34 @@
+<dialog x-ref="thumbnailModal" class="rounded-xl shadow-lg max-w-md w-full">
+  <div class="bg-white rounded-xl p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Set Thumbnail Image</h2>
+    <p class="text-sm text-gray-600 mb-6">Select an image to set as the primary product thumbnail.</p>
+    
+    <div class="grid grid-cols-3 gap-3 mb-6" id="thumbnailGrid">
+      {% for image in product.images.all %}
+      <button
+        type="button"
+        @click="setAsThumbnail('{{ image.id }}')"
+        class="relative rounded-lg border-2 overflow-hidden transition-all hover:border-teal-600 cursor-pointer {% if image.is_thumbnail %}border-teal-600{% else %}border-gray-300{% endif %}"
+        id="thumb-{{ image.id }}"
+      >
+        <img src="{{ image.image.url }}" alt="Thumbnail" class="w-full h-24 object-cover">
+        {% if image.is_thumbnail %}
+        <div class="absolute inset-0 bg-teal-600/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-2xl">check_circle</span>
+        </div>
+        {% endif %}
+      </button>
+      {% endfor %}
+    </div>
+
+    <div class="flex gap-3">
+      <button
+        type="button"
+        @click="$refs.thumbnailModal.close()"
+        class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</dialog>

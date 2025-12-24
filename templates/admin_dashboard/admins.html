@@ -1,0 +1,74 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Administrators{% endblock %}
+{% block page_title %}Administrators{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="text-base font-semibold text-gray-900">Admin Accounts</h2>
+      <span class="text-sm text-gray-500">{{ admins.count }} total</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 text-left text-gray-600">
+            <th class="py-3 px-4 font-medium">Name</th>
+            <th class="py-3 px-4 font-medium">Email</th>
+            <th class="py-3 px-4 font-medium">Phone</th>
+            <th class="py-3 px-4 font-medium">Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for admin in admins %}
+          <tr class="border-b border-gray-100">
+            <td class="py-3 px-4 text-gray-900">{{ admin.get_full_name|default:admin.email }}</td>
+            <td class="py-3 px-4 text-gray-700">{{ admin.email }}</td>
+            <td class="py-3 px-4 text-gray-700">{{ admin.phone|default:'-' }}</td>
+            <td class="py-3 px-4 text-gray-700">{{ admin.date_joined|date:"jS M Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="py-8 text-center text-gray-500">No admin accounts yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div class="p-5 border-b border-gray-100">
+      <h2 class="text-base font-semibold text-gray-900">Invite New Admin</h2>
+      <p class="text-sm text-gray-500">Send an invite email so they can set their password.</p>
+    </div>
+    <form method="post" class="p-5 space-y-4">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="space-y-1">
+        <label class="text-sm font-medium text-gray-700">First Name</label>
+        {{ form.first_name }}
+        {{ form.first_name.errors }}
+      </div>
+      <div class="space-y-1">
+        <label class="text-sm font-medium text-gray-700">Last Name</label>
+        {{ form.last_name }}
+        {{ form.last_name.errors }}
+      </div>
+      <div class="space-y-1">
+        <label class="text-sm font-medium text-gray-700">Email</label>
+        {{ form.email }}
+        {{ form.email.errors }}
+      </div>
+      <div class="space-y-1">
+        <label class="text-sm font-medium text-gray-700">Phone</label>
+        {{ form.phone }}
+        {{ form.phone.errors }}
+      </div>
+      <button type="submit" class="w-full px-4 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800">Send Invite</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

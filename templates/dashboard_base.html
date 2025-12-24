@@ -8,6 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% tailwind_css %}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
     {% block extra_head %}{% endblock %}
     <style>
       [x-cloak]{display:none!important}
@@ -26,6 +30,12 @@
         padding: 0;
         border: none;
         border-radius: 12px;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Satoshi', sans-serif;
       }
     </style>
   </head>
@@ -46,7 +56,7 @@
               <span class="material-symbols-outlined">notifications</span>
               <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
-            <div class="flex items-center gap-2 lg:gap-3">
+            <a href="{% url 'admin_profile' %}" class="flex items-center gap-2 lg:gap-3 hover:opacity-80 transition-opacity">
               <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold text-sm lg:text-base">
                 {{ request.user.first_name.0|default:'A' }}{{ request.user.last_name.0|default:'' }}
               </div>
@@ -54,7 +64,7 @@
                 <p class="text-sm font-medium text-gray-900">{{ request.user.first_name|default:'Admin' }} {{ request.user.last_name|default:'' }}</p>
                 <p class="text-xs text-gray-500">{{ request.user.email }}</p>
               </div>
-            </div>
+            </a>
           </div>
         </div>
       </header>

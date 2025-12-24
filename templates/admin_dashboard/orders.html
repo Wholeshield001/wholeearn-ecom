@@ -28,10 +28,10 @@
       <span class="material-symbols-outlined text-base">location_on</span>
       Track
     </button>
-    <button class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+    <a href="{% url 'admin_export_orders' %}?status={{ status_filter }}" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
       <span class="material-symbols-outlined text-base">cloud_download</span>
-      Export
-    </button>
+      Export CSV
+    </a>
   </div>
 </div>
 
@@ -206,7 +206,7 @@
                   <span class="material-symbols-outlined text-blue-600 text-base">visibility</span>
                   View Details
                 </a>
-                <a href="{% url 'admin_orders_tracking' %}?status=in_progress" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                <a href="{% url 'admin_order_tracking' order.id %}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                   <span class="material-symbols-outlined text-green-600 text-base">edit</span>
                   Update Status
                 </a>

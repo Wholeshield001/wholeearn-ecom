@@ -1,0 +1,135 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Profile Information -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      <div class="p-5 border-b border-gray-100">
+        <h2 class="text-base font-semibold text-gray-900">Profile Information</h2>
+        <p class="text-sm text-gray-500">Update your account details</p>
+      </div>
+      <form method="post" class="p-5 space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_profile">
+        
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">First Name</label>
+          {{ profile_form.first_name }}
+          {% if profile_form.first_name.errors %}
+            <p class="text-sm text-red-600">{{ profile_form.first_name.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Last Name</label>
+          {{ profile_form.last_name }}
+          {% if profile_form.last_name.errors %}
+            <p class="text-sm text-red-600">{{ profile_form.last_name.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Email</label>
+          {{ profile_form.email }}
+          <p class="text-xs text-gray-500">Email cannot be changed</p>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Phone</label>
+          {{ profile_form.phone }}
+          {% if profile_form.phone.errors %}
+            <p class="text-sm text-red-600">{{ profile_form.phone.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="w-full px-4 py-3 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700">
+          Update Profile
+        </button>
+      </form>
+    </div>
+
+    <!-- Change Password -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      <div class="p-5 border-b border-gray-100">
+        <h2 class="text-base font-semibold text-gray-900">Change Password</h2>
+        <p class="text-sm text-gray-500">Update your password regularly for security</p>
+      </div>
+      <form method="post" class="p-5 space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="change_password">
+        
+        {% if password_form.non_field_errors %}
+          <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {{ password_form.non_field_errors.0 }}
+          </div>
+        {% endif %}
+
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Current Password</label>
+          {{ password_form.current_password }}
+          {% if password_form.current_password.errors %}
+            <p class="text-sm text-red-600">{{ password_form.current_password.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">New Password</label>
+          {{ password_form.new_password }}
+          <p class="text-xs text-gray-500">Minimum 8 characters</p>
+          {% if password_form.new_password.errors %}
+            <p class="text-sm text-red-600">{{ password_form.new_password.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Confirm New Password</label>
+          {{ password_form.confirm_password }}
+          {% if password_form.confirm_password.errors %}
+            <p class="text-sm text-red-600">{{ password_form.confirm_password.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="w-full px-4 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800">
+          Change Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Account Information -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm mt-6">
+    <div class="p-5 border-b border-gray-100">
+      <h2 class="text-base font-semibold text-gray-900">Account Information</h2>
+    </div>
+    <div class="p-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-gray-500">Role</p>
+          <p class="text-sm font-semibold text-gray-900">{{ request.user.role|title }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Account Status</p>
+          <p class="text-sm font-semibold {% if request.user.is_active %}text-green-600{% else %}text-red-600{% endif %}">
+            {% if request.user.is_active %}Active{% else %}Inactive{% endif %}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Email Verified</p>
+          <p class="text-sm font-semibold {% if request.user.email_verified %}text-green-600{% else %}text-yellow-600{% endif %}">
+            {% if request.user.email_verified %}Verified{% else %}Not Verified{% endif %}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Member Since</p>
+          <p class="text-sm font-semibold text-gray-900">{{ request.user.date_joined|date:"F d, Y" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

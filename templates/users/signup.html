@@ -55,6 +55,14 @@
           {% endif %}
         </div>
 
+        <!-- Phone Number -->
+        <div>
+          {{ form.phone }}
+          {% if form.phone.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ form.phone.errors.0 }}</p>
+          {% endif %}
+        </div>
+
         <!-- Password -->
         <div>
           {{ form.password }}

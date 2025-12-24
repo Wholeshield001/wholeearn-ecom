@@ -25,16 +25,22 @@ class SignUpForm(forms.ModelForm):
         label='Confirm Password'
     )
     role = forms.ChoiceField(
-        choices=User.ROLE_CHOICES[1:],  # Exclude administrator
+        choices=[
+            (User.WHOLESALER, 'Wholesaler'),
+            (User.RETAILER, 'Retailer'),
+            (User.HOSPITAL, 'Hospital'),
+            (User.PHARMACY, 'Pharmacy'),
+            (User.END_USER, 'End User'),
+        ],
         widget=forms.RadioSelect(attrs={
             'class': 'text-pink-500 focus:ring-pink-500',
         }),
-        label='Tell us: Are you a Distributor or a Wholesale Partner?'
+        label='What describes you best?'
     )
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'role')
+        fields = ('first_name', 'last_name', 'email', 'phone', 'role')
         widgets = {
             'first_name': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500',
@@ -50,6 +56,12 @@ class SignUpForm(forms.ModelForm):
                 'class': 'w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500',
                 'placeholder': 'Email',
                 'required': 'required',
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500',
+                'placeholder': 'Phone Number',
+                'required': 'required',
+                'inputmode': 'tel',
             }),
         }
 
@@ -70,10 +82,22 @@ class SignUpForm(forms.ModelForm):
             raise ValidationError('An account with this email already exists.')
         return email
 
+    def clean_phone(self):
+        phone = (self.cleaned_data.get('phone') or '').strip()
+        if not phone:
+            raise ValidationError('Phone number is required.')
+        # Basic sanity check: 7-20 digits with optional +, spaces, dashes
+        import re
+        if not re.fullmatch(r"[+\d][\d\s\-]{6,19}", phone):
+            raise ValidationError('Enter a valid phone number.')
+        return phone
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
         user.is_active = False  # Account inactive until email verified
+        # Save phone explicitly since model allows null/blank but we require at form level
+        user.phone = self.cleaned_data.get('phone')
         if commit:
             user.save()
         return user

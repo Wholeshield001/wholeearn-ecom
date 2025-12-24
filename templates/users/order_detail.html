@@ -92,8 +92,10 @@
       <div class="space-y-4">
         {% for item in order.items.all %}
           <div class="flex items-center border-b pb-4 last:border-b-0">
-            {% if item.product and item.product.thumbnail %}
-              <img src="{{ item.product.thumbnail.url }}" alt="{{ item.product_name }}" class="w-20 h-20 object-cover rounded-lg mr-4">
+            {% if item.product and item.product.thumbnail and item.product.thumbnail.image %}
+              <img src="{{ item.product.thumbnail.image.url }}" alt="{{ item.product_name }}" class="w-20 h-20 object-cover rounded-lg mr-4">
+            {% elif item.product and item.product.images.first %}
+              <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product_name }}" class="w-20 h-20 object-cover rounded-lg mr-4">
             {% else %}
               <div class="w-20 h-20 bg-gray-200 rounded-lg mr-4 flex items-center justify-center">
                 <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

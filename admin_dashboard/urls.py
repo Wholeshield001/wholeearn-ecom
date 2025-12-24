@@ -9,6 +9,8 @@ urlpatterns = [
     path('resend-otp/', views.resend_otp, name='resend_otp'),
     path('reset-password/', views.reset_password, name='reset_password'),
     path('password-reset-success/', views.password_reset_success, name='password_reset_success'),
+    path('admins/', views.admin_admins, name='admin_admins'),
+    path('profile/', views.admin_profile, name='admin_profile'),
     path('', views.admin_dashboard, name='admin_dashboard'),
 
     # Categories
@@ -22,6 +24,7 @@ urlpatterns = [
     path('products/add/', views.add_product, name='add_product'),
     path('products/<uuid:product_id>/delete/', views.delete_product, name='delete_product'),
     path('products/<uuid:product_id>/edit/', views.edit_product, name='edit_product'),
+    path('products/export/', views.export_products_csv, name='admin_export_products'),
 
 
     # Add to admin_dashboard/urls.py
@@ -34,12 +37,21 @@ urlpatterns = [
 
     # Notifications
     path('notifications/', views.notifications_page, name='admin_notifications'),
+    path('notifications/<str:notification_type>/<uuid:notification_id>/delete/', views.delete_notification, name='delete_notification'),
 
 
     path('wholesalers/', views.wholesalers_page, name='admin_wholesalers'),
     path('wholesalers/<uuid:wholesaler_id>/detail/', views.wholesaler_detail, name='wholesaler_detail'),
+    path('wholesalers/export/', views.export_wholesalers_csv, name='admin_export_wholesalers'),
     path('retailers/', views.retailers_page, name='admin_retailers'),
-    path('retailers/<uuid:distributor_id>/detail/', views.distributor_detail, name='distributor_detail'),
+    path('retailers/<uuid:retailer_id>/detail/', views.retailer_detail, name='retailer_detail'),
+    path('retailers/export/', views.export_retailers_csv, name='admin_export_retailers'),
+    path('hospitals/', views.hospitals_page, name='admin_hospitals'),
+    path('hospitals/<uuid:hospital_id>/detail/', views.hospital_detail, name='hospital_detail'),
+    path('hospitals/export/', views.export_hospitals_csv, name='admin_export_hospitals'),
+    path('pharmacies/', views.pharmacy_page, name='admin_pharmacies'),
+    path('pharmacies/<uuid:pharmacy_id>/detail/', views.pharmacy_detail, name='pharmacy_detail'),
+    path('pharmacies/export/', views.export_pharmacies_csv, name='admin_export_pharmacies'),
     # path('products/add/', views.add_product, name='add_product'),
 
     # Analytics
@@ -48,7 +60,9 @@ urlpatterns = [
 
     # Orders
     path('orders/', views.orders_page, name='admin_orders'),
+    path('orders/export/', views.export_orders_csv, name='admin_export_orders'),
     path('orders/<uuid:order_id>/detail/', views.order_detail, name='admin_order_detail'),
+    path('orders/<uuid:order_id>/tracking/', views.orders_tracking, name='admin_order_tracking'),
     path('orders/tracking/', views.orders_tracking, name='admin_orders_tracking'),
     path('orders/<uuid:order_id>/delete/', views.delete_order, name='admin_delete_order'),
     path('orders/<uuid:order_id>/cancel/', views.cancel_order, name='admin_cancel_order'),
@@ -60,6 +74,10 @@ urlpatterns = [
     # Customers
     path('customers/', views.customers_page, name='admin_customers'),
     path('customers/<uuid:user_id>/detail/', views.user_detail, name='user_detail'),
+
+    # End Users (regular customers)
+    path('end-users/', views.end_users_page, name='admin_end_users'),
+    path('end-users/export/', views.export_end_users_csv, name='admin_export_end_users'),
 
     # Blog
     path('blog/', views.blog_list, name='admin_blog_list'),

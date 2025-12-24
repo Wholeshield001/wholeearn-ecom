@@ -131,11 +131,30 @@ def add_to_cart(request, product_id):
     if quantity < 1:
         quantity = 1
     
+    # Get user role for minimum quantity validation
+    user_role = None
+    role_display = "End User"
+    min_quantity = 1
+    if request.user.is_authenticated:
+        user_role = request.user.role
+        min_quantity = product.get_min_quantity_for_role(user_role)
+        # Get role display name
+        role_display = dict(request.user.ROLE_CHOICES).get(user_role, "End User")
+    
+    # Validate minimum quantity requirement
+    if quantity < min_quantity:
+        error_msg = f"As a {role_display}, the minimum quantity for {product.name} is {min_quantity} items."
+        if request.headers.get('HX-Request') == 'true':
+            return JsonResponse({'success': False, 'message': error_msg}, status=400)
+        messages.error(request, error_msg, extra_tags='cart')
+        return redirect('product-detail', product_id=product_id)
+    
     # Validate stock
     if product.stock < quantity:
+        error_msg = f"Only {product.stock} items available in stock. You need at least {min_quantity} items (as a {role_display})."
         if request.headers.get('HX-Request') == 'true':
-            return JsonResponse({'success': False, 'message': f"Only {product.stock} items available in stock."}, status=400)
-        messages.error(request, f"Only {product.stock} items available in stock.", extra_tags='cart')
+            return JsonResponse({'success': False, 'message': error_msg}, status=400)
+        messages.error(request, error_msg, extra_tags='cart')
         return redirect('product-detail', product_id=product_id)
     
     # Get or create cart
@@ -150,13 +169,21 @@ def add_to_cart(request, product_id):
     
     if not created:
         # Item already in cart, update quantity
-        if cart_item.quantity + quantity <= product.stock:
-            cart_item.quantity += quantity
+        new_quantity = cart_item.quantity + quantity
+        if new_quantity < min_quantity:
+            error_msg = f"Total quantity must be at least {min_quantity} items (minimum for {role_display}). Currently you have {cart_item.quantity} in cart."
+            if request.headers.get('HX-Request') == 'true':
+                return JsonResponse({'success': False, 'message': error_msg}, status=400)
+            messages.error(request, error_msg, extra_tags='cart')
+            return redirect('product-detail', product_id=product_id)
+        if new_quantity <= product.stock:
+            cart_item.quantity = new_quantity
             cart_item.save()
         else:
+            error_msg = f"Cannot add {quantity} more items. Only {product.stock - cart_item.quantity} available. Minimum required is {min_quantity} items (as a {role_display})."
             if request.headers.get('HX-Request') == 'true':
-                return JsonResponse({'success': False, 'message': f"Cannot add {quantity} more items. Only {product.stock - cart_item.quantity} available."}, status=400)
-            messages.error(request, f"Cannot add {quantity} more items. Only {product.stock - cart_item.quantity} available.", extra_tags='cart')
+                return JsonResponse({'success': False, 'message': error_msg}, status=400)
+            messages.error(request, error_msg, extra_tags='cart')
             return redirect('product-detail', product_id=product_id)
     
     # Check if HTMX request, return JSON

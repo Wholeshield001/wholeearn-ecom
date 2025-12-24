@@ -12,21 +12,21 @@
       All <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-white rounded">{{ products.count }}</span>
     </button>
     <button class="px-4 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 transition-colors">
-      In Stock <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 rounded">6</span>
+      In Stock <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 rounded">{{ in_stock }}</span>
     </button>
     <button class="px-4 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 transition-colors">
-      Low Stock <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 rounded">6</span>
+      Low Stock <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 rounded">{{ low_stock }}</span>
     </button>
     <button class="px-4 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 transition-colors">
-      Out of Stock <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 rounded">6</span>
+      Out of Stock <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 rounded">{{ out_of_stock }}</span>
     </button>
   </div>
   
   <div class="flex items-center gap-2">
-    <button class="px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
+    <a href="{% url 'admin_export_products' %}" class="px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
       <span class="material-symbols-outlined text-base">cloud_download</span>
-      Export
-    </button>
+      Export CSV
+    </a>
     <a href="{% url 'add_product' %}" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
       <span class="material-symbols-outlined text-base">add</span>
       Add New Product
@@ -59,7 +59,7 @@
       </div>
       <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
     </div>
-    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">#500,600</p><p class="text-xs lg:text-sm text-green-600">+12% to last month</p></div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">₦{{ total_revenue|floatformat:2 }}</p><p class="text-xs lg:text-sm text-green-600">+12% to last month</p></div>
   </div>
 
   <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
@@ -72,7 +72,7 @@
       </div>
       <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
     </div>
-    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">12,250</p><p class="text-xs lg:text-sm text-green-600">+12% to last month</p></div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_units_sold }}</p><p class="text-xs lg:text-sm text-green-600">+12% to last month</p></div>
   </div>
 
   <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
@@ -85,7 +85,7 @@
       </div>
       <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
     </div>
-    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">12,250</p><p class="text-xs lg:text-sm text-green-600">+12% to last month</p></div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">₦{{ monthly_revenue|floatformat:2 }}</p><p class="text-xs lg:text-sm text-green-600">+12% to last month</p></div>
   </div>
 </div>
 
@@ -128,9 +128,9 @@
             </div>
           </td>
           <td class="py-3 px-4 text-gray-700">₦{{ product.price|floatformat:2|default:"0" }}</td>
-          <td class="py-3 px-4"><span class="text-green-600">0</span></td>
+          <td class="py-3 px-4"><span class="text-green-600">{{ product.units_sold|default:"0" }}</span></td>
           <td class="py-3 px-4"><span class="text-red-600">{{ product.stock|default:"0" }}</span></td>
-          <td class="py-3 px-4 text-gray-700">₦0</td>
+          <td class="py-3 px-4 text-gray-700">₦{{ product.revenue|floatformat:2|default:"0" }}</td>
           <td class="py-3 px-4 text-gray-700">{{ product.created_at|date:"jS M Y" }}</td>
           <td class="py-3 px-4">
             <div x-data="{ open:false, width:200, pos:{top:0,left:0}, place() { 

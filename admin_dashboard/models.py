@@ -23,19 +23,29 @@ class Product(models.Model):
     name = models.CharField(max_length=200, blank=True, null=True)
     description = CKEditor5Field('Description', config_name='default', blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    discount = models.IntegerField(default=0, help_text="Discount percentage")  # matches form
+    
+    # Pricing for different roles
+    customer_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    wholesaler_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    retailer_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    hospital_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    pharmacy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    
+    # Legacy field kept for backward compatibility
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Legacy price field - use role-specific prices instead")
+    
+    discount = models.IntegerField(default=0, help_text="Discount percentage")
     stock = models.IntegerField(default=0, blank=True, null=True)
     sku = models.CharField(max_length=100, unique=True, blank=True, null=True)
-    is_best_seller = models.BooleanField(default=False, blank=True, null=True)  # matches form
+    is_best_seller = models.BooleanField(default=False, blank=True, null=True)
     is_male = models.BooleanField(default=False, help_text="Product for male")
     is_female = models.BooleanField(default=False, help_text="Product for female")
     is_general = models.BooleanField(default=True, help_text="Product for everyone")
-    additional_info = models.TextField(blank=True, null=True)  # matches form
+    additional_info = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-     # IMPORTANT: store thumbnail relationship
+    # IMPORTANT: store thumbnail relationship
     thumbnail = models.ForeignKey(
         "ProductImage", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
@@ -45,6 +55,32 @@ class Product(models.Model):
 
     def __str__(self):
         return str(self.name)
+    
+    def get_price_for_role(self, role):
+        """Get price based on user role"""
+        from users.models import User
+        
+        price_map = {
+            User.END_USER: self.customer_price,
+            User.WHOLESALER: self.wholesaler_price or self.customer_price,
+            User.RETAILER: self.retailer_price or self.customer_price,
+            User.HOSPITAL: self.hospital_price or self.customer_price,
+            User.PHARMACY: self.pharmacy_price or self.customer_price,
+        }
+        return price_map.get(role, self.customer_price)
+    
+    def get_min_quantity_for_role(self, role):
+        """Get minimum quantity that can be added to cart based on user role"""
+        from users.models import User
+        
+        min_quantity_map = {
+            User.END_USER: 1,
+            User.WHOLESALER: 10,
+            User.RETAILER: 5,
+            User.HOSPITAL: 5,
+            User.PHARMACY: 5,
+        }
+        return min_quantity_map.get(role, 1)
 
 
 class ProductImage(models.Model):

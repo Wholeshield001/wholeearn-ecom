@@ -25,14 +25,18 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     ADMINISTRATOR = 'administrator'
     WHOLESALER = 'wholesaler'
-    DISTRIBUTOR = 'distributor'
-    CUSTOMER = 'customer'
+    RETAILER = 'retailer'
+    HOSPITAL = 'hospital'
+    PHARMACY = 'pharmacy'
+    END_USER = 'end_user'
 
     ROLE_CHOICES = [
         (ADMINISTRATOR, 'Administrator'),
         (WHOLESALER, 'Wholesaler'),
-        (DISTRIBUTOR, 'Distributor'),
-        (CUSTOMER, 'Customer'),
+        (RETAILER, 'Retailer'),
+        (HOSPITAL, 'Hospital'),
+        (PHARMACY, 'Pharmacy'),
+        (END_USER, 'End User'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

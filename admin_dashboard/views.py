@@ -14,8 +14,13 @@ from .forms import (AdminLoginForm,
                     ProductImageForm, 
                     CategoryForm,
                     BlogPostForm,
-                    BlogCategoryForm)
+                    BlogCategoryForm,
+                    AdminInviteForm,
+                    AdminProfileForm,
+                    AdminPasswordChangeForm)
 from users.models import User
+from django.core.mail import send_mail
+from django.conf import settings
 from django.http import JsonResponse
 from .models import Product, Category, ProductImage, BlogPost, BlogCategory
 from django.db.models import Count
@@ -23,6 +28,7 @@ from django.db.models.functions import TruncMonth
 from datetime import datetime
 from decimal import Decimal
 import json
+import secrets
 
 
 # Custom decorator to require admin role
@@ -212,6 +218,93 @@ def admin_dashboard(request):
     return render(request, 'admin_dashboard/dashboard.html', context)
 
 
+@admin_required
+def admin_admins(request):
+    """Manage administrator accounts and invite new admins"""
+    if request.user.role != User.ADMINISTRATOR or not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('admin_login')
+
+    admins = User.objects.filter(role=User.ADMINISTRATOR, is_staff=True).order_by('-date_joined')
+    if request.method == 'POST':
+        form = AdminInviteForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            temp_password = secrets.token_urlsafe(12)
+            user = User.objects.create_user(
+                email=data['email'],
+                password=temp_password,
+                first_name=data.get('first_name') or '',
+                last_name=data.get('last_name') or '',
+                phone=data.get('phone') or '',
+                role=User.ADMINISTRATOR,
+                is_staff=True,
+                is_active=True,
+            )
+            # Mark as verified since created by an existing admin
+            user.email_verified = True
+            user.save(update_fields=['email_verified'])
+
+            login_url = request.build_absolute_uri(reverse('admin_login'))
+            send_mail(
+                subject='Your WholeShield admin access',
+                message=(
+                    f"Hello {user.get_full_name() or 'Admin'},\n\n"
+                    f"An administrator created an account for you.\n\n"
+                    f"Login email: {user.email}\n"
+                    f"Temporary password: {temp_password}\n\n"
+                    f"Login here: {login_url}\n"
+                    "Please sign in and reset your password immediately."
+                ),
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+            messages.success(request, f"Admin invite sent to {user.email}.")
+            return redirect('admin_admins')
+    else:
+        form = AdminInviteForm()
+
+    context = {
+        'admins': admins,
+        'form': form,
+    }
+    return render(request, 'admin_dashboard/admins.html', context)
+
+
+@admin_required
+def admin_profile(request):
+    """Admin profile page with edit and password change"""
+    if request.user.role != User.ADMINISTRATOR or not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('admin_login')
+
+    profile_form = AdminProfileForm(instance=request.user)
+    password_form = AdminPasswordChangeForm(user=request.user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'update_profile':
+            profile_form = AdminProfileForm(request.POST, instance=request.user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Profile updated successfully.')
+                return redirect('admin_profile')
+        elif action == 'change_password':
+            password_form = AdminPasswordChangeForm(user=request.user, data=request.POST)
+            if password_form.is_valid():
+                request.user.set_password(password_form.cleaned_data['new_password'])
+                request.user.save()
+                messages.success(request, 'Password changed successfully. Please log in again.')
+                return redirect('admin_login')
+
+    context = {
+        'profile_form': profile_form,
+        'password_form': password_form,
+    }
+    return render(request, 'admin_dashboard/admin_profile.html', context)
+
+
 def forgot_password(request):
     if request.method == 'POST':
         form = ForgotPasswordForm(request.POST)
@@ -342,11 +435,6 @@ def password_reset_success(request):
 
 
 @admin_required
-def products_page(request):
-    return render(request, 'admin_dashboard/products.html')
-
-@admin_required
-@admin_required
 def notifications_page(request):
     """Display all notifications (orders and tickets)"""
     from ecom.models import Order
@@ -355,6 +443,9 @@ def notifications_page(request):
     
     # Get filter type
     filter_type = request.GET.get('type', 'all')
+    
+    # Get dismissed notifications from session
+    dismissed_notifications = request.session.get('dismissed_notifications', [])
     
     # Get recent orders and tickets
     recent_orders = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')
@@ -365,30 +456,34 @@ def notifications_page(request):
     # Add order notifications
     if filter_type in ['all', 'orders']:
         for order in recent_orders[:20]:
-            first_item = order.items.first()
-            if first_item:
-                notifications.append({
-                    'type': 'order',
-                    'user': order.user,
-                    'product_name': first_item.product_name,
-                    'created_at': order.created_at,
-                    'order_id': order.id,
-                    'status': order.status,
-                    'total_amount': order.total_amount,
-                })
+            notification_key = f"order-{str(order.id)}"
+            if notification_key not in dismissed_notifications:
+                first_item = order.items.first()
+                if first_item:
+                    notifications.append({
+                        'type': 'order',
+                        'user': order.user,
+                        'product_name': first_item.product_name,
+                        'created_at': order.created_at,
+                        'order_id': order.id,
+                        'status': order.status,
+                        'total_amount': order.total_amount,
+                    })
     
     # Add ticket notifications
     if filter_type in ['all', 'tickets']:
         for ticket in recent_tickets[:20]:
-            notifications.append({
-                'type': 'ticket',
-                'user': ticket.user,
-                'ticket_id': ticket.id,
-                'subject': ticket.title,
-                'priority': ticket.priority,
-                'status': ticket.status,
-                'created_at': ticket.created_at,
-            })
+            notification_key = f"ticket-{str(ticket.id)}"
+            if notification_key not in dismissed_notifications:
+                notifications.append({
+                    'type': 'ticket',
+                    'user': ticket.user,
+                    'ticket_id': ticket.id,
+                    'subject': ticket.title,
+                    'priority': ticket.priority,
+                    'status': ticket.status,
+                    'created_at': ticket.created_at,
+                })
     
     # Sort all notifications by created_at
     notifications.sort(key=lambda x: x['created_at'], reverse=True)
@@ -452,6 +547,35 @@ def wholesalers_page(request):
 
 
 @admin_required
+def export_wholesalers_csv(request):
+    """Export wholesalers list to CSV respecting status filter"""
+    import csv
+    from django.db.models import Sum, Count
+
+    status_filter = request.GET.get('status', 'all')
+    qs = User.objects.filter(role=User.WHOLESALER).annotate(
+        total_orders=Count('orders'),
+        total_spent=Sum('orders__total_amount')
+    ).order_by('-date_joined')
+    if status_filter == 'active':
+        qs = qs.filter(is_active=True)
+    elif status_filter == 'inactive':
+        qs = qs.filter(is_active=False)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="wholesalers.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent'])
+    for u in qs:
+        writer.writerow([
+            str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'wholesaler',
+            'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'),
+            int(u.total_orders or 0), float(u.total_spent or 0),
+        ])
+    return response
+
+
+@admin_required
 def retailers_page(request):
     """Retailers management page"""
     from ecom.models import Order
@@ -460,8 +584,8 @@ def retailers_page(request):
     # Get filter parameter
     status_filter = request.GET.get('status', 'all')
     
-    # Get all retailers (distributors)
-    retailers = User.objects.filter(role=User.DISTRIBUTOR).annotate(
+    # Get all retailers
+    retailers = User.objects.filter(role=User.RETAILER).annotate(
         total_orders=Count('orders'),
         total_spent=Sum('orders__total_amount')
     ).order_by('-date_joined')
@@ -473,14 +597,14 @@ def retailers_page(request):
         retailers = retailers.filter(is_active=False)
     
     # Calculate statistics
-    total_retailers = User.objects.filter(role=User.DISTRIBUTOR).count()
-    inactive_retailers = User.objects.filter(role=User.DISTRIBUTOR, is_active=False).count()
-    active_retailers = User.objects.filter(role=User.DISTRIBUTOR, is_active=True).count()
+    total_retailers = User.objects.filter(role=User.RETAILER).count()
+    inactive_retailers = User.objects.filter(role=User.RETAILER, is_active=False).count()
+    active_retailers = User.objects.filter(role=User.RETAILER, is_active=True).count()
     
     # Get total products distributed (sum of all order items quantities for retailers)
     from ecom.models import OrderItem
     products_distributed = OrderItem.objects.filter(
-        order__user__role=User.DISTRIBUTOR
+        order__user__role=User.RETAILER
     ).aggregate(total=Sum('quantity'))['total'] or 0
     
     context = {
@@ -492,7 +616,182 @@ def retailers_page(request):
         'products_distributed': products_distributed,
         'status_filter': status_filter,
     }
-    return render(request, 'admin_dashboard/retailer.html', context)
+    return render(request, 'admin_dashboard/retailers.html', context)
+
+
+@admin_required
+def export_retailers_csv(request):
+    """Export retailers list to CSV respecting status filter"""
+    import csv
+    from django.db.models import Sum, Count
+
+    status_filter = request.GET.get('status', 'all')
+    qs = User.objects.filter(role=User.RETAILER).annotate(
+        total_orders=Count('orders'),
+        total_spent=Sum('orders__total_amount')
+    ).order_by('-date_joined')
+    if status_filter == 'active':
+        qs = qs.filter(is_active=True)
+    elif status_filter == 'inactive':
+        qs = qs.filter(is_active=False)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="retailers.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent'])
+    for u in qs:
+        writer.writerow([
+            str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'retailer',
+            'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'),
+            int(u.total_orders or 0), float(u.total_spent or 0),
+        ])
+    return response
+
+
+@admin_required
+def hospitals_page(request):
+    """Hospitals management page"""
+    from ecom.models import Order
+    from django.db.models import Sum, Count, Q
+    
+    # Get filter parameter
+    status_filter = request.GET.get('status', 'all')
+    
+    # Get all hospitals
+    hospitals = User.objects.filter(role=User.HOSPITAL).annotate(
+        total_orders=Count('orders'),
+        total_spent=Sum('orders__total_amount')
+    ).order_by('-date_joined')
+    
+    # Apply status filter
+    if status_filter == 'active':
+        hospitals = hospitals.filter(is_active=True)
+    elif status_filter == 'inactive':
+        hospitals = hospitals.filter(is_active=False)
+    
+    # Calculate statistics
+    total_hospitals = User.objects.filter(role=User.HOSPITAL).count()
+    inactive_hospitals = User.objects.filter(role=User.HOSPITAL, is_active=False).count()
+    active_hospitals = User.objects.filter(role=User.HOSPITAL, is_active=True).count()
+    
+    # Get total products ordered (sum of all order items quantities for hospitals)
+    from ecom.models import OrderItem
+    total_products_ordered = OrderItem.objects.filter(
+        order__user__role=User.HOSPITAL
+    ).aggregate(total=Sum('quantity'))['total'] or 0
+    
+    context = {
+        'page_title': 'Hospitals',
+        'hospitals': hospitals,
+        'total_hospitals': total_hospitals,
+        'inactive_hospitals': inactive_hospitals,
+        'active_hospitals': active_hospitals,
+        'total_products_ordered': total_products_ordered,
+        'status_filter': status_filter,
+    }
+    return render(request, 'admin_dashboard/hospitals.html', context)
+
+
+@admin_required
+def export_hospitals_csv(request):
+    """Export hospitals list to CSV respecting status filter"""
+    import csv
+    from django.db.models import Sum, Count
+
+    status_filter = request.GET.get('status', 'all')
+    qs = User.objects.filter(role=User.HOSPITAL).annotate(
+        total_orders=Count('orders'),
+        total_spent=Sum('orders__total_amount')
+    ).order_by('-date_joined')
+    if status_filter == 'active':
+        qs = qs.filter(is_active=True)
+    elif status_filter == 'inactive':
+        qs = qs.filter(is_active=False)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="hospitals.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent'])
+    for u in qs:
+        writer.writerow([
+            str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'hospital',
+            'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'),
+            int(u.total_orders or 0), float(u.total_spent or 0),
+        ])
+    return response
+
+
+@admin_required
+def pharmacy_page(request):
+    """Pharmacies management page"""
+    from ecom.models import Order
+    from django.db.models import Sum, Count, Q
+    
+    # Get filter parameter
+    status_filter = request.GET.get('status', 'all')
+    
+    # Get all pharmacies
+    pharmacies = User.objects.filter(role=User.PHARMACY).annotate(
+        total_orders=Count('orders'),
+        total_spent=Sum('orders__total_amount')
+    ).order_by('-date_joined')
+    
+    # Apply status filter
+    if status_filter == 'active':
+        pharmacies = pharmacies.filter(is_active=True)
+    elif status_filter == 'inactive':
+        pharmacies = pharmacies.filter(is_active=False)
+    
+    # Calculate statistics
+    total_pharmacies = User.objects.filter(role=User.PHARMACY).count()
+    inactive_pharmacies = User.objects.filter(role=User.PHARMACY, is_active=False).count()
+    active_pharmacies = User.objects.filter(role=User.PHARMACY, is_active=True).count()
+    
+    # Get total products ordered (sum of all order items quantities for pharmacies)
+    from ecom.models import OrderItem
+    total_products_ordered = OrderItem.objects.filter(
+        order__user__role=User.PHARMACY
+    ).aggregate(total=Sum('quantity'))['total'] or 0
+    
+    context = {
+        'page_title': 'Pharmacies',
+        'pharmacies': pharmacies,
+        'total_pharmacies': total_pharmacies,
+        'inactive_pharmacies': inactive_pharmacies,
+        'active_pharmacies': active_pharmacies,
+        'total_products_ordered': total_products_ordered,
+        'status_filter': status_filter,
+    }
+    return render(request, 'admin_dashboard/pharmacies.html', context)
+
+
+@admin_required
+def export_pharmacies_csv(request):
+    """Export pharmacies list to CSV respecting status filter"""
+    import csv
+    from django.db.models import Sum, Count
+
+    status_filter = request.GET.get('status', 'all')
+    qs = User.objects.filter(role=User.PHARMACY).annotate(
+        total_orders=Count('orders'),
+        total_spent=Sum('orders__total_amount')
+    ).order_by('-date_joined')
+    if status_filter == 'active':
+        qs = qs.filter(is_active=True)
+    elif status_filter == 'inactive':
+        qs = qs.filter(is_active=False)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="pharmacies.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent'])
+    for u in qs:
+        writer.writerow([
+            str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'pharmacy',
+            'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'),
+            int(u.total_orders or 0), float(u.total_spent or 0),
+        ])
+    return response
 
 
 
@@ -502,8 +801,108 @@ def retailers_page(request):
 
 @admin_required
 def products_page(request):
-    products = Product.objects.all().order_by('-created_at')
-    return render(request, 'admin_dashboard/products.html', {'products': products})
+    from django.db.models import DecimalField, F, IntegerField, Sum, Value
+    from django.db.models.functions import Coalesce
+    from django.utils import timezone
+    from ecom.models import OrderItem
+
+    products = (
+        Product.objects
+        .annotate(
+            units_sold=Coalesce(
+                Sum('orderitem__quantity', output_field=IntegerField()),
+                Value(0, output_field=IntegerField()),
+            ),
+            revenue=Coalesce(
+                Sum(
+                    F('orderitem__quantity') * F('orderitem__price'),
+                    output_field=DecimalField(max_digits=12, decimal_places=2),
+                ),
+                Value(0, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            ),
+        )
+        .order_by('-created_at')
+    )
+
+    total_products = products.count()
+    in_stock = products.filter(stock__gt=0).count()
+    low_stock = products.filter(stock__gt=0, stock__lte=10).count()
+    out_of_stock = products.filter(stock=0).count()
+
+    total_revenue = OrderItem.objects.aggregate(
+        total=Sum(
+            F('quantity') * F('price'),
+            output_field=DecimalField(max_digits=12, decimal_places=2),
+        )
+    )['total'] or 0
+
+    total_units_sold = OrderItem.objects.aggregate(
+        total=Sum('quantity')
+    )['total'] or 0
+
+    month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    monthly_revenue = OrderItem.objects.filter(order__created_at__gte=month_start).aggregate(
+        total=Sum(
+            F('quantity') * F('price'),
+            output_field=DecimalField(max_digits=12, decimal_places=2),
+        )
+    )['total'] or 0
+
+    monthly_units_sold = OrderItem.objects.filter(order__created_at__gte=month_start).aggregate(
+        total=Sum('quantity')
+    )['total'] or 0
+
+    context = {
+        'products': products,
+        'total_products': total_products,
+        'in_stock': in_stock,
+        'low_stock': low_stock,
+        'out_of_stock': out_of_stock,
+        'total_revenue': total_revenue,
+        'total_units_sold': total_units_sold,
+        'monthly_revenue': monthly_revenue,
+        'monthly_units_sold': monthly_units_sold,
+    }
+    return render(request, 'admin_dashboard/products.html', context)
+
+
+@admin_required
+def export_products_csv(request):
+    """Export products to CSV"""
+    import csv
+    from django.db.models import DecimalField, F, IntegerField, Sum, Value
+    from django.db.models.functions import Coalesce
+    from ecom.models import OrderItem
+
+    products = (
+        Product.objects
+        .annotate(
+            units_sold=Coalesce(
+                Sum('orderitem__quantity', output_field=IntegerField()),
+                Value(0, output_field=IntegerField()),
+            ),
+            revenue=Coalesce(
+                Sum(
+                    F('orderitem__quantity') * F('orderitem__price'),
+                    output_field=DecimalField(max_digits=12, decimal_places=2),
+                ),
+                Value(0, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            ),
+        )
+        .order_by('name')
+    )
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="products.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['SKU', 'Name', 'Category', 'Stock', 'Customer Price', 'Wholesaler Price', 'Retailer Price', 'Hospital Price', 'Pharmacy Price', 'Units Sold', 'Revenue'])
+    for p in products:
+        writer.writerow([
+            p.sku or '', p.name, getattr(p.category, 'name', ''), p.stock,
+            float(p.customer_price or 0), float(p.wholesaler_price or 0), float(p.retailer_price or 0),
+            float(p.hospital_price or 0), float(p.pharmacy_price or 0), int(p.units_sold or 0), float(p.revenue or 0),
+        ])
+    return response
 
 @admin_required
 def add_product(request):
@@ -834,6 +1233,37 @@ def orders_page(request):
 
 
 @admin_required
+def export_orders_csv(request):
+    """Export orders to CSV respecting status filter"""
+    import csv
+    from ecom.models import Order
+    from django.db.models import Q, Count, Sum
+
+    status_filter = request.GET.get('status', 'all')
+    orders = Order.objects.select_related('user').annotate(
+        items_count=Count('items'),
+        items_qty=Sum('items__quantity')
+    ).all()
+    if status_filter == 'processing':
+        orders = orders.filter(Q(status='processing') | Q(status='shipped'))
+    elif status_filter == 'completed':
+        orders = orders.filter(status='delivered')
+    elif status_filter == 'cancelled':
+        orders = orders.filter(status='cancelled')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="orders.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Order ID', 'User Email', 'User Role', 'Status', 'Total Amount', 'Items Count', 'Items Qty', 'Created At'])
+    for o in orders.order_by('-created_at'):
+        writer.writerow([
+            str(o.id), getattr(o.user, 'email', ''), getattr(o.user, 'role', ''), o.status,
+            float(o.total_amount or 0), int(o.items_count or 0), int(o.items_qty or 0), o.created_at.strftime('%Y-%m-%d %H:%M'),
+        ])
+    return response
+
+
+@admin_required
 def order_detail(request, order_id):
     """Detailed view for a single order with items and shipping info"""
     from ecom.models import Order
@@ -865,7 +1295,7 @@ def order_detail(request, order_id):
 
 
 @admin_required
-def orders_tracking(request):
+def orders_tracking(request, order_id=None):
     """Tracking screen with status filters and inline status updates"""
     from ecom.models import Order
 
@@ -877,32 +1307,39 @@ def orders_tracking(request):
     status_choices = [choice[0] for choice in Order.STATUS_CHOICES]
 
     if request.method == 'POST':
-        order_id = request.POST.get('order_id')
+        posted_order_id = request.POST.get('order_id')
         new_status = request.POST.get('status')
-        if not order_id or new_status not in status_choices:
+        if not posted_order_id or new_status not in status_choices:
             messages.error(request, 'Invalid status update request.')
             return redirect(request.path)
-        order = get_object_or_404(Order, id=order_id)
+        order = get_object_or_404(Order, id=posted_order_id)
         order.status = new_status
         order.save(update_fields=['status', 'updated_at'])
         messages.success(request, f'Order status updated to {new_status.title()}')
-        redirect_url = reverse('admin_orders_tracking')
+
+        redirect_url = reverse(
+            'admin_order_tracking',
+            kwargs={'order_id': order_id},
+        ) if order_id else reverse('admin_orders_tracking')
         if status_param:
             redirect_url += f'?status={status_param}'
         return redirect(redirect_url)
 
     orders = Order.objects.select_related('user').prefetch_related('items__product__thumbnail').order_by('-created_at')
 
-    if status_param == 'in_progress':
-        orders = orders.filter(status__in=['pending', 'processing', 'shipped'])
-    elif status_param == 'completed':
-        orders = orders.filter(status='delivered')
-    elif status_param == 'cancelled':
-        orders = orders.filter(status='cancelled')
+    if order_id:
+        orders = orders.filter(id=order_id)
+    else:
+        if status_param == 'in_progress':
+            orders = orders.filter(status__in=['pending', 'processing', 'shipped'])
+        elif status_param == 'completed':
+            orders = orders.filter(status='delivered')
+        elif status_param == 'cancelled':
+            orders = orders.filter(status='cancelled')
 
-    total_orders = Order.objects.count()
-    in_progress_count = Order.objects.filter(status__in=['pending', 'processing', 'shipped']).count()
-    completed_count = Order.objects.filter(status='delivered').count()
+    total_orders = orders.count()
+    in_progress_count = orders.filter(status__in=['pending', 'processing', 'shipped']).count()
+    completed_count = orders.filter(status='delivered').count()
 
     progress_map = {
         'pending': 1,
@@ -1018,17 +1455,17 @@ def customers_page(request):
         users = users.filter(role=User.ADMINISTRATOR)
     elif role_filter == 'wholesaler':
         users = users.filter(role=User.WHOLESALER)
-    elif role_filter == 'distributor':
-        users = users.filter(role=User.DISTRIBUTOR)
-    elif role_filter == 'customer':
-        users = users.filter(role=User.CUSTOMER)
+    elif role_filter == 'retailer':
+        users = users.filter(role=User.RETAILER)
+    elif role_filter == 'end_user':
+        users = users.filter(role=User.END_USER)
     
     # Calculate stats
     total_users = User.objects.count()
     total_administrators = User.objects.filter(role=User.ADMINISTRATOR).count()
     total_wholesalers = User.objects.filter(role=User.WHOLESALER).count()
-    total_distributors = User.objects.filter(role=User.DISTRIBUTOR).count()
-    total_customers = User.objects.filter(role=User.CUSTOMER).count()
+    total_retailers = User.objects.filter(role=User.RETAILER).count()
+    total_customers = User.objects.filter(role=User.END_USER).count()
     
     context = {
         'page_title': 'Users',
@@ -1036,11 +1473,82 @@ def customers_page(request):
         'total_users': total_users,
         'total_administrators': total_administrators,
         'total_wholesalers': total_wholesalers,
-        'total_distributors': total_distributors,
+        'total_retailers': total_retailers,
         'total_customers': total_customers,
         'role_filter': role_filter,
     }
     return render(request, 'admin_dashboard/customers.html', context)
+
+
+@admin_required
+def end_users_page(request):
+    """End Users management page - lists regular customers (END_USER) only"""
+    from django.db.models import Count, Sum
+    from ecom.models import Order
+
+    # Get status filter
+    status_filter = request.GET.get('status', 'all')
+
+    # Get all end users
+    all_end_users = User.objects.filter(role=User.END_USER).annotate(
+        total_orders=Count('orders')
+    ).order_by('-date_joined')
+
+    # Apply status filter
+    users = all_end_users
+    if status_filter == 'active':
+        users = users.filter(is_active=True)
+    elif status_filter == 'inactive':
+        users = users.filter(is_active=False)
+
+    # Calculate stats
+    total_end_users = all_end_users.count()
+    active_end_users = all_end_users.filter(is_active=True).count()
+    inactive_end_users = all_end_users.filter(is_active=False).count()
+    total_orders = Order.objects.filter(user__role=User.END_USER).count()
+    total_spent = (
+        Order.objects.filter(user__role=User.END_USER).aggregate(total=Sum('total_amount'))['total']
+        or 0
+    )
+
+    context = {
+        'page_title': 'End Users',
+        'users': users,
+        'total_end_users': total_end_users,
+        'active_end_users': active_end_users,
+        'inactive_end_users': inactive_end_users,
+        'total_orders': total_orders,
+        'total_spent': total_spent,
+        'status_filter': status_filter,
+    }
+    return render(request, 'admin_dashboard/end_users.html', context)
+
+
+@admin_required
+def export_end_users_csv(request):
+    """Export end users list to CSV respecting status filter"""
+    import csv
+    from django.db.models import Count
+
+    status_filter = request.GET.get('status', 'all')
+    qs = User.objects.filter(role=User.END_USER).annotate(
+        total_orders=Count('orders')
+    ).order_by('-date_joined')
+    if status_filter == 'active':
+        qs = qs.filter(is_active=True)
+    elif status_filter == 'inactive':
+        qs = qs.filter(is_active=False)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="end_users.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders'])
+    for u in qs:
+        writer.writerow([
+            str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'end_user',
+            'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'), int(u.total_orders or 0)
+        ])
+    return response
 
 
 @admin_required
@@ -1227,42 +1735,118 @@ def wholesaler_detail(request, wholesaler_id):
     return render(request, 'admin_dashboard/wholesaler_detail.html', context)
 
 
-# Distributor Detail View
+# Distributor/Retailer Detail View
 @admin_required
-def distributor_detail(request, distributor_id):
+def retailer_detail(request, retailer_id):
     if request.user.role != User.ADMINISTRATOR or not request.user.is_staff:
         messages.error(request, 'Access denied.')
         return redirect('admin_login')
     
     # Handle deletion
     if request.method == 'POST' and request.POST.get('action') == 'delete':
-        distributor = get_object_or_404(User, id=distributor_id, role=User.DISTRIBUTOR)
-        distributor.delete()
-        messages.success(request, 'Distributor deleted successfully!')
+        retailer = get_object_or_404(User, id=retailer_id, role=User.RETAILER)
+        retailer.delete()
+        messages.success(request, 'Retailer deleted successfully!')
         return redirect('admin_retailers')
     
-    distributor = get_object_or_404(User, id=distributor_id, role=User.DISTRIBUTOR)
+    retailer = get_object_or_404(User, id=retailer_id, role=User.RETAILER)
     
-    # Get orders for this distributor
+    # Get orders for this retailer
     from ecom.models import Order, OrderItem
     from django.db.models import Sum, Count
     
-    orders = Order.objects.filter(user=distributor).prefetch_related('items__product').order_by('-created_at')
+    orders = Order.objects.filter(user=retailer).prefetch_related('items__product').order_by('-created_at')
     
     # Calculate stats
     total_orders = orders.count()
     total_revenue = orders.aggregate(total=Sum('total_amount'))['total'] or 0
-    total_items_sold = OrderItem.objects.filter(order__user=distributor).aggregate(total=Sum('quantity'))['total'] or 0
+    total_items_sold = OrderItem.objects.filter(order__user=retailer).aggregate(total=Sum('quantity'))['total'] or 0
     
     context = {
-        'distributor': distributor,
+        'retailer': retailer,
         'orders': orders[:10],  # Recent 10 orders
         'total_orders': total_orders,
         'total_revenue': total_revenue,
         'total_items_sold': total_items_sold,
-        'page_title': f"{distributor.first_name} {distributor.last_name}",
+        'page_title': f"{retailer.first_name} {retailer.last_name}",
     }
-    return render(request, 'admin_dashboard/distributor_detail.html', context)
+    return render(request, 'admin_dashboard/retailer_detail.html', context)
+
+
+# Hospital Detail View
+@admin_required
+def hospital_detail(request, hospital_id):
+    if request.user.role != User.ADMINISTRATOR or not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('admin_login')
+    
+    # Handle deletion
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        hospital = get_object_or_404(User, id=hospital_id, role=User.HOSPITAL)
+        hospital.delete()
+        messages.success(request, 'Hospital deleted successfully!')
+        return redirect('admin_hospitals')
+    
+    hospital = get_object_or_404(User, id=hospital_id, role=User.HOSPITAL)
+    
+    # Get orders for this hospital
+    from ecom.models import Order, OrderItem
+    from django.db.models import Sum, Count
+    
+    orders = Order.objects.filter(user=hospital).prefetch_related('items__product').order_by('-created_at')
+    
+    # Calculate stats
+    total_orders = orders.count()
+    total_revenue = orders.aggregate(total=Sum('total_amount'))['total'] or 0
+    total_items_ordered = OrderItem.objects.filter(order__user=hospital).aggregate(total=Sum('quantity'))['total'] or 0
+    
+    context = {
+        'hospital': hospital,
+        'orders': orders[:10],  # Recent 10 orders
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'total_items_ordered': total_items_ordered,
+        'page_title': f"{hospital.first_name} {hospital.last_name}",
+    }
+    return render(request, 'admin_dashboard/hospital_detail.html', context)
+
+
+# Pharmacy Detail View
+@admin_required
+def pharmacy_detail(request, pharmacy_id):
+    if request.user.role != User.ADMINISTRATOR or not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('admin_login')
+    
+    # Handle deletion
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        pharmacy = get_object_or_404(User, id=pharmacy_id, role=User.PHARMACY)
+        pharmacy.delete()
+        messages.success(request, 'Pharmacy deleted successfully!')
+        return redirect('admin_pharmacies')
+    
+    pharmacy = get_object_or_404(User, id=pharmacy_id, role=User.PHARMACY)
+    
+    # Get orders for this pharmacy
+    from ecom.models import Order, OrderItem
+    from django.db.models import Sum, Count
+    
+    orders = Order.objects.filter(user=pharmacy).prefetch_related('items__product').order_by('-created_at')
+    
+    # Calculate stats
+    total_orders = orders.count()
+    total_revenue = orders.aggregate(total=Sum('total_amount'))['total'] or 0
+    total_items_ordered = OrderItem.objects.filter(order__user=pharmacy).aggregate(total=Sum('quantity'))['total'] or 0
+    
+    context = {
+        'pharmacy': pharmacy,
+        'orders': orders[:10],  # Recent 10 orders
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'total_items_ordered': total_items_ordered,
+        'page_title': f"{pharmacy.first_name} {pharmacy.last_name}",
+    }
+    return render(request, 'admin_dashboard/pharmacy_detail.html', context)
 
 
 @admin_required
@@ -1401,3 +1985,23 @@ def ticket_detail(request, ticket_id):
         'page_title': f'Ticket #{str(ticket.id)[:8]}',
     }
     return render(request, 'admin_dashboard/ticket_detail.html', context)
+
+
+@admin_required
+def delete_notification(request, notification_type, notification_id):
+    """Delete a notification (order or ticket)"""
+    if request.method == 'DELETE':
+        try:
+            # Store dismissed notifications in session
+            if 'dismissed_notifications' not in request.session:
+                request.session['dismissed_notifications'] = []
+            
+            notification_key = f"{notification_type}-{str(notification_id)}"
+            if notification_key not in request.session['dismissed_notifications']:
+                request.session['dismissed_notifications'].append(notification_key)
+                request.session.modified = True
+            
+            return JsonResponse({'success': True, 'message': 'Notification dismissed'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)

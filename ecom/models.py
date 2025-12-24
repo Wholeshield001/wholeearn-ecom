@@ -1,4 +1,7 @@
-from django.db import models
+from django.db import models, transaction
+from django.db.models import F
+from django.db.models.functions import Greatest
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from admin_dashboard.models import Product
 import uuid
@@ -74,6 +77,7 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    inventory_deducted = models.BooleanField(default=False)
     
     # Payment info
     payment_reference = models.CharField(max_length=255, unique=True, null=True, blank=True)
@@ -98,6 +102,44 @@ class Order(models.Model):
     
     def __str__(self):
         return f"Order {self.id} - {self.user.email}"
+
+    def _should_deduct_inventory(self, was_deducted: bool = False):
+        return (not was_deducted) and (
+            self.payment_status == 'completed' or self.status in ['shipped', 'delivered']
+        )
+
+    def adjust_inventory(self):
+        if self.inventory_deducted:
+            return
+        items = self.items.select_related('product')
+        with transaction.atomic():
+            for item in items:
+                if item.product_id:
+                    Product.objects.filter(id=item.product_id).update(
+                        stock=Greatest(F('stock') - item.quantity, 0)
+                    )
+            # avoid recursive save by using update()
+            Order.objects.filter(pk=self.pk).update(
+                inventory_deducted=True,
+                updated_at=timezone.now(),
+            )
+            self.inventory_deducted = True
+
+    def save(self, *args, **kwargs):
+        should_adjust = False
+        if self.pk:
+            prev = Order.objects.filter(pk=self.pk).values(
+                'inventory_deducted', 'status', 'payment_status'
+            ).first()
+            if prev:
+                should_adjust = self._should_deduct_inventory(prev['inventory_deducted'])
+        else:
+            should_adjust = self._should_deduct_inventory(False)
+
+        super().save(*args, **kwargs)
+
+        if should_adjust:
+            self.adjust_inventory()
 
 
 class OrderItem(models.Model):

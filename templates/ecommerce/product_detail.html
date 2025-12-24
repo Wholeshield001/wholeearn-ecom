@@ -122,18 +122,37 @@
         <form method="post" action="{% url 'add-to-cart' product.id %}" class="flex flex-col sm:flex-row gap-3 mb-8">
           {% csrf_token %}
           {% if product.stock > 0 %}
-            <div class="flex items-center border border-[#ec3183] rounded-lg overflow-hidden">
-              <button type="button" class="px-4 py-2 text-[#ec3183] hover:bg-pink-50" onclick="decrementQty()">−</button>
-              <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}" class="flex-1 text-center py-2 focus:outline-none text-[#ec3183] font-medium" onchange="validateQty()">
-              <button type="button" class="px-4 py-2 text-[#ec3183] hover:bg-pink-50" onclick="incrementQty()">+</button>
+            {% with min_qty=product.get_min_quantity_for_role|add:request.user.role %}
+            <div class="flex flex-col gap-2">
+              <!-- Role-based minimum quantity info -->
+              <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                {% if request.user.is_authenticated %}
+                  <p class="text-sm text-blue-900">
+                    As a <span class="font-semibold">{{ request.user.get_role_display }}</span>, 
+                    minimum quantity is <span class="font-bold text-blue-600">{{ min_qty }}</span> {{ min_qty|pluralize:"item,items" }}
+                  </p>
+                {% else %}
+                  <p class="text-sm text-blue-900">
+                    Minimum quantity: <span class="font-bold text-blue-600">{{ min_qty }}</span> {{ min_qty|pluralize:"item,item" }}
+                  </p>
+                {% endif %}
+              </div>
+              
+              <!-- Quantity selector -->
+              <div class="flex items-center border border-[#ec3183] rounded-lg overflow-hidden">
+                <button type="button" class="px-4 py-2 text-[#ec3183] hover:bg-pink-50" onclick="decrementQty()">−</button>
+                <input type="number" id="quantity" name="quantity" value="{{ min_qty }}" min="{{ min_qty }}" max="{{ product.stock }}" class="flex-1 text-center py-2 focus:outline-none text-[#ec3183] font-medium" onchange="validateQty()">
+                <button type="button" class="px-4 py-2 text-[#ec3183] hover:bg-pink-50" onclick="incrementQty()">+</button>
+              </div>
             </div>
             <button type="submit" 
                     hx-post="{% url 'add-to-cart' product.id %}"
                     hx-include="[name='quantity']"
                     hx-swap="none"
-                    class="flex-1 px-6 py-3 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow">
+                    class="flex-1 px-6 py-3 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow h-fit">
               Add to Cart
             </button>
+            {% endwith %}
           {% else %}
             <button type="button" disabled class="flex-1 px-6 py-3 bg-gray-300 text-gray-500 font-semibold rounded-lg cursor-not-allowed">
               Out of Stock

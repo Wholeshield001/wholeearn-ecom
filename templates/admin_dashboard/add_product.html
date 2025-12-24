@@ -138,17 +138,67 @@
 
       <!-- Pricing -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 class="text-base font-semibold text-gray-900 mb-6">Pricing</h3>
+        <h3 class="text-base font-semibold text-gray-900 mb-6">Pricing by Role</h3>
         
         <div class="space-y-6">
+          <!-- Customer Price -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-3">Price</label>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Customer Price</label>
             <input 
               type="number" 
               step="0.01"
-              name="price"
+              name="customer_price"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               placeholder="0.00"
+              required
+            />
+          </div>
+
+          <!-- Wholesaler Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Wholesaler Price (Optional)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="wholesaler_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Leave empty to use customer price"
+            />
+          </div>
+
+          <!-- Retailer Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Retailer Price (Optional)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="retailer_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Leave empty to use customer price"
+            />
+          </div>
+
+          <!-- Hospital Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Hospital Price (Optional)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="hospital_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Leave empty to use customer price"
+            />
+          </div>
+
+          <!-- Pharmacy Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Pharmacy Price (Optional)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="pharmacy_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Leave empty to use customer price"
             />
           </div>
 

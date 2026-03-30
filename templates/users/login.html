@@ -13,21 +13,22 @@
       </div>
 
       {% if messages %}
-        {% for message in messages %}
-          {% if 'cart' not in message.tags %}
-            <div class="flash-message mb-4 p-4 rounded-lg {% if 'error' in message.tags %}bg-red-100 text-red-700 border border-red-300{% elif 'success' in message.tags %}bg-green-100 text-green-700 border border-green-300{% else %}bg-blue-100 text-blue-700 border border-blue-300{% endif %}">
-              {{ message }}
-            </div>
-          {% endif %}
-        {% endfor %}
+      {% for message in messages %}
+      {% if 'cart' not in message.tags %}
+      <div
+        class="flash-message mb-4 p-4 rounded-lg {% if 'error' in message.tags %}bg-red-100 text-red-700 border border-red-300{% elif 'success' in message.tags %}bg-green-100 text-green-700 border border-green-300{% else %}bg-blue-100 text-blue-700 border border-blue-300{% endif %}">
+        {{ message }}
+      </div>
+      {% endif %}
+      {% endfor %}
       {% endif %}
 
       {% if form.non_field_errors %}
-        <div class="mb-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg">
-          {% for error in form.non_field_errors %}
-            <p>{{ error }}</p>
-          {% endfor %}
-        </div>
+      <div class="mb-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg">
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+      </div>
       {% endif %}
 
       <form method="POST" class="space-y-4">
@@ -40,7 +41,7 @@
           </label>
           {{ form.email }}
           {% if form.email.errors %}
-            <p class="text-red-500 text-xs mt-1">{{ form.email.errors.0 }}</p>
+          <p class="text-red-500 text-xs mt-1">{{ form.email.errors.0 }}</p>
           {% endif %}
         </div>
 
@@ -51,7 +52,7 @@
           </label>
           {{ form.password }}
           {% if form.password.errors %}
-            <p class="text-red-500 text-xs mt-1">{{ form.password.errors.0 }}</p>
+          <p class="text-red-500 text-xs mt-1">{{ form.password.errors.0 }}</p>
           {% endif %}
         </div>
 
@@ -61,15 +62,15 @@
             {{ form.remember_me }}
             <span class="ml-2 text-sm text-[#ec3183]">{{ form.remember_me.label }}</span>
           </label>
-          <a href="#"
-             class="text-sm text-[#ec3183] hover:opacity-80 font-semibold">
+          <a href="#" class="text-sm text-[#ec3183] hover:opacity-80 font-semibold">
             Forgot password?
           </a>
         </div>
 
         <!-- Submit Button -->
         <button type="submit"
-                class="w-full bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold py-3 rounded-full hover:shadow-lg transition-shadow mt-8">
+          class="w-full text-white font-semibold rounded-full hover:shadow-lg transition-shadow mt-8 h-[44px]"
+          style="background-color: #C2185B !important;">
           Log In
         </button>
       </form>

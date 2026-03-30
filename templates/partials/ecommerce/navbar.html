@@ -9,18 +9,22 @@
 
     <div class="flex items-center gap-4">
       {% if user.is_authenticated %}
-        <a href="{% url 'user-dashboard' %}" class="hidden sm:inline-flex" aria-label="My Dashboard">
-          <span class="inline-block w-8 h-8 rounded-full bg-gradient-to-br from-[#31dec4] to-[#5aa8ff] ring-2 ring-blue-200"></span>
-        </a>
+      <a href="{% url 'user-dashboard' %}" class="hidden sm:inline-flex" aria-label="My Dashboard">
+        <span
+          class="inline-block w-8 h-8 rounded-full bg-gradient-to-br from-[#31dec4] to-[#5aa8ff] ring-2 ring-blue-200"></span>
+      </a>
       {% else %}
-        <a href="{% url 'login' %}" class="hidden sm:inline-flex" aria-label="Login">
-          <span class="inline-block w-8 h-8 rounded-full bg-gradient-to-br from-[#31dec4] to-[#5aa8ff] ring-2 ring-blue-200"></span>
-        </a>
+      <a href="{% url 'login' %}" class="hidden sm:inline-flex" aria-label="Login">
+        <span
+          class="inline-block w-8 h-8 rounded-full bg-gradient-to-br from-[#31dec4] to-[#5aa8ff] ring-2 ring-blue-200"></span>
+      </a>
       {% endif %}
       <!-- Cart Icon with Badge -->
-      <button id="openCartBtn" class="relative p-1.5 rounded-lg hover:bg-gray-100 transition-colors" aria-label="Shopping cart">
+      <button id="openCartBtn" class="relative p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+        aria-label="Shopping cart">
         <span class="material-symbols-outlined text-[#ec3183]">shopping_bag</span>
-        <span id="cartItemCountBadge" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] rounded-full {% if not cart_item_count %}hidden{% endif %}">
+        <span id="cartItemCountBadge"
+          class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] rounded-full {% if not cart_item_count %}hidden{% endif %}">
           {{ cart_item_count|default:0 }}
         </span>
       </button>
@@ -33,7 +37,8 @@
     <div id="menuBackdrop" class="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-200"></div>
 
     <!-- Drawer Container - using translate instead of absolute positioning -->
-    <div id="drawerContainer" class="fixed top-0 left-0 h-screen w-80 max-w-[85vw] bg-white shadow-2xl transition-transform duration-300 -translate-x-full overflow-y-auto flex flex-col">
+    <div id="drawerContainer"
+      class="fixed top-0 left-0 h-screen w-80 max-w-[85vw] bg-white shadow-2xl transition-transform duration-300 -translate-x-full overflow-y-auto flex flex-col">
       <!-- Close Button -->
       <div class="flex justify-end items-center p-6 pb-4 border-b border-gray-200 flex-shrink-0">
         <button id="closeMenuBtn" class="p-2 rounded-lg hover:bg-gray-50 transition-colors">
@@ -43,16 +48,23 @@
 
       <!-- Menu Items -->
       <nav class="px-6 py-4 space-y-0 flex-1">
-        <a href="{% url 'products' %}" class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop All</a>
-        <a href="{% url 'products' %}?gender=men" class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop for Men</a>
-        <a href="{% url 'products' %}?gender=women" class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop for Women</a>
-        <a href="{% url 'blog' %}" class="block text-[#ec3183] text-3xl font-bold py-4 hover:opacity-80 transition-opacity">Our Blog</a>
+        <a href="{% url 'products' %}"
+          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop
+          All</a>
+        <a href="{% url 'products' %}?gender=men"
+          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop
+          for Men</a>
+        <a href="{% url 'products' %}?gender=women"
+          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop
+          for Women</a>
+        <a href="{% url 'blog' %}"
+          class="block text-[#ec3183] text-3xl font-bold py-4 hover:opacity-80 transition-opacity">Our Blog</a>
       </nav>
     </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const menuBtn = document.getElementById('menuBtn');
       const menuDrawer = document.getElementById('menuDrawer');
       const menuBackdrop = document.getElementById('menuBackdrop');

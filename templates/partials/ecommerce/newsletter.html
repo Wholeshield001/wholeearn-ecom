@@ -1,0 +1,47 @@
+<!-- Unified Newsletter Section -->
+<section
+    style="background-color: white; border-top: 1px solid #f0f0f0; border-bottom: 2px solid #C2185B; padding: 100px 40px; margin-top: 0;"
+    class="reveal">
+    <div
+        style="max-width: 1400px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 40px;">
+
+        <!-- Text Content -->
+        <div>
+            <h2 style="font-size: 48px; font-weight: 700; color: #C2185B; margin: 0; line-height: 1.1;">No half-baked
+                updates</h2>
+            <p style="font-size: 24px; font-weight: 500; color: #C2185B; margin: 8px 0 0 0;">just the whole scoop.</p>
+        </div>
+
+        <!-- Subscription Form -->
+        <div style="flex: 1; max-width: 600px; width: 100%;">
+            <form style="display: flex; background-color: #f9f9f9; border-radius: 4px; overflow: hidden;"
+                hx-post="{% url 'home' %}" hx-target="this" hx-swap="outerHTML">
+                {% csrf_token %}
+                <input type="email" name="email" placeholder="Enter your email" required
+                    style="flex: 1; padding: 20px 24px; border: none; background: transparent; color: #C2185B; font-size: 18px; outline: none; font-family: 'Inter', sans-serif;">
+                <button type="submit"
+                    style="padding: 20px 32px; border: none; background: transparent; color: #C2185B; font-weight: 600; font-size: 18px; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.2s;">
+                    Subscribe
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    @media (max-width: 768px) {
+        div[style*="justify-content: space-between"] {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            text-align: left !important;
+        }
+
+        h2[style*="font-size: 48px"] {
+            font-size: 36px !important;
+        }
+
+        p[style*="font-size: 24px"] {
+            font-size: 18px !important;
+        }
+    }
+</style>

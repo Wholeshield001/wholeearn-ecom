@@ -6,214 +6,439 @@
 {% block content %}
 
 <!-- Hero Section -->
-<section class="relative overflow-hidden min-h-[80vh] bg-white reveal opacity-0 translate-y-3">
-  <!-- Decorative edge bottles with hover reveal -->
-  <div class="hidden md:block absolute left-0 top-20 w-[35vw] max-w-[480px] group pointer-events-auto z-0">
-    <img src="{% static 'images/Arthorshield.png' %}"
-         alt="Arthorshield bottle"
-         class="opacity-15 blur-[2px] transition-all duration-300 ease-out select-none pointer-events-none group-hover:opacity-90 group-hover:blur-0 group-hover:scale-105 group-hover:drop-shadow-2xl" />
+<section class="relative overflow-hidden min-h-[85vh] bg-white reveal flex items-center justify-center pt-24 pb-0">
+
+  <style>
+    .hero-side-bottle {
+      position: absolute;
+      z-index: 10;
+      transition: transform 0.5s ease-out;
+      width: 180px;
+      /* Mobile size */
+    }
+
+    .left-bottle {
+      left: -60px;
+      top: 15%;
+      transform: rotate(-12deg);
+    }
+
+    .right-bottle {
+      right: -60px;
+      top: 15%;
+      transform: rotate(12deg);
+    }
+
+    .left-bottle:hover {
+      transform: translateY(-8px) rotate(-6deg);
+    }
+
+    .right-bottle:hover {
+      transform: translateY(-8px) rotate(6deg);
+    }
+
+    .hero-cta-button {
+      background-color: #C2185B;
+      padding: 14px 28px;
+      border-radius: 9999px;
+      transition: all 0.3s ease;
+    }
+
+    @media (min-width: 640px) {
+      .hero-cta-button {
+        padding: 16px 40px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .hero-side-bottle {
+        width: 420px;
+      }
+
+      .left-bottle {
+        left: 2%;
+        top: 18%;
+      }
+
+      .right-bottle {
+        right: 2%;
+        top: 18%;
+      }
+    }
+
+    @media (min-width: 1536px) {
+      .left-bottle {
+        left: 5%;
+      }
+
+      .right-bottle {
+        right: 5%;
+      }
+    }
+
+    .hero-bottom-cap-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+      height: 90px;
+      margin-top: 24px;
+    }
+
+    @media (min-width: 640px) {
+      .hero-bottom-cap-container {
+        height: 130px;
+        margin-top: 32px;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .hero-bottom-cap-container {
+        height: 160px;
+      }
+    }
+
+    @keyframes marquee {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .animate-marquee {
+      display: flex;
+      animation: marquee 40s linear infinite;
+    }
+
+    .ticker-item {
+      padding: 0 40px;
+      flex-shrink: 0;
+    }
+
+    .ticker-item img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      opacity: 0.9;
+      transition: opacity 0.3s;
+    }
+
+    .ticker-item img:hover {
+      opacity: 1;
+    }
+
+    @media (min-width: 640px) {
+      .ticker-item {
+        padding: 0 60px;
+      }
+
+      .ticker-item img {
+        height: 50px;
+      }
+    }
+  </style>
+
+  <!-- Left Bottle (ReproShield) -->
+  <div class="hero-side-bottle left-bottle">
+    <img src="{% static 'images/Reposhield.png' %}" alt="ReproShield Men bottle"
+      style="filter: drop-shadow(0 25px 25px rgba(0,0,0,0.15)); width: 100%;" />
   </div>
-  <div class="hidden md:block absolute right-0 top-24 w-[35vw] max-w-[480px] group pointer-events-auto z-0">
-    <img src="{% static 'images/Reposhield.png' %}"
-         alt="Reposhield bottle"
-         class="opacity-15 blur-[2px] transition-all duration-300 ease-out select-none pointer-events-none group-hover:opacity-90 group-hover:blur-0 group-hover:scale-105 group-hover:drop-shadow-2xl" />
+
+  <!-- Right Bottle (Arthorshield) -->
+  <div class="hero-side-bottle right-bottle">
+    <img src="{% static 'images/Arthorshield.png' %}" alt="Arthorshield bottle"
+      style="filter: drop-shadow(0 25px 25px rgba(0,0,0,0.15)); width: 100%;" />
   </div>
 
   <!-- Center hero content -->
-  <div class="max-w-6xl mx-auto px-4 pt-8 pb-16 sm:pt-12 sm:pb-20 text-center relative z-10">
-    <!-- Top product image -->
-    <img src="{% static 'images/Magnesium.png' %}"
-         alt="Magnesium bottle"
-         class="mx-auto h-32 sm:h-40 md:h-44 opacity-90 drop-shadow-lg select-none pointer-events-none mb-6" />
-    
-    <h1 class="mt-2 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
-      <span class="text-[#ec3183]">Welcome to the </span>
-      <span class="text-[#31dec4] italic">whole</span><br class="sm:hidden" />
-      <span class="text-[#ec3183]"> side of life!</span>
+  <div class="max-w-4xl mx-auto px-4 text-center relative z-20 w-full pt-4">
+
+    <!-- Top Center Bottle (Magnesium) -->
+    <div class="flex justify-center mb-6 sm:mb-8">
+      <img src="{% static 'images/Magnesium.png' %}" alt="Magnesium bottle"
+        style="height: 180px; filter: drop-shadow(0 15px 15px rgba(0,0,0,0.1)); transition: transform 0.5s;"
+        class="hover:-translate-y-2" />
+    </div>
+
+    <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1] mb-8 sm:mb-12">
+      <span style="color: #E91E63; display: block;">Welcome to the </span>
+      <span class="relative inline-block" style="color: #009688;">
+        whole
+        <!-- Hand-drawn SVG underline -->
+        <svg class="absolute w-full h-3 sm:h-4 -bottom-1 sm:-bottom-2 left-0" style="color: #009688;"
+          viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="4"
+          stroke-linecap="round">
+          <path d="M5,15 Q50,5 100,10 T195,5" />
+        </svg>
+      </span>
+      <span style="color: #E91E63;"> side of life!</span>
     </h1>
 
-    <div class="mt-8 sm:mt-10">
-      <a href="#"
-         class="inline-flex items-center justify-center rounded-full px-8 sm:px-10 py-3 sm:py-3.5 text-white font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition-shadow"
-         style="background: linear-gradient(90deg, #ec3183 0%, #31dec4 100%);">
+    <div class="relative z-30 mb-6 sm:mb-8">
+      <a href="{% url 'products' %}"
+        class="inline-flex items-center justify-center text-white font-semibold text-base sm:text-lg shadow-xl hover:shadow-2xl hero-cta-button hover:-translate-y-1">
         Complete Your Whole Health
       </a>
     </div>
 
-    <!-- Bottom decorative element (half circle) -->
-    <div class="mt-12 sm:mt-16 relative">
-      <div class="absolute left-1/2 transform -translate-x-1/2 w-64 h-32 sm:w-80 sm:h-40 bg-gradient-to-b from-yellow-100 to-yellow-50 rounded-t-full opacity-60"></div>
+    <!-- Bottom decorative element (Vitamin C Cap) -->
+    <div class="hero-bottom-cap-container">
+      <img src="{% static 'images/VitaminC.png' %}" alt="Vitamin C"
+        class="w-48 sm:w-64 md:w-80 h-auto object-contain" />
     </div>
   </div>
 </section>
 
+<!-- Brand Ticker Tape -->
+<div class="bg-gradient-to-r from-[#fff5f8] to-[#f0fdfa] border-y border-gray-100 py-12 overflow-hidden"
+  style="margin-top: 0; margin-bottom: 240px;">
+  <div class="animate-marquee">
+    <div class="flex items-center">
+      <div class="ticker-item"><img src="{% static 'images/Arthroshield.png' %}" alt="Brand 1"></div>
+      <div class="ticker-item"><img src="{% static 'images/Ellashield.png' %}" alt="Brand 2"></div>
+      <div class="ticker-item"><img src="{% static 'images/Optishield.png' %}" alt="Brand 3"></div>
+      <div class="ticker-item"><img src="{% static 'images/Refire.png' %}" alt="Brand 4"></div>
+      <div class="ticker-item"><img src="{% static 'images/WholeBeauty.png' %}" alt="Brand 1"></div>
+      <div class="ticker-item"><img src="{% static 'images/WholeCell.png' %}" alt="Brand 2"></div>
+      <div class="ticker-item"><img src="{% static 'images/magn.png' %}" alt="Brand 6"></div>
+      <div class="ticker-item"><img src="{% static 'images/probiotics.png' %}" alt="Brand 7"></div>
+      <div class="ticker-item"><img src="{% static 'images/colla.png' %}" alt="Brand 8"></div>
+      <div class="ticker-item"><img src="{% static 'images/vitae.png' %}" alt="Brand 9"></div>
+      <div class="ticker-item"><img src="{% static 'images/vitac.png' %}" alt="Brand 10"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Shop Bestsellers Section -->
-<section class="py-16 sm:py-20 bg-white reveal opacity-0 translate-y-3">
+<section class="pt-4 pb-16 sm:pt-6 sm:pb-20 bg-white reveal">
   <div class="max-w-7xl mx-auto px-4">
     <!-- Section Header -->
     <div class="flex items-center justify-between pb-12">
-      <h2 class="text-2xl sm:text-3xl font-bold text-[#ec3183]">Shop Bestsellers</h2>
+      <h2 class="text-2xl sm:text-3xl font-medium text-[#ec3183]">Shop Bestsellers</h2>
       <a href="{% url 'products' %}" class="text-[#ec3183] hover:opacity-80 font-medium">Shop All</a>
     </div>
     <!-- Products Marquee -->
     {% if bestsellers %}
-      <style>
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+    <style>
+      @keyframes marquee {
+        0% {
+          transform: translateX(0);
         }
-        .marquee-wrapper { 
-          overflow: hidden; 
-          max-width: 1280px;
-          margin: 0 auto;
+
+        100% {
+          transform: translateX(-50%);
         }
-        .marquee-content { 
-          display: flex; 
-          gap: 32px; 
-          animation: marquee 40s linear infinite;
-          width: max-content;
-        }
-        .marquee-content:hover { animation-play-state: paused; }
+      }
+
+      .marquee-wrapper {
+        overflow: hidden;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+
+      .marquee-content {
+        display: flex;
+        gap: 32px;
+        animation: marquee 40s linear infinite;
+        width: max-content;
+      }
+
+      .marquee-content:hover {
+        animation-play-state: paused;
+      }
+
+      .product-card-marquee {
+        width: calc((1280px - 96px) / 4);
+        min-width: 260px;
+      }
+
+      @media (max-width: 1280px) {
         .product-card-marquee {
-          width: calc((1280px - 96px) / 4);
-          min-width: 260px;
+          width: calc((100vw - 128px) / 4);
         }
-        @media (max-width: 1280px) {
-          .product-card-marquee {
-            width: calc((100vw - 128px) / 4);
-          }
+      }
+
+      @media (max-width: 768px) {
+        .product-card-marquee {
+          width: calc((100vw - 96px) / 2);
+          min-width: 200px;
         }
-        @media (max-width: 768px) {
-          .product-card-marquee {
-            width: calc((100vw - 96px) / 2);
-            min-width: 200px;
-          }
-        }
-      </style>
-      <div class="marquee-wrapper">
-        <div class="marquee-content">
-          <!-- First set of products -->
-          {% for product in bestsellers %}
-            <a href="{% url 'product-detail' product.id %}"
-               class="group block flex-none product-card-marquee">
-              <div class="rounded-xl overflow-hidden bg-white shadow border border-pink-100" style="height: 340px;">
-                {% if product.thumbnail and product.thumbnail.image %}
-                  <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-                {% elif product.images.first %}
-                  <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-                {% else %}
-                  <img src="{% static 'images/Arthorshield.png' %}" alt="{{ product.name|default:'Product' }}" class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-                {% endif %}
-              </div>
-              <div class="mt-4">
-                <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
-                <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
-                <p class="mt-2 text-[#ec3183] font-medium text-base">
-                  {% if product.price %}${{ product.price }}{% else %}—{% endif %}
-                </p>
-              </div>
-            </a>
-          {% endfor %}
-          <!-- Duplicate set for seamless loop -->
-          {% for product in bestsellers %}
-            <a href="{% url 'product-detail' product.id %}"
-               class="group block flex-none product-card-marquee">
-              <div class="rounded-xl overflow-hidden bg-white shadow border border-pink-100" style="height: 340px;">
-                {% if product.thumbnail and product.thumbnail.image %}
-                  <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-                {% elif product.images.first %}
-                  <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-                {% else %}
-                  <img src="{% static 'images/Arthorshield.png' %}" alt="{{ product.name|default:'Product' }}" class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-                {% endif %}
-              </div>
-              <div class="mt-4">
-                <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
-                <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
-                <p class="mt-2 text-[#ec3183] font-medium text-base">
-                  {% if product.price %}${{ product.price }}{% else %}—{% endif %}
-                </p>
-              </div>
-            </a>
-          {% endfor %}
-        </div>
-      </div>
-    {% else %}
-      <!-- Placeholder cards -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
-        {% for i in "1234" %}
-          <div class="group">
-            <div class="aspect-[3/4] rounded-xl overflow-hidden bg-white shadow border border-pink-100">
-              <img src="{% static 'images/Arthorshield.png' %}" alt="Arthorshield" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
-            </div>
-            <div class="mt-3">
-              <p class="text-[#ec3183] font-semibold">Arthorshield</p>
-              <p class="text-[#ec3183] opacity-80">Joint Health</p>
-              <p class="mt-1 text-[#ec3183] font-medium">$33</p>
-            </div>
+      }
+    </style>
+    <div class="marquee-wrapper">
+      <div class="marquee-content">
+        <!-- First set of products -->
+        {% for product in bestsellers %}
+        <a href="{% url 'product-detail' product.id %}" class="group block flex-none product-card-marquee">
+          <div class="rounded-xl overflow-hidden bg-white shadow border border-pink-100" style="height: 340px;">
+            {% if product.thumbnail and product.thumbnail.image %}
+            <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% elif product.images.first %}
+            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% else %}
+            <img src="{% static 'images/Arthorshield.png' %}" alt="{{ product.name|default:'Product' }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% endif %}
           </div>
+          <div class="mt-4">
+            <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
+            <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
+            <p class="mt-2 text-[#ec3183] font-medium text-base">
+              {% if product.price %}${{ product.price }}{% else %}—{% endif %}
+            </p>
+          </div>
+        </a>
+        {% endfor %}
+        <!-- Duplicate set for seamless loop -->
+        {% for product in bestsellers %}
+        <a href="{% url 'product-detail' product.id %}" class="group block flex-none product-card-marquee">
+          <div class="rounded-xl overflow-hidden bg-white shadow border border-pink-100" style="height: 340px;">
+            {% if product.thumbnail and product.thumbnail.image %}
+            <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% elif product.images.first %}
+            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% else %}
+            <img src="{% static 'images/Arthorshield.png' %}" alt="{{ product.name|default:'Product' }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% endif %}
+          </div>
+          <div class="mt-4">
+            <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
+            <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
+            <p class="mt-2 text-[#ec3183] font-medium text-base">
+              {% if product.price %}${{ product.price }}{% else %}—{% endif %}
+            </p>
+          </div>
+        </a>
         {% endfor %}
       </div>
+    </div>
+    {% else %}
+    <!-- Placeholder cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+      {% for i in "1234" %}
+      <div class="group">
+        <div class="aspect-[3/4] rounded-xl overflow-hidden bg-white shadow border border-pink-100">
+          <img src="{% static 'images/Arthorshield.png' %}" alt="Arthorshield"
+            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+        </div>
+        <div class="mt-3">
+          <p class="text-[#ec3183] font-semibold">Arthorshield</p>
+          <p class="text-[#ec3183] opacity-80">Joint Health</p>
+          <p class="mt-1 text-[#ec3183] font-medium">$33</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
     {% endif %}
   </div>
 </section>
 
 <!-- Trust & Certifications Section -->
-<section class="py-16 sm:py-20 bg-white reveal opacity-0 translate-y-3">
+<section class="py-16 sm:py-24 bg-white reveal">
   <div class="max-w-7xl mx-auto px-4">
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-8 sm:gap-12">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-10 sm:gap-14">
+
       <!-- Vegan Friendly -->
-      <div class="text-center">
-        <div class="flex justify-center mb-4">
-          <span class="text-5xl sm:text-6xl text-[#ec3183]">🌱</span>
+      <div class="text-center group">
+        <div class="flex justify-center mb-5">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C2185B" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round"
+            class="transition-transform duration-300 group-hover:scale-110">
+            <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12A10 10 0 0 1 12 2z" />
+            <path d="M12 22C12 22 17 17 17 12s-5-10-5-10-5 5-5 10 5 10 5 10z" />
+            <path d="M12 8v8" />
+            <path d="M12 12l2-2" />
+            <path d="M12 15l3-3" />
+          </svg>
         </div>
-        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">Vegan-Friendly</p>
+        <p class="text-xs sm:text-sm font-semibold tracking-wide uppercase transition-colors"
+          style="color: #C2185B; font-family: 'Inter', sans-serif;">Vegan-Friendly</p>
       </div>
 
       <!-- Clean Label -->
-      <div class="text-center">
-        <div class="flex justify-center mb-4">
-          <span class="text-5xl sm:text-6xl text-[#ec3183]">✓</span>
+      <div class="text-center group">
+        <div class="flex justify-center mb-5">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C2185B" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round"
+            class="transition-transform duration-300 group-hover:scale-110">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
         </div>
-        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">Clean Label<br />No Artificial Additives</p>
+        <p class="text-xs sm:text-sm font-semibold tracking-wide uppercase transition-colors"
+          style="color: #C2185B; font-family: 'Inter', sans-serif;">Clean Label<br /><span
+            class="opacity-80 font-normal normal-case">No Artificial Additives</span></p>
       </div>
 
       <!-- Science Backed -->
-      <div class="text-center">
-        <div class="flex justify-center mb-4">
-          <span class="text-5xl sm:text-6xl text-[#ec3183]">🔬</span>
+      <div class="text-center group">
+        <div class="flex justify-center mb-5">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C2185B" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round"
+            class="transition-transform duration-300 group-hover:scale-110">
+            <path d="M4.53 10.8a6 6 0 0 1 8.49-8.49l6.36 6.36a6 6 0 0 1-8.49 8.49l-6.36-6.36z" />
+            <path d="m14 7 3 3" />
+            <path d="m9 12 3 3" />
+            <path d="M18 19s-1-1.5-3-1.5-3 1.5-3 1.5" />
+            <path d="M15 19v3" />
+            <circle cx="20" cy="21" r="1" />
+            <circle cx="16" cy="18" r="1" />
+          </svg>
         </div>
-        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">Science Backed<br />Active Ingredients</p>
+        <p class="text-xs sm:text-sm font-semibold tracking-wide uppercase transition-colors"
+          style="color: #C2185B; font-family: 'Inter', sans-serif;">Science Backed<br /><span
+            class="opacity-80 font-normal normal-case">Active Ingredients</span></p>
       </div>
 
-      <!-- NAFDAC & EU -->
-      <div class="text-center">
-        <div class="flex justify-center mb-4">
-          <span class="text-5xl sm:text-6xl text-[#ec3183]">✓</span>
+      <!-- Compliance -->
+      <div class="text-center group">
+        <div class="flex justify-center mb-5">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C2185B" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round"
+            class="transition-transform duration-300 group-hover:scale-110">
+            <circle cx="12" cy="12" r="10" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
         </div>
-        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">NAFDAC & EU -GMP<br />Compliance</p>
+        <p class="text-xs sm:text-sm font-semibold tracking-wide uppercase transition-colors"
+          style="color: #C2185B; font-family: 'Inter', sans-serif;">NAFDAC & EU -GMP<br /><span
+            class="opacity-80 font-normal normal-case">Compliance</span></p>
       </div>
 
       <!-- 100% Traceable -->
-      <div class="text-center">
-        <div class="flex justify-center mb-4">
-          <span class="text-5xl sm:text-6xl text-[#ec3183]">◉</span>
+      <div class="text-center group col-span-2 md:col-span-1">
+        <div class="flex justify-center mb-5">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C2185B" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round"
+            class="transition-transform duration-300 group-hover:scale-110">
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
         </div>
-        <p class="text-sm sm:text-base font-semibold text-[#ec3183]">100% Traceable</p>
+        <p class="text-xs sm:text-sm font-semibold tracking-wide uppercase transition-colors"
+          style="color: #C2185B; font-family: 'Inter', sans-serif;">100% Traceable</p>
       </div>
+
     </div>
   </div>
 </section>
 
 <!-- Philosophy Section -->
-<section class="py-16 sm:py-24 bg-gray-50 reveal opacity-0 translate-y-3">
+<section class="py-16 sm:py-24 bg-gray-50 reveal">
   <div class="max-w-6xl mx-auto px-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
       <!-- Left: Product Image -->
       <div class="flex justify-center md:justify-start">
-        <img src="{% static 'images/Carton.png' %}"
-             alt="WholeShield Products"
-             class="h-64 sm:h-80 md:h-96 drop-shadow-xl" />
+        <img src="{% static 'images/Carton.png' %}" alt="WholeShield Products"
+          class="h-64 sm:h-80 md:h-96 drop-shadow-xl" />
       </div>
 
       <!-- Right: Philosophy Text -->
@@ -222,7 +447,8 @@
           Our Philosophy:<br />Catching The Wellness Bug.
         </h2>
         <p class="text-base sm:text-lg text-[#ed3e8b] leading-relaxed">
-          We believe that true health isn't about simply avoiding sickness; it's about actively pursuing a state of total, vibrant well-being.
+          We believe that true health isn't about simply avoiding sickness; it's about actively pursuing a state of
+          total, vibrant well-being.
         </p>
       </div>
     </div>
@@ -230,7 +456,7 @@
 </section>
 
 <!-- Maximum Protection Section -->
-<section class="py-16 sm:py-24 bg-white reveal opacity-0 translate-y-3">
+<section class="py-16 sm:py-24 bg-white reveal">
   <div class="max-w-6xl mx-auto px-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
       <!-- Left: Text Content -->
@@ -239,22 +465,22 @@
           Maximum Protection:<br />Your Daily Dose of WholeShielding
         </h2>
         <p class="text-base sm:text-lg text-[#ed3e8b] leading-relaxed">
-          Every capsule, tablet, and softgel in this collection is an investment in your long-term vitality. Consider this your daily upgrade—everything you need, nothing you don't.
+          Every capsule, tablet, and softgel in this collection is an investment in your long-term vitality. Consider
+          this your daily upgrade—everything you need, nothing you don't.
         </p>
       </div>
 
       <!-- Right: Product Image -->
       <div class="flex justify-center md:justify-end">
-        <img src="{% static 'images/Pills.png' %}"
-             alt="WholeShield Capsules"
-             class="h-64 sm:h-80 md:h-96 drop-shadow-xl" />
+        <img src="{% static 'images/Pills.png' %}" alt="WholeShield Capsules"
+          class="h-64 sm:h-80 md:h-96 drop-shadow-xl" />
       </div>
     </div>
   </div>
 </section>
 
 <!-- Embrace Total Well-Being Section -->
-<section class="py-16 sm:py-24 bg-gray-50 reveal opacity-0 translate-y-3">
+<section class="py-16 sm:py-24 bg-gray-50 reveal">
   <div class="max-w-7xl mx-auto px-4">
     <!-- Section Header -->
     <div class="mb-12">
@@ -270,23 +496,20 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
       <!-- Card 1 -->
       <div class="group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-        <img src="{% static 'images/Arthorshield.png' %}"
-             alt="Eye Health Collection"
-             class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105" />
+        <img src="{% static 'images/Arthorshield.png' %}" alt="Eye Health Collection"
+          class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105" />
       </div>
 
       <!-- Card 2 -->
       <div class="group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-        <img src="{% static 'images/Magnesium.png' %}"
-             alt="Wellness & Vitality"
-             class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105" />
+        <img src="{% static 'images/Magnesium.png' %}" alt="Wellness & Vitality"
+          class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105" />
       </div>
 
       <!-- Card 3 -->
       <div class="group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-        <img src="{% static 'images/Reposhield.png' %}"
-             alt="Mental Clarity"
-             class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105" />
+        <img src="{% static 'images/Reposhield.png' %}" alt="Mental Clarity"
+          class="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105" />
       </div>
     </div>
   </div>
@@ -294,7 +517,7 @@
 
 
 <!-- Join The Whole Crew Section -->
-<section class="py-16 sm:py-20 bg-white text-center reveal opacity-0 translate-y-3">
+<section class="py-16 sm:py-20 bg-white text-center reveal">
   <div class="max-w-3xl mx-auto px-4">
     <h2 class="text-3xl sm:text-4xl font-bold text-[#ec3183] mb-3">
       Join The Whole Crew
@@ -304,59 +527,15 @@
     </p>
     <div>
       <a href="{% url 'signup' %}"
-         class="inline-flex items-center justify-center rounded-full px-6 sm:px-8 py-3 text-white font-semibold shadow-md hover:shadow-lg transition-shadow"
-         style="background: linear-gradient(90deg, #ec3183 0%, #31dec4 100%);">
+        class="inline-flex items-center justify-center rounded-full px-6 sm:px-8 py-3 text-white font-semibold shadow-md hover:shadow-lg transition-shadow"
+        style="background-color: #C2185B !important;">
         Come on in
       </a>
     </div>
   </div>
 </section>
 
-<!-- Newsletter Section -->
-<section class="py-16 sm:py-20 bg-gray-50 reveal opacity-0 translate-y-3">
-  <div class="max-w-6xl mx-auto px-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 items-center">
-      <div>
-        <h3 class="text-2xl sm:3xl font-bold text-[#ec3183] mb-2">
-          No half-baked updates
-        </h3>
-        <p class="text-sm sm:text-base text-[#ec3183]">
-          just the whole scoop.
-        </p>
-      </div>
-      <form class="w-full">
-        <div class="flex items-stretch bg-white rounded-full shadow-sm border border-pink-100 overflow-hidden">
-          <input type="email"
-                 name="email"
-                 required
-                 placeholder="Enter your email"
-                 class="flex-1 px-4 sm:px-5 py-3 text-sm sm:text-base outline-none" />
-          <button type="submit"
-                  class="px-4 sm:px-6 text-sm sm:text-base font-semibold text-[#ec3183] hover:opacity-80 transition-opacity">
-            Subscribe
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</section>
 {% endblock %}
 
 {% block scripts %}
-<script>
-  (function() {
-    const Els = document.querySelectorAll('.reveal');
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const el = entry.target;
-          el.classList.remove('opacity-0', 'translate-y-3');
-          el.classList.add('transition', 'duration-700');
-          io.unobserve(el);
-        }
-      });
-    }, { threshold: 0.1 });
-    Els.forEach(el => io.observe(el));
-  })();
-</script>
 {% endblock %}

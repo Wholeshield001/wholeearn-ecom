@@ -2,59 +2,62 @@
 
 <!-- Cart Items Partial for HTMX updates -->
 {% if cart_items %}
-  {% for item in cart_items %}
-    <div class="flex gap-3 border border-pink-200 rounded-lg p-3 cart-item" data-item-id="{{ item.id }}">
-      {% if item.product.thumbnail and item.product.thumbnail.image %}
-        <img src="{{ item.product.thumbnail.image.url }}" class="w-16 h-16 rounded object-cover" alt="{{ item.product.name }}">
-      {% elif item.product.images.first %}
-        <img src="{{ item.product.images.first.image.url }}" class="w-16 h-16 rounded object-cover" alt="{{ item.product.name }}">
-      {% else %}
-        <div class="w-16 h-16 rounded bg-gradient-to-br from-[#ec3183] to-[#31dec4] opacity-20 flex items-center justify-center">
-          <span class="text-xs text-gray-400">No img</span>
-        </div>
-      {% endif %}
-      <div class="flex-1">
-        <p class="font-medium text-gray-900">{{ item.product.name }}</p>
-        <p class="text-sm text-gray-500">{{ item.product.category.name }}</p>
-        <div class="flex items-center gap-1 mt-2">
-          <form method="post" action="{% url 'update-cart-item' item.id %}" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="quantity" value="{{ item.quantity|add:'-1' }}">
-            <button type="submit" class="p-1 border border-pink-200 rounded text-[#ec3183] hover:bg-pink-50">−</button>
-          </form>
-          <form method="post" action="{% url 'update-cart-item' item.id %}" id="qty-form-{{ item.id }}" style="display:inline;">
-            {% csrf_token %}
-            <input type="number" 
-                   name="quantity"
-                   class="w-12 text-center text-sm font-medium text-[#ec3183] border border-pink-200 rounded" 
-                   value="{{ item.quantity }}" 
-                   min="1" 
-                   max="{{ item.product.stock }}"
-                   onchange="this.form.submit()">
-          </form>
-          <form method="post" action="{% url 'update-cart-item' item.id %}" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="quantity" value="{{ item.quantity|add:'1' }}">
-            <button type="submit" class="p-1 border border-pink-200 rounded text-[#ec3183] hover:bg-pink-50">+</button>
-          </form>
-        </div>
-      </div>
-      <div class="text-right flex flex-col justify-between">
-        <p class="font-semibold text-[#ec3183]">${{ item.get_total_price }}</p>
-        <form method="post" action="{% url 'remove-from-cart' item.id %}" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">Remove</button>
-        </form>
-      </div>
-    </div>
-  {% endfor %}
-{% else %}
-  <div class="flex flex-col items-center justify-center h-full text-center py-12">
-    <svg class="w-12 h-12 text-[#ec3183] opacity-30 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
-    </svg>
-    <p class="text-gray-500">Your cart is empty</p>
+{% for item in cart_items %}
+<div class="flex gap-3 border border-pink-200 rounded-lg p-3 cart-item" data-item-id="{{ item.id }}">
+  {% if item.product.thumbnail and item.product.thumbnail.image %}
+  <img src="{{ item.product.thumbnail.image.url }}" class="w-16 h-16 rounded object-cover"
+    alt="{{ item.product.name }}">
+  {% elif item.product.images.first %}
+  <img src="{{ item.product.images.first.image.url }}" class="w-16 h-16 rounded object-cover"
+    alt="{{ item.product.name }}">
+  {% else %}
+  <div
+    class="w-16 h-16 rounded bg-gradient-to-br from-[#ec3183] to-[#31dec4] opacity-20 flex items-center justify-center">
+    <span class="text-xs text-gray-400">No img</span>
   </div>
+  {% endif %}
+  <div class="flex-1">
+    <p class="font-medium text-gray-900">{{ item.product.name }}</p>
+    <p class="text-sm text-gray-500">{{ item.product.category.name }}</p>
+    <div class="flex items-center gap-1 mt-2">
+      <form hx-post="{% url 'update-cart-item' item.id %}" hx-target="#cartItems" hx-swap="innerHTML"
+        style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="quantity" value="{{ item.quantity|add:'-1' }}">
+        <button type="submit" class="p-1 border border-pink-200 rounded text-[#ec3183] hover:bg-pink-50">−</button>
+      </form>
+      <form hx-post="{% url 'update-cart-item' item.id %}" hx-target="#cartItems" hx-swap="innerHTML"
+        id="qty-form-{{ item.id }}" style="display:inline;">
+        {% csrf_token %}
+        <input type="number" name="quantity"
+          class="w-12 text-center text-sm font-medium text-[#ec3183] border border-pink-200 rounded"
+          value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" onchange="this.form.submit()">
+      </form>
+      <form hx-post="{% url 'update-cart-item' item.id %}" hx-target="#cartItems" hx-swap="innerHTML"
+        style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="quantity" value="{{ item.quantity|add:'1' }}">
+        <button type="submit" class="p-1 border border-pink-200 rounded text-[#ec3183] hover:bg-pink-50">+</button>
+      </form>
+    </div>
+  </div>
+  <div class="text-right flex flex-col justify-between">
+    <p class="font-semibold text-[#ec3183]">${{ item.get_total_price }}</p>
+    <form hx-post="{% url 'remove-from-cart' item.id %}" hx-target="#cartItems" hx-swap="innerHTML"
+      style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">Remove</button>
+    </form>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="flex flex-col items-center justify-center h-full text-center py-12">
+  <svg class="w-12 h-12 text-[#ec3183] opacity-30 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+    </path>
+  </svg>
+  <p class="text-gray-500">Your cart is empty</p>
+</div>
 {% endif %}
-
-

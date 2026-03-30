@@ -1,12 +1,9 @@
 {% include 'partials/ecommerce/cart_items.html' %}
 
-<div id="cartTotals" hx-swap-oob="true" class="space-y-2 text-sm">
-  {% if cart_items %}
-    <div class="flex justify-between text-gray-700"><span>Subtotal</span><span class="text-[#ec3183] font-semibold">${{ cart_total }}</span></div>
-    <div class="flex justify-between text-gray-700"><span>Shipping</span><span class="text-green-600 font-semibold">Free</span></div>
-    <div class="flex justify-between text-gray-700"><span>Tax</span><span class="text-[#ec3183]">$0.00</span></div>
-    <div class="flex justify-between font-semibold border-t border-gray-200 pt-2 text-gray-900"><span>Total</span><span class="text-[#ec3183]">${{ cart_total }}</span></div>
-  {% else %}
-    <div class="text-gray-600 text-sm">Your cart is empty.</div>
-  {% endif %}
-</div>
+{% include 'partials/ecommerce/cart_checkout_section.html' %}
+
+<!-- Out of Band Swap for Navbar Cart Badge -->
+<span id="cartItemCountBadge" hx-swap-oob="true"
+  class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] rounded-full {% if not cart_item_count %}hidden{% endif %}">
+  {{ cart_item_count|default:0 }}
+</span>

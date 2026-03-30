@@ -100,9 +100,15 @@ def product_detail(request, product_id):
         category=product.category
     ).exclude(id=product_id).order_by('-created_at')[:5]
     
+    # Get minimum quantity based on user role
+    min_quantity = 1
+    if request.user.is_authenticated:
+        min_quantity = product.get_min_quantity_for_role(request.user.role)
+    
     context = {
         'product': product,
         'related_products': related_products,
+        'min_quantity': min_quantity,
     }
     return render(request, 'ecommerce/product_detail.html', context)
 
@@ -230,6 +236,14 @@ def update_cart_item(request, item_id):
         cart_item.save()
         messages.success(request, "Cart updated.", extra_tags='cart')
     
+    if request.headers.get('HX-Request') == 'true':
+        context = {
+            'cart_items': cart.items.all(),
+            'cart_total': cart.get_total_price(),
+            'cart_item_count': cart.get_item_count(),
+        }
+        return render(request, 'partials/ecommerce/cart_drawer_content.html', context)
+    
     # Redirect back to the referring page with cart=open parameter
     next_url = request.META.get('HTTP_REFERER', '/')
     separator = '&' if '?' in next_url else '?'
@@ -252,6 +266,14 @@ def remove_from_cart(request, item_id):
     product_name = cart_item.product.name
     cart_item.delete()
     messages.success(request, f"{product_name} removed from cart.", extra_tags='cart')
+    
+    if request.headers.get('HX-Request') == 'true':
+        context = {
+            'cart_items': cart.items.all(),
+            'cart_total': cart.get_total_price(),
+            'cart_item_count': cart.get_item_count(),
+        }
+        return render(request, 'partials/ecommerce/cart_drawer_content.html', context)
     
     # Redirect back to the referring page with cart=open parameter
     next_url = request.META.get('HTTP_REFERER', '/')
@@ -560,3 +582,19 @@ def blog_detail(request, slug):
         'post': post,
         'related_posts': related_posts,
     })
+
+def terms_of_service(request):
+    """Display Terms of Service page"""
+    return render(request, 'ecommerce/terms_of_service.html')
+
+def privacy_policy(request):
+    """Display Privacy Policy page"""
+    return render(request, 'ecommerce/privacy_policy.html')
+
+def return_policy(request):
+    """Display Return Policy page"""
+    return render(request, 'ecommerce/return_policy.html')
+
+def delivery_policy(request):
+    """Display Delivery Policy page"""
+    return render(request, 'ecommerce/delivery_policy.html')

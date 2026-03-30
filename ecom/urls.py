@@ -3,7 +3,7 @@ from .views import (
     home, products, product_detail, add_to_cart, view_cart,
     update_cart_item, remove_from_cart, checkout, get_cart_drawer,
     process_checkout, verify_payment, order_confirmation, user_orders, order_detail,
-    blog_list, blog_detail
+    blog_list, blog_detail, terms_of_service, privacy_policy, return_policy, delivery_policy
 )
 
 urlpatterns = [
@@ -23,4 +23,8 @@ urlpatterns = [
     path('orders/<uuid:order_id>/', order_detail, name='order-detail'),
     path('blog/', blog_list, name='blog'),
     path('blog/<slug:slug>/', blog_detail, name='blog-detail'),
+    path('terms-of-service/', terms_of_service, name='terms-of-service'),
+    path('privacy-policy/', privacy_policy, name='privacy-policy'),
+    path('return-policy/', return_policy, name='return-policy'),
+    path('delivery-policy/', delivery_policy, name='delivery-policy'),
 ]

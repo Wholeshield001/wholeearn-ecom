@@ -1,0 +1,27 @@
+{% extends "emails/email_base.html" %}
+
+{% block content %}
+<h1 style="color: #16a34a; margin-bottom: 20px;">Withdrawal Completed</h1>
+
+<p>Hello {{ user.get_full_name|default:user.email }},</p>
+
+<p>Your reward wallet withdrawal has been completed successfully.</p>
+
+<div style="background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0 0 8px 0;"><strong>Amount:</strong> ₦{{ withdrawal.amount|floatformat:2 }}</p>
+    <p style="margin: 0 0 8px 0;"><strong>Reference:</strong> {{ withdrawal.reference }}</p>
+    <p style="margin: 0 0 8px 0;"><strong>Bank:</strong> {{ withdrawal.bank_account.bank_name|default:withdrawal.bank_account.bank_code }}</p>
+    <p style="margin: 0;"><strong>Account:</strong> {{ withdrawal.bank_account.account_number }}</p>
+</div>
+
+<p>You can log in to your reward dashboard to review your latest withdrawal history at any time.</p>
+
+<p style="margin-top: 28px;">
+    <a href="{{ site_url }}/users/reward/"
+       style="background-color: #16a34a; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">
+        View Reward Dashboard
+    </a>
+</p>
+
+<p style="margin-top: 24px;">Thank you,<br>The WholeShield Team</p>
+{% endblock %}

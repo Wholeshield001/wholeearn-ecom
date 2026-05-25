@@ -248,6 +248,10 @@
               <td class="py-3 px-4">
                 {% if entry.reason == 'purchase' %}
                   <span class="px-2 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium">Purchase Reward</span>
+                {% elif entry.reason == 'checkout_code' %}
+                  <span class="px-2 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-medium">Unique Referral Bonus</span>
+                {% elif entry.reason == 'conversion_debit' %}
+                  <span class="px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-medium">Converted to Wallet</span>
                 {% else %}
                   <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-800 text-xs font-medium">Referral Bonus</span>
                 {% endif %}

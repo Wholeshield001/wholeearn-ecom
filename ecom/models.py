@@ -94,6 +94,7 @@ class Order(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    checkout_idempotency_key = models.CharField(max_length=64, unique=True, null=True, blank=True)
     
     # Order details
     shipping_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -115,8 +116,19 @@ class Order(models.Model):
         blank=True,
         related_name='referred_orders'
     )
+    checkout_code = models.CharField(max_length=12, null=True, blank=True)
+    checkout_code_owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='checkout_code_orders',
+    )
+    checkout_discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
+    checkout_discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     purchase_points_awarded = models.BooleanField(default=False)
     referral_points_awarded = models.BooleanField(default=False)
+    checkout_code_points_awarded = models.BooleanField(default=False)
     
     # Shipping info
     speedaf_order_id = models.CharField(max_length=100, null=True, blank=True)
@@ -195,30 +207,32 @@ class Order(models.Model):
             self.inventory_deducted = True
 
     def apply_reward_points(self):
-        """Award purchase and referral points once payment is completed."""
+        """Award purchase/referral points only on a user's first completed purchase."""
         if self.payment_status != 'completed':
             return
 
         config = RewardPointConfig.get_solo()
         with transaction.atomic():
+            is_first_purchase = not Order.objects.filter(
+                user_id=self.user_id,
+                payment_status='completed',
+            ).exclude(pk=self.pk).exists()
+
             if not self.purchase_points_awarded:
-                User.objects.filter(pk=self.user_id).update(
-                    reward_points=F('reward_points') + config.points_per_purchase
-                )
-                RewardPointLedger.objects.create(
-                    user_id=self.user_id,
-                    points=config.points_per_purchase,
-                    reason=RewardPointLedger.PURCHASE,
-                    order=self,
-                )
+                if is_first_purchase:
+                    User.objects.filter(pk=self.user_id).update(
+                        reward_points=F('reward_points') + config.points_per_purchase
+                    )
+                    RewardPointLedger.objects.create(
+                        user_id=self.user_id,
+                        points=config.points_per_purchase,
+                        reason=RewardPointLedger.PURCHASE,
+                        order=self,
+                    )
                 self.purchase_points_awarded = True
 
             if self.referrer_id and not self.referral_points_awarded:
-                # Only award referral bonus on the referred user's first completed purchase
-                is_first_purchase = not Order.objects.filter(
-                    user_id=self.user_id,
-                    payment_status='completed',
-                ).exclude(pk=self.pk).exists()
+                # Award referral bonus only on the referred user's first completed purchase.
                 if is_first_purchase:
                     User.objects.filter(pk=self.referrer_id).update(
                         reward_points=F('reward_points') + config.referral_bonus_points
@@ -231,9 +245,27 @@ class Order(models.Model):
                     )
                 self.referral_points_awarded = True
 
+            if self.checkout_code_owner_id and not self.checkout_code_points_awarded:
+                checkout_code_points = sum(
+                    (item.checkout_code_points or 0) * item.quantity
+                    for item in self.items.all()
+                )
+                if checkout_code_points > 0:
+                    User.objects.filter(pk=self.checkout_code_owner_id).update(
+                        reward_points=F('reward_points') + checkout_code_points
+                    )
+                    RewardPointLedger.objects.create(
+                        user_id=self.checkout_code_owner_id,
+                        points=checkout_code_points,
+                        reason=RewardPointLedger.CHECKOUT_CODE,
+                        order=self,
+                    )
+                self.checkout_code_points_awarded = True
+
             Order.objects.filter(pk=self.pk).update(
                 purchase_points_awarded=self.purchase_points_awarded,
                 referral_points_awarded=self.referral_points_awarded,
+                checkout_code_points_awarded=self.checkout_code_points_awarded,
                 updated_at=timezone.now(),
             )
 
@@ -269,6 +301,12 @@ class RewardPointConfig(models.Model):
     """Configurable points awarded on completed purchases and referrals."""
     points_per_purchase = models.PositiveIntegerField(default=1)
     referral_bonus_points = models.PositiveIntegerField(default=1)
+    checkout_code_discount_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text='Percentage discount applied to the product subtotal when a valid checkout code is used.',
+    )
     points_to_naira_rate = models.DecimalField(
         max_digits=12,
         decimal_places=4,
@@ -297,7 +335,7 @@ class RewardPointConfig(models.Model):
     def __str__(self):
         return (
             f"Purchase: {self.points_per_purchase} | Referral: {self.referral_bonus_points} "
-            f"| Rate: {self.points_to_naira_rate}"
+            f"| Code discount: {self.checkout_code_discount_percent}% | Rate: {self.points_to_naira_rate}"
         )
 
     @classmethod
@@ -339,10 +377,12 @@ class RewardPointLedger(models.Model):
     """Records every point credit or debit for a user."""
     PURCHASE = 'purchase'
     REFERRAL = 'referral'
+    CHECKOUT_CODE = 'checkout_code'
     CONVERSION_DEBIT = 'conversion_debit'
     REASON_CHOICES = [
         (PURCHASE, 'Purchase Reward'),
         (REFERRAL, 'Referral Bonus'),
+        (CHECKOUT_CODE, 'Checkout Code Reward'),
         (CONVERSION_DEBIT, 'Converted to Wallet'),
     ]
 
@@ -467,6 +507,7 @@ class WalletWithdrawalRequest(models.Model):
     bank_account = models.ForeignKey(WalletBankAccount, on_delete=models.PROTECT, related_name='withdrawals')
     amount = models.DecimalField(max_digits=14, decimal_places=2)
     reference = models.CharField(max_length=120, unique=True)
+    idempotency_key = models.CharField(max_length=64, unique=True, null=True, blank=True)
     monnify_reference = models.CharField(max_length=120, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING)
     provider_response = models.JSONField(blank=True, null=True)
@@ -493,6 +534,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     product_name = models.CharField(max_length=255)  # Snapshot
     product_sku = models.CharField(max_length=100, null=True, blank=True)  # Snapshot
+    checkout_code_points = models.PositiveIntegerField(default=0)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)  # Snapshot at order time
     

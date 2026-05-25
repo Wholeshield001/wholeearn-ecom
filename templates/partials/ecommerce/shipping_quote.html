@@ -1,18 +1,36 @@
-<div id="shipping-summary">
+<div>
   <div class="space-y-3 mb-6 pb-6 border-b border-gray-200">
     <div class="flex justify-between text-sm">
       <span class="text-gray-600">Subtotal</span>
       <span class="text-gray-900">₦{{ total_price|floatformat:2 }}</span>
     </div>
+    {% if checkout_discount_amount %}
+    <div class="flex justify-between text-sm">
+      <span class="text-gray-600">Unique code discount{% if checkout_discount_percent %} ({{ checkout_discount_percent|floatformat:2 }}%){% endif %}</span>
+      <span class="font-semibold text-green-700">-₦{{ checkout_discount_amount|floatformat:2 }}</span>
+    </div>
+    {% endif %}
     <div class="flex justify-between text-sm">
       <span class="text-gray-600">Shipping</span>
       {% if shipping_fee is not None %}
       <span class="font-semibold text-gray-900">₦{{ shipping_fee|floatformat:2 }}</span>
+      {% elif shipping_pending %}
+      <span class="text-gray-500 italic">Enter address to calculate</span>
       {% else %}
       <span class="text-red-500 italic">Error calculating shipping</span>
       {% endif %}
     </div>
   </div>
+
+  {% if checkout_code_error %}
+  <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+    {{ checkout_code_error }}
+  </div>
+  {% elif checkout_code_owner %}
+  <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
+    Code {{ checkout_code }} applied.
+  </div>
+  {% endif %}
 
   <div class="flex justify-between items-center mb-6">
     <span class="text-lg font-bold text-gray-900">Total</span>

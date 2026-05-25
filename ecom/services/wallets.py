@@ -122,7 +122,7 @@ def add_or_update_bank_account(
     return account
 
 
-def create_withdrawal_request(*, user: User, amount: Decimal, bank_account: WalletBankAccount) -> WalletWithdrawalRequest:
+def create_withdrawal_request(*, user: User, amount: Decimal, bank_account: WalletBankAccount, idempotency_key: str | None = None) -> WalletWithdrawalRequest:
     """Reserve wallet funds and create a withdrawal request."""
     amount = _to_money(Decimal(str(amount or 0)))
     if amount <= 0:
@@ -136,9 +136,16 @@ def create_withdrawal_request(*, user: User, amount: Decimal, bank_account: Wall
     if bank_account.user_id != user.id or not bank_account.is_verified or not bank_account.is_active:
         raise WalletOperationError('Please use an active verified bank account.')
 
+    idempotency_key = (idempotency_key or '').strip() or None
+
     with transaction.atomic():
         wallet = UserWallet.get_for_user(user)
         wallet = UserWallet.objects.select_for_update().get(pk=wallet.pk)
+
+        if idempotency_key:
+            existing = WalletWithdrawalRequest.objects.select_for_update().filter(idempotency_key=idempotency_key, user=user).first()
+            if existing:
+                return existing
 
         # Guard against concurrent or duplicate withdrawal submissions
         if WalletWithdrawalRequest.objects.filter(
@@ -156,13 +163,14 @@ def create_withdrawal_request(*, user: User, amount: Decimal, bank_account: Wall
         wallet.pending_balance = F('pending_balance') + amount
         wallet.save(update_fields=['available_balance', 'pending_balance', 'updated_at'])
 
-        reference = f"WDR-{timezone.now().strftime('%Y%m%d%H%M%S%f')}-{user.id.hex[:6].upper()}"
+        reference = f"WDR-{idempotency_key}" if idempotency_key else f"WDR-{timezone.now().strftime('%Y%m%d%H%M%S%f')}-{user.id.hex[:6].upper()}"
         withdrawal = WalletWithdrawalRequest.objects.create(
             user=user,
             wallet=wallet,
             bank_account=bank_account,
             amount=amount,
             reference=reference,
+            idempotency_key=idempotency_key,
             status=WalletWithdrawalRequest.PENDING,
         )
 
@@ -221,6 +229,7 @@ def process_withdrawal_request(withdrawal: WalletWithdrawalRequest) -> WalletWit
                 processed_at=timezone.now(),
                 failure_reason='',
             )
+            _queue_withdrawal_completion_email(str(withdrawal.pk))
     except Exception as exc:
         with transaction.atomic():
             wallet = UserWallet.objects.select_for_update().get(pk=withdrawal.wallet_id)
@@ -237,6 +246,20 @@ def process_withdrawal_request(withdrawal: WalletWithdrawalRequest) -> WalletWit
 
     withdrawal.refresh_from_db()
     return withdrawal
+
+
+def queue_withdrawal_request(withdrawal: WalletWithdrawalRequest) -> WalletWithdrawalRequest:
+    """Transition a withdrawal to processing and queue provider payout.
+
+    This is the async entry point used by Celery tasks.
+    """
+    return process_withdrawal_request(withdrawal)
+
+
+def _queue_withdrawal_completion_email(withdrawal_id: str):
+    from ecom.tasks import send_withdrawal_completed_email_task
+
+    transaction.on_commit(lambda: send_withdrawal_completed_email_task.delay(withdrawal_id))
 
 
 def apply_withdrawal_status_update(
@@ -287,5 +310,7 @@ def apply_withdrawal_status_update(
             update_fields['failure_reason'] = f'Monnify reported status: {normalized}'
 
         WalletWithdrawalRequest.objects.filter(pk=withdrawal.pk).update(**update_fields)
+        if is_success:
+            _queue_withdrawal_completion_email(str(withdrawal.pk))
 
     return WalletWithdrawalRequest.objects.get(pk=withdrawal.pk)

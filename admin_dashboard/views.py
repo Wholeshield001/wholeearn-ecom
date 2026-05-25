@@ -29,11 +29,13 @@ from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth
 from datetime import datetime
 from decimal import Decimal
+import hashlib
 import json
 import secrets
 from django.utils import timezone
 from ecom.models import RewardPointConfig, PaymentProviderConfig, Order, WalletWithdrawalRequest
-from ecom.services.wallets import process_withdrawal_request, WalletOperationError
+from ecom.services.wallets import WalletOperationError
+from ecom.tasks import process_withdrawal_request_task
 from users.emails import send_kyc_approved_email, send_kyc_rejected_email
 from users.tasks import send_kyc_status_update_email_task
 
@@ -1148,7 +1150,7 @@ def add_product(request):
             product = form.save()
             
             # Handle multiple image uploads (optional)
-            uploaded_images = request.FILES.getlist("images")
+            uploaded_images = _dedupe_uploaded_files(request.FILES.getlist("images"))
             
             image_objects = []
             for img in uploaded_images:
@@ -1264,7 +1266,7 @@ def add_product_images(request, product_id):
     if request.method == 'POST':
         try:
             product = get_object_or_404(Product, id=product_id)
-            new_images = request.FILES.getlist('new_images')
+            new_images = _dedupe_uploaded_files(request.FILES.getlist('new_images'))
             
             if not new_images:
                 return JsonResponse({
@@ -1287,7 +1289,7 @@ def add_product_images(request, product_id):
             messages.success(request, f'{len(new_images)} image(s) added successfully!')
             return JsonResponse({
                 'success': True,
-                'message': f'{len(new_images)} image(s) added',
+                'message': f'{len(added_images)} image(s) added',
                 'images': added_images
             })
         except Exception as e:
@@ -1296,6 +1298,69 @@ def add_product_images(request, product_id):
                 'message': str(e)
             }, status=400)
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
+
+
+@admin_required
+def cleanup_duplicate_product_images(request, product_id):
+    """Remove duplicate images for a product based on image content hash."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
+
+    product = get_object_or_404(Product, id=product_id)
+    images = list(product.images.all().order_by('created_at', 'id'))
+
+    if len(images) < 2:
+        return JsonResponse({'success': True, 'deleted': 0, 'message': 'No duplicate images found.'})
+
+    grouped = {}
+    for image in images:
+        digest = _hash_product_image(image)
+        if not digest:
+            digest = f'unhashable:{image.id}'
+        grouped.setdefault(digest, []).append(image)
+
+    deleted_count = 0
+
+    for _, group in grouped.items():
+        if len(group) <= 1:
+            continue
+
+        keep = next((img for img in group if img.id == product.thumbnail_id), None)
+        if keep is None:
+            keep = next((img for img in group if img.is_thumbnail), group[0])
+
+        for image in group:
+            if image.id == keep.id:
+                continue
+            image.delete()
+            deleted_count += 1
+
+    remaining = ProductImage.objects.filter(product=product).order_by('created_at', 'id')
+    thumbnail = remaining.filter(id=product.thumbnail_id).first() if product.thumbnail_id else None
+
+    if not thumbnail:
+        thumbnail = remaining.filter(is_thumbnail=True).first() or remaining.first()
+
+    if thumbnail:
+        ProductImage.objects.filter(product=product).exclude(id=thumbnail.id).update(is_thumbnail=False)
+        ProductImage.objects.filter(id=thumbnail.id).update(is_thumbnail=True)
+        if product.thumbnail_id != thumbnail.id:
+            product.thumbnail = thumbnail
+            product.save(update_fields=['thumbnail'])
+    elif product.thumbnail_id:
+        product.thumbnail = None
+        product.save(update_fields=['thumbnail'])
+
+    if deleted_count:
+        messages.success(request, f'Removed {deleted_count} duplicate image(s).')
+    else:
+        messages.info(request, 'No duplicate images found.')
+
+    return JsonResponse({
+        'success': True,
+        'deleted': deleted_count,
+        'message': f'Removed {deleted_count} duplicate image(s).' if deleted_count else 'No duplicate images found.',
+    })
 
 
 @admin_required
@@ -1321,6 +1386,51 @@ def edit_product(request, product_id):
         'page_title': product.name,
     }
     return render(request, 'admin_dashboard/product_details.html', context)
+
+
+def _dedupe_uploaded_files(files):
+    """Remove duplicate files within a single request payload.
+
+    This prevents accidental double-submits from creating repeated image rows.
+    """
+    unique_files = []
+    seen_hashes = set()
+
+    for file_obj in files or []:
+        hasher = hashlib.sha256()
+        for chunk in file_obj.chunks():
+            hasher.update(chunk)
+        digest = hasher.hexdigest()
+        file_obj.seek(0)
+
+        if digest in seen_hashes:
+            continue
+
+        seen_hashes.add(digest)
+        unique_files.append(file_obj)
+
+    return unique_files
+
+
+def _hash_product_image(image_obj):
+    """Compute a deterministic hash for a stored product image file."""
+    image_field = getattr(image_obj, 'image', None)
+    if not image_field:
+        return None
+
+    try:
+        image_field.open('rb')
+        hasher = hashlib.sha256()
+        for chunk in image_field.chunks():
+            hasher.update(chunk)
+        return hasher.hexdigest()
+    except Exception:
+        return None
+    finally:
+        try:
+            image_field.close()
+        except Exception:
+            pass
 
 
 
@@ -1591,7 +1701,7 @@ def order_detail(request, order_id):
 
 @admin_required
 def orders_tracking(request, order_id=None):
-    """Tracking screen with status filters and inline status updates"""
+    """Tracking screen with status filters; status is sourced from Speedaf."""
     from ecom.models import Order
 
     if request.user.role != User.ADMINISTRATOR or not request.user.is_staff:
@@ -1599,26 +1709,9 @@ def orders_tracking(request, order_id=None):
         return redirect('admin_login')
 
     status_param = request.GET.get('status', 'all')
-    status_choices = [choice[0] for choice in Order.STATUS_CHOICES]
-
     if request.method == 'POST':
-        posted_order_id = request.POST.get('order_id')
-        new_status = request.POST.get('status')
-        if not posted_order_id or new_status not in status_choices:
-            messages.error(request, 'Invalid status update request.')
-            return redirect(request.path)
-        order = get_object_or_404(Order, id=posted_order_id)
-        order.status = new_status
-        order.save(update_fields=['status', 'updated_at'])
-        messages.success(request, f'Order status updated to {new_status.title()}')
-
-        redirect_url = reverse(
-            'admin_order_tracking',
-            kwargs={'order_id': order_id},
-        ) if order_id else reverse('admin_orders_tracking')
-        if status_param:
-            redirect_url += f'?status={status_param}'
-        return redirect(redirect_url)
+        messages.info(request, 'Manual status updates are disabled. Tracking status is synced from Speedaf.')
+        return redirect(request.get_full_path())
 
     orders = Order.objects.select_related('user').prefetch_related('items__product__thumbnail').order_by('-created_at')
 
@@ -1678,7 +1771,6 @@ def orders_tracking(request, order_id=None):
     context = {
         'orders_data': orders_data,
         'status_param': status_param,
-        'status_choices': status_choices,
         'total_orders': total_orders,
         'in_progress_count': in_progress_count,
         'completed_count': completed_count,
@@ -2149,11 +2241,8 @@ def retry_reward_withdrawal(request, withdrawal_id):
         return redirect('admin_reward_withdrawals')
 
     try:
-        result = process_withdrawal_request(withdrawal)
-        if result.status == WalletWithdrawalRequest.SUCCESS:
-            messages.success(request, f'Withdrawal {result.reference} retried successfully.')
-        else:
-            messages.info(request, f'Withdrawal {result.reference} retry submitted with status {result.status}.')
+        process_withdrawal_request_task.delay(str(withdrawal.pk))
+        messages.success(request, f'Withdrawal {withdrawal.reference} retry queued.')
     except WalletOperationError as exc:
         messages.error(request, f'Retry failed: {exc}')
 

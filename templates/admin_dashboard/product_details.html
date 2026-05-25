@@ -40,6 +40,14 @@
       <span class="material-symbols-outlined text-base">delete</span>
       Delete Product
     </button>
+    <button
+      type="button"
+      onclick="cleanupDuplicateImages()"
+      class="px-4 py-2 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-50 flex items-center gap-2 transition-colors border border-amber-200"
+    >
+      <span class="material-symbols-outlined text-base">cleaning_services</span>
+      Remove Duplicate Images
+    </button>
   </div>
 
   <!-- Thumbnail Modal -->
@@ -372,6 +380,42 @@
                   style="display: none;"
                 >
               </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Checkout Code Discount (%)</label>
+                <div x-show="!editMode" class="px-3 py-2 bg-white rounded border border-gray-200 text-gray-900 text-sm">
+                  {% if product.checkout_code_discount_percent %}{{ product.checkout_code_discount_percent|floatformat:2 }}%{% else %}<span class="text-gray-500">None</span>{% endif %}
+                </div>
+                <input 
+                  type="number" 
+                  name="checkout_code_discount_percent" 
+                  value="{{ product.checkout_code_discount_percent|default:0 }}"
+                  x-show="editMode"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="0.00"
+                  style="display: none;"
+                >
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Checkout Code Reward Points</label>
+                <div x-show="!editMode" class="px-3 py-2 bg-white rounded border border-gray-200 text-gray-900 text-sm">
+                  {{ product.checkout_code_points|default:0 }} pts
+                </div>
+                <input 
+                  type="number" 
+                  name="checkout_code_points" 
+                  value="{{ product.checkout_code_points|default:0 }}"
+                  x-show="editMode"
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="0"
+                  style="display: none;"
+                >
+              </div>
             </div>
           </div>
 
@@ -592,10 +636,28 @@
   let selectedImageIdForDelete = null;
   let deleteImageModal = null;
   let deleteImagePreview = null;
+  let uploadInFlight = false;
+  let thumbnailInFlight = false;
+  let saveInFlight = false;
 
   document.addEventListener('DOMContentLoaded', () => {
     deleteImageModal = document.querySelector('dialog[x-ref="deleteImageModal"]');
     deleteImagePreview = deleteImageModal?.querySelector('[data-delete-preview]');
+
+    const editForm = document.querySelector('form.space-y-6[method="POST"]');
+    if (editForm) {
+      editForm.addEventListener('submit', function () {
+        if (saveInFlight) {
+          return;
+        }
+        saveInFlight = true;
+        const submitButton = editForm.querySelector('button[type="submit"]');
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = 'Saving...';
+        }
+      });
+    }
   });
 
   function showToast(type, message) {
@@ -700,6 +762,11 @@
   }
 
   function setAsThumbnail(imageId) {
+    if (thumbnailInFlight) {
+      return;
+    }
+    thumbnailInFlight = true;
+
     const url = `/admin-dashboard/products/{{ product.id }}/images/set-thumbnail/${imageId}/`;
     fetch(url, {
       method: 'POST',
@@ -720,15 +787,51 @@
       .catch(error => {
         console.error('Error:', error);
         alert('Error setting thumbnail');
+      })
+      .finally(() => {
+        thumbnailInFlight = false;
+      });
+  }
+
+  function cleanupDuplicateImages() {
+    const url = `/admin-dashboard/products/{{ product.id }}/images/cleanup-duplicates/`;
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast('success', data.message || 'Duplicate image cleanup completed.');
+          setTimeout(() => location.reload(), 700);
+        } else {
+          showToast('error', data.message || 'Unable to clean duplicate images.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Unable to clean duplicate images.');
       });
   }
 
   function uploadNewImages() {
+    if (uploadInFlight) {
+      return;
+    }
+
     const fileInput = document.getElementById('newImages');
     const files = fileInput.files;
     if (files.length === 0) {
       showToast('info', 'Please select images first');
       return;
+    }
+
+    uploadInFlight = true;
+    const submitButton = fileInput.closest('form')?.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
     }
 
     const formData = new FormData();
@@ -756,6 +859,12 @@
       .catch(error => {
         console.error('Error:', error);
         showToast('error', 'Error uploading images');
+      })
+      .finally(() => {
+        uploadInFlight = false;
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
       });
   }
 </script>

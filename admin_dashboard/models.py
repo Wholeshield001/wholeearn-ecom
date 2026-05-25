@@ -36,6 +36,16 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Legacy price field - use role-specific prices instead")
     
     discount = models.IntegerField(default=0, help_text="Discount percentage")
+    checkout_code_discount_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        help_text="Discount percentage applied to this product when a valid checkout code is used.",
+    )
+    checkout_code_points = models.PositiveIntegerField(
+        default=0,
+        help_text="Points awarded to the owner of a checkout unique code when this product is purchased with that code.",
+    )
     stock = models.IntegerField(default=0, blank=True, null=True)
     weight_kg = models.DecimalField(max_digits=8, decimal_places=2, default=1.00, help_text="Product unit weight in kg")
     sku = models.CharField(max_length=100, unique=True, blank=True, null=True)

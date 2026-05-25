@@ -231,7 +231,7 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = [
             'name', 'description', 'category', 'customer_price', 'wholesaler_price', 
-            'retailer_price', 'hospital_price', 'pharmacy_price', 'online_vendor_price', 'discount', 'stock', 'weight_kg',
+            'retailer_price', 'hospital_price', 'pharmacy_price', 'online_vendor_price', 'discount', 'checkout_code_discount_percent', 'checkout_code_points', 'stock', 'weight_kg',
             'is_best_seller', 'is_male', 'is_female', 'is_general', 'additional_info'
         ]
         widgets = {
@@ -245,6 +245,8 @@ class ProductForm(forms.ModelForm):
             'pharmacy_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Pharmacy Price (optional)'}),
             'online_vendor_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Online Vendor Price (optional)'}),
             'discount': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0','max':'100'}),
+            'checkout_code_discount_percent': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0','max':'100','step':'0.01','placeholder':'0.00'}),
+            'checkout_code_points': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0','placeholder':'0'}),
             'stock': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0'}),
             'weight_kg': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0.01','step':'0.01','placeholder':'1.00'}),
             'is_best_seller': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),

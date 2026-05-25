@@ -181,3 +181,80 @@ def send_order_confirmation_email_task(self, order_id):
             order_id, self.request.retries + 1, exc, countdown,
         )
         raise self.retry(exc=exc, countdown=countdown)
+
+
+@shared_task(bind=True, max_retries=5, default_retry_delay=60)
+def process_withdrawal_request_task(self, withdrawal_id):
+    """Process a queued withdrawal asynchronously via Monnify transfer."""
+    from ecom.models import WalletWithdrawalRequest
+    from ecom.services.wallets import queue_withdrawal_request, WalletOperationError
+
+    try:
+        withdrawal = WalletWithdrawalRequest.objects.select_related('wallet', 'bank_account', 'user').get(pk=withdrawal_id)
+    except WalletWithdrawalRequest.DoesNotExist:
+        logger.warning("process_withdrawal_request_task: withdrawal %s not found", withdrawal_id)
+        return
+
+    try:
+        queue_withdrawal_request(withdrawal)
+        logger.info("process_withdrawal_request_task: completed for withdrawal %s", withdrawal_id)
+    except WalletOperationError as exc:
+        countdown = 60 * (2 ** self.request.retries)
+        logger.warning(
+            "process_withdrawal_request_task: failed for withdrawal %s (attempt %d): %s. Retrying in %ss",
+            withdrawal_id, self.request.retries + 1, exc, countdown,
+        )
+        raise self.retry(exc=exc, countdown=countdown)
+
+
+@shared_task(bind=True, max_retries=5, default_retry_delay=60)
+def send_withdrawal_completed_email_task(self, withdrawal_id):
+    """Send withdrawal completion email asynchronously after a successful payout."""
+    from django.core.mail import send_mail
+    from django.template.loader import render_to_string
+    from django.utils.html import strip_tags
+    from ecom.models import WalletWithdrawalRequest
+
+    try:
+        withdrawal = WalletWithdrawalRequest.objects.select_related('user', 'bank_account').get(pk=withdrawal_id)
+    except WalletWithdrawalRequest.DoesNotExist:
+        logger.warning("send_withdrawal_completed_email_task: withdrawal %s not found", withdrawal_id)
+        return
+
+    if withdrawal.status != WalletWithdrawalRequest.SUCCESS:
+        logger.info(
+            "send_withdrawal_completed_email_task: skipping withdrawal %s with status %s",
+            withdrawal_id,
+            withdrawal.status,
+        )
+        return
+
+    subject = f"Withdrawal Completed - {withdrawal.reference}"
+    site_url = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
+    html_message = render_to_string('emails/withdrawal_completed.html', {
+        'withdrawal': withdrawal,
+        'user': withdrawal.user,
+        'site_url': site_url,
+    })
+    plain_message = strip_tags(html_message)
+
+    try:
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [withdrawal.user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        logger.info("send_withdrawal_completed_email_task: sent for withdrawal %s", withdrawal_id)
+    except Exception as exc:
+        countdown = 60 * (2 ** self.request.retries)
+        logger.warning(
+            "send_withdrawal_completed_email_task: failed for withdrawal %s (attempt %d): %s. Retrying in %ss",
+            withdrawal_id,
+            self.request.retries + 1,
+            exc,
+            countdown,
+        )
+        raise self.retry(exc=exc, countdown=countdown)

@@ -1,0 +1,285 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}Checkout - WholeShield{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-[#ec3183] mb-2">Checkout</h1>
+    <p class="text-gray-600">Complete your purchase</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Shipping Form -->
+    <div class="lg:col-span-2">
+      <form method="POST" action="{% url 'process-checkout' %}" id="checkoutForm">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <h2 class="text-xl font-bold text-[#ec3183] mb-6">Shipping Information</h2>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Full Address *</label>
+              <input type="text" name="shipping_address" required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="123 Main Street, Apartment 4">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">State *</label>
+                <select name="shipping_state" id="shipping_state" required
+                  hx-get="{% url 'htmx-speedaf-cities' %}"
+                  hx-target="#shipping_city"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white">
+                  <option value="">Select State...</option>
+                  {% for state in speedaf_states %}
+                  <option value="{{ state.code }}">{{ state.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                <select name="shipping_city" id="shipping_city" required
+                  hx-post="{% url 'get-shipping-quote' %}"
+                  hx-trigger="change"
+                  hx-include="[name='shipping_state']"
+                  hx-target="#shipping-summary"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white">
+                  <option value="">Select a State first...</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+              <input type="tel" name="shipping_phone" value="{{ user.phone|default:'' }}" required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="+234 800 000 0000">
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 class="text-xl font-bold text-[#ec3183] mb-4">Payment Method</h2>
+          <p class="text-sm text-gray-600 mb-4">You will be redirected to {{ payment_provider_name }} to complete your payment securely.
+          </p>
+          <div class="flex items-center gap-2">
+            {% if payment_provider_key == 'monnify' %}
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect width="24" height="24" rx="4" fill="#0052CC" />
+              <path d="M6 15V9h2.3l2.2 3.1L12.7 9H15v6h-2V12.5l-2.5 3.4-2.5-3.4V15H6Z" fill="white" />
+            </svg>
+            {% else %}
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect width="24" height="24" rx="4" fill="#00C3F7" />
+              <path d="M7 12h10M7 8h10M7 16h6" stroke="white" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            {% endif %}
+            <span class="text-gray-700 font-medium">Secure Payment via {{ payment_provider_name }}</span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-xl border border-gray-200 p-6 sticky top-20">
+        <h2 class="text-xl font-bold text-[#ec3183] mb-6">Order Summary</h2>
+
+        <div class="space-y-3 mb-6 pb-6 border-b border-gray-200 max-h-96 overflow-y-auto">
+          {% for item in items %}
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-700">{{ item.product.name }} ×{{ item.quantity }}</span>
+            <span class="font-semibold text-gray-900">₦{{ item.get_total_price|floatformat:2 }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div id="shipping-summary">
+          <div class="space-y-3 mb-6 pb-6 border-b border-gray-200">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Subtotal</span>
+              <span class="text-gray-900">₦{{ total_price|floatformat:2 }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Shipping</span>
+              <span class="text-gray-500 italic">Enter address to calculate</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center mb-6">
+            <span class="text-lg font-bold text-gray-900">Total</span>
+            <span class="text-2xl font-bold text-[#ec3183]">₦{{ total_price|floatformat:2 }}</span>
+          </div>
+        </div>
+
+        <button type="submit" form="checkoutForm"
+          class="w-full py-3 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow mb-3">
+          Proceed to Payment
+        </button>
+
+        <div id="paymentStatusBanner" class="hidden mb-3 rounded-lg border px-4 py-3 text-sm" role="status" aria-live="polite">
+          <p id="paymentStatusText" class="font-medium"></p>
+        </div>
+
+        <a href="{% url 'home' %}"
+          class="w-full py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-center block">
+          Continue Shopping
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if messages %}
+<div class="fixed bottom-4 right-4 z-50 space-y-2 max-w-md">
+  {% for message in messages %}
+  <div
+    class="flash-message bg-white rounded-lg shadow-lg p-4 border-l-4 {% if 'success' in message.tags %}border-green-500{% else %}border-red-500{% endif %}">
+    <p class="text-sm font-medium">{{ message }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if payment_provider_key == 'monnify' %}
+<script src="https://sdk.monnify.com/plugin/monnify.js"></script>
+<script>
+  (function () {
+    const form = document.getElementById('checkoutForm');
+    const submitButton = document.querySelector('button[form="checkoutForm"]');
+    const statusBanner = document.getElementById('paymentStatusBanner');
+    const statusText = document.getElementById('paymentStatusText');
+    if (!form || !submitButton) return;
+
+    const originalButtonText = submitButton.textContent;
+    let paymentCompleted = false;
+    let redirectInProgress = false;
+
+    function setSubmitting(isSubmitting) {
+      submitButton.disabled = isSubmitting;
+      submitButton.classList.toggle('opacity-60', isSubmitting);
+      submitButton.classList.toggle('cursor-not-allowed', isSubmitting);
+      submitButton.textContent = isSubmitting ? 'Processing...' : originalButtonText;
+    }
+
+    function showStatus(kind, message) {
+      if (!statusBanner || !statusText) return;
+      statusBanner.classList.remove('hidden');
+      statusText.textContent = message;
+
+      statusBanner.classList.remove(
+        'border-blue-200', 'bg-blue-50', 'text-blue-800',
+        'border-green-200', 'bg-green-50', 'text-green-800',
+        'border-yellow-200', 'bg-yellow-50', 'text-yellow-800',
+        'border-red-200', 'bg-red-50', 'text-red-800'
+      );
+
+      if (kind === 'success') {
+        statusBanner.classList.add('border-green-200', 'bg-green-50', 'text-green-800');
+      } else if (kind === 'warning') {
+        statusBanner.classList.add('border-yellow-200', 'bg-yellow-50', 'text-yellow-800');
+      } else if (kind === 'error') {
+        statusBanner.classList.add('border-red-200', 'bg-red-50', 'text-red-800');
+      } else {
+        statusBanner.classList.add('border-blue-200', 'bg-blue-50', 'text-blue-800');
+      }
+    }
+
+    function hideStatus() {
+      if (!statusBanner) return;
+      statusBanner.classList.add('hidden');
+    }
+
+    function getCsrfToken() {
+      const tokenInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+      return tokenInput ? tokenInput.value : '';
+    }
+
+    function redirectToVerify(paymentReference, transactionReference) {
+      redirectInProgress = true;
+      const url = new URL("{% url 'verify-payment' %}", window.location.origin);
+      if (paymentReference) {
+        url.searchParams.set('paymentReference', paymentReference);
+      }
+      if (transactionReference) {
+        url.searchParams.set('transactionReference', transactionReference);
+      }
+      // Replace avoids leaving a stale checkout page in history and feels direct.
+      window.location.replace(url.toString());
+    }
+
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      paymentCompleted = false;
+      redirectInProgress = false;
+      setSubmitting(true);
+      showStatus('info', 'Preparing your order and initializing secure payment...');
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          credentials: 'same-origin',
+        });
+
+        const payload = await response.json();
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error || 'Unable to initialize payment.');
+        }
+
+        if (!window.MonnifySDK || typeof window.MonnifySDK.initialize !== 'function') {
+          if (payload.authorization_url) {
+            showStatus('info', 'Redirecting to secure payment...');
+            window.location.assign(payload.authorization_url);
+            return;
+          }
+          throw new Error('Monnify checkout SDK is unavailable.');
+        }
+
+        const config = payload.monnify || {};
+        showStatus('info', 'Opening secure Monnify checkout...');
+        window.MonnifySDK.initialize({
+          amount: config.amount,
+          currency: config.currency || 'NGN',
+          reference: config.reference,
+          customerFullName: config.customer_full_name,
+          customerEmail: config.customer_email,
+          apiKey: config.api_key,
+          contractCode: config.contract_code,
+          paymentDescription: config.payment_description,
+          metadata: config.metadata || {},
+          onComplete: function (data) {
+            paymentCompleted = true;
+            const paymentReference = (data && data.paymentReference) || payload.payment_reference;
+            const transactionReference = (data && data.transactionReference) || payload.transaction_reference;
+            showStatus('success', 'Payment completed. Redirecting to order confirmation...');
+            redirectToVerify(paymentReference, transactionReference);
+          },
+          onClose: function () {
+            // Monnify can call onClose after a successful completion; ignore that case.
+            if (paymentCompleted || redirectInProgress) {
+              return;
+            }
+            setSubmitting(false);
+            showStatus('warning', 'Checkout was closed before completion. You can try again.');
+          },
+        });
+      } catch (error) {
+        setSubmitting(false);
+        showStatus('error', error.message || 'Payment could not be started. Please try again.');
+      }
+    });
+
+    hideStatus();
+  })();
+</script>
+{% endif %}
+{% endblock %}

@@ -40,13 +40,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_browser_reload',
+    # 'django_browser_reload',
     "tailwind",
     "theme",
+    "django_ckeditor_5",
     "users.apps.UsersConfig",
     "ecom.apps.EcomConfig",
     "admin_dashboard.apps.AdminDashboardConfig",
+    "django_celery_beat",
 ]
+
+USE_CLOUDINARY_MEDIA = config('USE_CLOUDINARY_MEDIA', cast=bool, default=True)
+if USE_CLOUDINARY_MEDIA:
+    INSTALLED_APPS += [
+        'cloudinary_storage',
+        'cloudinary',
+    ]
 
 TAILWIND_APP_NAME = "theme"
 
@@ -61,8 +70,8 @@ UNFOLD = {
 
 
     "SITE_LOGO": {
-        "light": lambda request: static("images/"),  # light mode
-        "dark": lambda request: static("images/"),  # dark mode
+        "light": lambda request: static("images/wholeShield.png"),  # light mode
+        "dark": lambda request: static("images/wholeShield.png"),  # dark mode
     },
 
     "COLORS": {
@@ -86,12 +95,13 @@ UNFOLD = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'admin_dashboard.middleware.WebsiteVisitTrackingMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_browser_reload.middleware.BrowserReloadMiddleware',
+    # 'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -106,6 +116,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'ecom.context_processors.cart_context',
+                'admin_dashboard.context_processors.admin_context',
             ],
         },
     },
@@ -116,13 +128,26 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+DB_ENGINE = config('DB_ENGINE', default='sqlite').lower()
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DB_ENGINE == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('POSTGRES_DB'),
+            'USER': config('POSTGRES_USER'),
+            'PASSWORD': config('POSTGRES_PASSWORD'),
+            'HOST': config('POSTGRES_HOST', default='db'),
+            'PORT': config('POSTGRES_PORT', default='5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -162,12 +187,29 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    BASE_DIR / 'theme' / 'static',
+    BASE_DIR / 'core' / 'static',
 ]
 
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+if USE_CLOUDINARY_MEDIA:
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
+        'API_KEY': config('CLOUDINARY_API_KEY', default=''),
+        'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
+        'SECURE': True,
+    }
+
+    STORAGES = {
+        'default': {
+            'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
 
 # Security settings for production
 if not DEBUG:
@@ -189,16 +231,181 @@ CSRF_TRUSTED_ORIGINS = config(
 )
 
 
+# Payment Configuration
+PAYMENT_PROVIDER = config('PAYMENT_PROVIDER', default='paystack')
+PAYMENT_CALLBACK_BASE_URL = config('PAYMENT_CALLBACK_BASE_URL', default='').rstrip('/')
+# Used in email templates and Celery tasks. Falls back to localhost in dev.
+SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000').rstrip('/')
 
-# # Email Configuration
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-# EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-# EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-# EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@wholeshieldwellness.com')
+# Paystack
+PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='')
+PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='')
+
+# Monnify
+MONNIFY_API_KEY = config('MONNIFY_API_KEY', default='')
+MONNIFY_SECRET_KEY = config('MONNIFY_SECRET_KEY', default='')
+MONNIFY_CONTRACT_CODE = config('MONNIFY_CONTRACT_CODE', default='')
+MONNIFY_BASE_URL = config('MONNIFY_BASE_URL', default='https://sandbox.monnify.com')
+MONNIFY_WEBHOOK_SECRET = config('MONNIFY_WEBHOOK_SECRET', default='')
+MONNIFY_ACCOUNT_LOOKUP_ENDPOINT = config('MONNIFY_ACCOUNT_LOOKUP_ENDPOINT', default='/api/v1/disbursements/account/validate')
+MONNIFY_TRANSFER_ENDPOINT = config('MONNIFY_TRANSFER_ENDPOINT', default='/api/v2/disbursements/single')
+MONNIFY_BANKS_ENDPOINT = config('MONNIFY_BANKS_ENDPOINT', default='/api/v1/banks')
+MONNIFY_SOURCE_ACCOUNT_NUMBER = config('MONNIFY_SOURCE_ACCOUNT_NUMBER', default='')
+
+# SpeedAF Integration
+# ---------------------------------------------------------------------------
+# Celery
+# ---------------------------------------------------------------------------
+REDIS_URL = config('REDIS_URL', default='redis://redis:6379/0')
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+from celery.schedules import crontab
+
+# SpeedAF tracking schedule:
+# - Lagos deliveries: every hour
+# - Outside Lagos: daily at 12:00 AM WAT (23:00 UTC)
+CELERY_BEAT_SCHEDULE = {
+    'poll-speedaf-tracking-lagos': {
+        'task': 'ecom.tasks.poll_speedaf_tracking',
+        'schedule': 3600,
+        'kwargs': {'scope': 'lagos'},
+    },
+    'poll-speedaf-tracking-national': {
+        'task': 'ecom.tasks.poll_speedaf_tracking',
+        'schedule': crontab(hour=23, minute=0),
+        'kwargs': {'scope': 'national'},
+    },
+}
+
+SPEEDAF_APP_CODE = config('SPEEDAF_APP_CODE', default='')
+SPEEDAF_APP_KEY = config('SPEEDAF_APP_KEY', default='')
+SPEEDAF_CUSTOMER_CODE = config('SPEEDAF_CUSTOMER_CODE', default='')
+SPEEDAF_BASE_URL = config('SPEEDAF_BASE_URL', default='https://uat-api.speedaf.com/')
+SPEEDAF_PRODUCT_CODE = config('SPEEDAF_PRODUCT_CODE', default='1')
+SPEEDAF_SUBJECT_CODE = config('SPEEDAF_SUBJECT_CODE', default='101')
+SPEEDAF_SEND_PROVINCE_CODE = config('SPEEDAF_SEND_PROVINCE_CODE', default='NGR00023')
+SPEEDAF_SEND_CITY_CODE = config('SPEEDAF_SEND_CITY_CODE', default='NGC00346')
+SPEEDAF_SEND_ADDRESS = config('SPEEDAF_SEND_ADDRESS', default='12,oluwole Aduojutimi Street Apple Estate Amuwo Odofin Lagos Nigeria')
+SPEEDAF_PLATFORM_SOURCE = config('SPEEDAF_PLATFORM_SOURCE', default='csp')
+SPEEDAF_DELIVERY_TYPE = config('SPEEDAF_DELIVERY_TYPE', default='DE01')
+SPEEDAF_PARCEL_TYPE = config('SPEEDAF_PARCEL_TYPE', default='PT01')
+SPEEDAF_PAY_METHOD = config('SPEEDAF_PAY_METHOD', default='PA01')
+SPEEDAF_SHIP_TYPE = config('SPEEDAF_SHIP_TYPE', default='ST01')
+SPEEDAF_TRANSPORT_TYPE = config('SPEEDAF_TRANSPORT_TYPE', default='TT02')
+SPEEDAF_TAX_METHOD = config('SPEEDAF_TAX_METHOD', default='')
+
+
+
+
+# Email (Zoho SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.zoho.com')
+EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', cast=bool, default=False)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')  # your full Zoho address
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # app-specific password
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+# Give slow/mobile networks more time before treating the SMTP connection as dead.
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', cast=int, default=60)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'ecom': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CKEditor 5 Configuration
+customColorPalette = [
+    {'color': 'hsl(4, 90%, 58%)', 'label': 'Red'},
+    {'color': 'hsl(340, 82%, 52%)', 'label': 'Pink'},
+    {'color': 'hsl(291, 64%, 42%)', 'label': 'Purple'},
+    {'color': 'hsl(262, 52%, 47%)', 'label': 'Deep Purple'},
+    {'color': 'hsl(231, 48%, 48%)', 'label': 'Indigo'},
+    {'color': 'hsl(207, 90%, 54%)', 'label': 'Blue'},
+]
+
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': ['heading', '|', 'bold', 'italic', 'link',
+                    'bulletedList', 'numberedList', 'blockQuote', '|',
+                    'insertTable', '|', 'undo', 'redo'],
+    },
+    'extends': {
+        'blockToolbar': [
+            'paragraph', 'heading1', 'heading2', 'heading3',
+            '|',
+            'bulletedList', 'numberedList',
+            '|',
+            'blockQuote',
+        ],
+        'toolbar': ['heading', '|', 'outdent', 'indent', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
+        'code','subscript', 'superscript', 'highlight', '|', 'codeBlock', 'sourceEditing', 'insertImage',
+                    'bulletedList', 'numberedList', 'todoList', '|',  'blockQuote', 'imageUpload', '|',
+                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', 'mediaEmbed', 'removeFormat',
+                    'insertTable',],
+        'image': {
+            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft',
+                        'imageStyle:alignRight', 'imageStyle:alignCenter', 'imageStyle:side',  '|'],
+            'styles': [
+                'full',
+                'side',
+                'alignLeft',
+                'alignRight',
+                'alignCenter',
+            ]
+
+        },
+        'table': {
+            'contentToolbar': [ 'tableColumn', 'tableRow', 'mergeTableCells',
+            'tableProperties', 'tableCellProperties' ],
+            'tableProperties': {
+                'borderColors': customColorPalette,
+                'backgroundColors': customColorPalette
+            },
+            'tableCellProperties': {
+                'borderColors': customColorPalette,
+                'backgroundColors': customColorPalette
+            }
+        },
+        'heading' : {
+            'options': [
+                { 'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph' },
+                { 'model': 'heading1', 'view': 'h1', 'title': 'Heading 1', 'class': 'ck-heading_heading1' },
+                { 'model': 'heading2', 'view': 'h2', 'title': 'Heading 2', 'class': 'ck-heading_heading2' },
+                { 'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3' }
+            ]
+        }
+    },
+    'list': {
+        'properties': {
+            'styles': 'true',
+            'startIndex': 'true',
+            'reversed': 'true',
+        }
+    }
+}

@@ -4,7 +4,7 @@
 <aside id="sidebar" class="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
   <!-- Logo -->
   <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-    <img src="{% static 'images/wholeshield-logo.svg' %}" alt="WholeShield" class="h-8" />
+    <img src="{% static 'images/wholeShield.png' %}" alt="WholeShield" class="h-8" />
     <button id="closeSidebar" class="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
       <span class="material-symbols-outlined">close</span>
     </button>
@@ -20,6 +20,20 @@
       Dashboard
     </a>
 
+    <a href="{% url 'admin_admins' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_admins' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_admins' %}text-teal-600{% else %}text-gray-400{% endif %}">admin_panel_settings</span>
+      Admins
+    </a>
+
+    <a href="{% url 'admin_categories' %}"
+      class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+      {% if current == 'admin_categories' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_categories' %}text-teal-600{% else %}text-gray-400{% endif %}">category</span>
+      Categories
+    </a>
+
     <!-- Products -->
     <a href="{% url 'admin_products' %}"
        class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
@@ -28,22 +42,20 @@
       Products
     </a>
 
-    <!-- Distributors (placeholder route) -->
-    {% comment %} <a href="#"
-       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50">
-      <span class="material-symbols-outlined text-gray-400">group</span>
-      Distributors
-    </a> {% endcomment %}
+    <!-- B2B Partners Section -->
+    <div class="px-4 pt-6 pb-2">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">B2B Partners</p>
+    </div>
 
     <!-- Wholesalers -->
     <a href="{% url 'admin_wholesalers' %}"
        class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
        {% if current == 'admin_wholesalers' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
-      <span class="material-symbols-outlined {% if current == 'admin_wholesalers' %}text-teal-600{% else %}text-gray-400{% endif %}">store</span>
+      <span class="material-symbols-outlined {% if current == 'admin_wholesalers' %}text-teal-600{% else %}text-gray-400{% endif %}">local_shipping</span>
       Wholesalers
     </a>
 
-    <!-- Retailers (placeholder route) -->
+    <!-- Retailers -->
     <a href="{% url 'admin_retailers' %}"
        class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
        {% if current == 'admin_retailers' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
@@ -51,33 +63,123 @@
       Retailers
     </a>
 
-    <!-- Orders (placeholder route) -->
-    <a href="#"
-       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50">
-      <span class="material-symbols-outlined text-gray-400">shopping_cart</span>
+    <!-- Hospitals -->
+    <a href="{% url 'admin_hospitals' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_hospitals' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_hospitals' %}text-teal-600{% else %}text-gray-400{% endif %}">local_hospital</span>
+      Hospitals
+    </a>
+
+    <!-- Pharmacies -->
+    <a href="{% url 'admin_pharmacies' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_pharmacies' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_pharmacies' %}text-teal-600{% else %}text-gray-400{% endif %}">local_pharmacy</span>
+      Pharmacies
+    </a>
+
+    <!-- Orders -->
+    <a href="{% url 'admin_orders' %}"
+      class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+      {% if current == 'admin_orders' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_orders' %}text-teal-600{% else %}text-gray-400{% endif %}">shopping_cart</span>
       Orders
     </a>
 
-    <!-- Customers (placeholder route) -->
-    <a href="#"
-       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50">
-      <span class="material-symbols-outlined text-gray-400">person</span>
-      Customers
+    <!-- Users Section -->
+    <div class="px-4 pt-6 pb-2">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Users & Support</p>
+    </div>
+
+    <!-- Users -->
+    <a href="{% url 'admin_customers' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_customers' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_customers' %}text-teal-600{% else %}text-gray-400{% endif %}">person</span>
+      Users
+    </a>
+
+    <!-- End Users -->
+    <a href="{% url 'admin_end_users' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_end_users' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_end_users' %}text-teal-600{% else %}text-gray-400{% endif %}">groups</span>
+      End Users
+    </a>
+
+     <a href="{% url 'kyc-submissions' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'kyc-submissions' or current == 'kyc-detail' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'kyc-submissions' or current == 'kyc-detail' %}text-teal-600{% else %}text-gray-400{% endif %}">verified_user</span>
+      KYC
+     </a>
+
+    <a href="{% url 'admin_reward_settings' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_reward_settings' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_reward_settings' %}text-teal-600{% else %}text-gray-400{% endif %}">workspace_premium</span>
+      Reward Settings
+    </a>
+
+    <a href="{% url 'admin_reward_withdrawals' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_reward_withdrawals' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_reward_withdrawals' %}text-teal-600{% else %}text-gray-400{% endif %}">account_balance_wallet</span>
+      Reward Withdrawals
+    </a>
+
+    <a href="{% url 'admin_payment_settings' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_payment_settings' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_payment_settings' %}text-teal-600{% else %}text-gray-400{% endif %}">credit_card</span>
+      Payment Settings
+    </a>
+
+    <!-- Tickets -->
+    <a href="{% url 'admin_tickets' %}"
+      class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+      {% if current == 'admin_tickets' or current == 'admin_ticket_detail' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_tickets' or current == 'admin_ticket_detail' %}text-teal-600{% else %}text-gray-400{% endif %}">support</span>
+      Tickets
+      {% if pending_tickets_count > 0 %}
+        <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ pending_tickets_count }}</span>
+      {% endif %}
+    </a>
+
+    <!-- Content Section -->
+    <div class="px-4 pt-6 pb-2">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Content</p>
+    </div>
+
+    <!-- Blog -->
+    <a href="{% url 'admin_blog_list' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_blog_list' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_blog_list' %}text-teal-600{% else %}text-gray-400{% endif %}">article</span>
+      Blog
+    </a>
+
+    <a href="{% url 'admin_blog_categories' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_blog_categories' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_blog_categories' %}text-teal-600{% else %}text-gray-400{% endif %}">category</span>
+      Blog Categories
     </a>
 
     <!-- Analytics (placeholder route) -->
-    <a href="#"
-       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-50">
-      <span class="material-symbols-outlined text-gray-400">analytics</span>
+    <a href="{% url 'admin_analytics' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+        {% if current == 'admin_analytics' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_analytics' %}text-teal-600{% else %}text-gray-400{% endif %}">analytics</span>
       Analytics
     </a>
 
-    <!-- Notifications -->
-    <a href="{% url 'admin_notifications' %}"
+    <a href="{% url 'admin_website_visits' %}"
        class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
-       {% if current == 'admin_notifications' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
-      <span class="material-symbols-outlined {% if current == 'admin_notifications' %}text-teal-600{% else %}text-gray-400{% endif %}">notifications</span>
-      Notifications
+        {% if current == 'admin_website_visits' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_website_visits' %}text-teal-600{% else %}text-gray-400{% endif %}">monitoring</span>
+      Website Visits
     </a>
 
     <!-- Logout -->

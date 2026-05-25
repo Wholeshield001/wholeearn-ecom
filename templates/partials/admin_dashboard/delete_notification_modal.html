@@ -1,0 +1,87 @@
+<!-- Delete Notification Modal -->
+<div id="deleteNotificationModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+  <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+    <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-4">
+      <span class="material-symbols-outlined text-red-600 text-xl">delete_outline</span>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Delete Notification</h3>
+    <p class="text-gray-600 text-sm mb-6">Are you sure you want to delete this notification? This action cannot be undone.</p>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+        Cancel
+      </button>
+      <button id="confirmDeleteBtn" onclick="confirmDelete()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition">
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let deleteData = {
+  type: null,
+  id: null
+};
+
+function openDeleteModal(type, id) {
+  console.log('Opening modal for', type, id);
+  deleteData.type = type;
+  deleteData.id = id;
+  const modal = document.getElementById('deleteNotificationModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  } else {
+    console.error('Modal element not found');
+  }
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('deleteNotificationModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  deleteData = { type: null, id: null };
+}
+
+function confirmDelete() {
+  if (!deleteData.type || !deleteData.id) return;
+  
+  const deleteBtn = document.getElementById('confirmDeleteBtn');
+  deleteBtn.disabled = true;
+  deleteBtn.textContent = 'Deleting...';
+  
+  // Find and remove the notification from the DOM
+  const notificationElement = document.querySelector(`[data-notification="${deleteData.type}-${deleteData.id}"]`);
+  if (notificationElement) {
+    notificationElement.style.opacity = '0';
+    notificationElement.style.transform = 'translateX(-100%)';
+    notificationElement.style.transition = 'all 0.3s ease';
+    setTimeout(() => {
+      notificationElement.remove();
+      // Check if there are any notifications left
+      const notificationList = document.querySelector('.space-y-3');
+      if (notificationList && notificationList.children.length === 0) {
+        location.reload(); // Reload to show "No notifications" message
+      }
+    }, 300);
+  }
+  closeDeleteModal();
+  deleteBtn.disabled = false;
+  deleteBtn.textContent = 'Delete';
+}
+
+// Close modal when pressing Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeDeleteModal();
+  }
+});
+
+// Close modal when clicking outside
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('deleteNotificationModal');
+  if (modal && e.target === modal) {
+    closeDeleteModal();
+  }
+});
+</script>

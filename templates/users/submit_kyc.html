@@ -1,0 +1,125 @@
+{% extends 'ecommerce_base.html' %}
+{% load static %}
+
+{% block title %}Submit KYC | WholeShield{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">KYC Verification</h1>
+            <p class="text-gray-600">Please submit your business documents for verification</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 p-4 rounded-lg {% if message.tags %}{{ message.tags }}{% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if existing_kyc and existing_kyc.status == 'pending' %}
+            <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg">
+                <p class="font-semibold mb-1">Submission Under Review</p>
+                <p>Your KYC submission is currently under review. We'll notify you once it's verified.</p>
+            </div>
+        {% elif existing_kyc and existing_kyc.status == 'approved' %}
+            <div class="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg">
+                <p class="font-semibold mb-1">✓ KYC Approved</p>
+                <p>Your KYC has been approved. You can now proceed with orders.</p>
+            </div>
+        {% elif existing_kyc and existing_kyc.status == 'rejected' %}
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+                <p class="font-semibold mb-1">KYC Rejected</p>
+                <p class="mb-2">{{ existing_kyc.rejection_reason }}</p>
+                <p class="text-sm">Please resubmit with the correct information.</p>
+            </div>
+        {% endif %}
+
+        {% if not existing_kyc or existing_kyc.status == 'rejected' %}
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="id_business_name" class="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                {{ form.business_name }}
+                {% if form.business_name.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.business_name.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_contact_number" class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                {{ form.contact_number }}
+                {% if form.contact_number.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.contact_number.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_business_address" class="block text-sm font-medium text-gray-700 mb-1">Business Address</label>
+                {{ form.business_address }}
+                {% if form.business_address.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.business_address.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_cac_document" class="block text-sm font-medium text-gray-700 mb-2">Business Document (CAC, Registration, etc.)</label>
+                <div class="rounded-lg border border-pink-200 bg-pink-50/40 p-3">
+                    <input type="file" name="cac_document" id="id_cac_document" accept=".pdf,.jpg,.jpeg,.png" class="hidden" {% if not existing_kyc %}required{% endif %}>
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <label for="id_cac_document" class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-[#ec3183] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d72874] transition-colors">
+                            Upload Document
+                        </label>
+                        <span id="selectedFileName" class="text-sm text-gray-600">No file chosen</span>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">Accepted formats: PDF, JPG, PNG (Max 5MB)</p>
+                </div>
+                {% if form.cac_document.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.cac_document.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+                        <div class="flex gap-4">
+                                <button type="submit" class="flex-1 bg-[#ec3183] hover:bg-[#d72874] border border-[#ec3183] text-white font-bold py-3 rounded-lg transition duration-200 shadow-sm">
+                    Submit KYC
+                </button>
+                                <a href="{% url 'kyc-status' %}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 font-bold py-3 rounded-lg transition duration-200 text-center">
+                    View Status
+                </a>
+            </div>
+        </form>
+                    {% else %}
+                    <div class="mt-6 flex gap-4">
+                        <a href="{% url 'kyc-status' %}" class="flex-1 bg-[#ec3183] hover:bg-[#d72874] border border-[#ec3183] text-white font-bold py-3 rounded-lg transition duration-200 text-center">
+                            View KYC Status
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 font-bold py-3 rounded-lg transition duration-200 text-center">
+                            Back to Dashboard
+                        </a>
+                    </div>
+                    {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('id_cac_document');
+        const fileName = document.getElementById('selectedFileName');
+        if (!input || !fileName) return;
+
+        input.addEventListener('change', function () {
+            const selected = input.files && input.files.length ? input.files[0].name : 'No file chosen';
+            fileName.textContent = selected;
+        });
+    });
+</script>
+{% endblock %}

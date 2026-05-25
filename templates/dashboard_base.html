@@ -1,19 +1,141 @@
 {% load static tailwind_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="htmlRoot">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>{% block title %}Admin Dashboard{% endblock %} - WholeShield</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{% static 'images/Logo.png' %}">
     {% tailwind_css %}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
     <style>
+      [x-cloak]{display:none!important}
+      dialog::backdrop{background: rgba(0,0,0,.5)}
+      .dropdown-fixed{position:fixed; z-index:1000}
       .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
       @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
       @keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
       .toast-enter{animation:slideIn .25s ease-out}
       .toast-exit{animation:slideOut .25s ease-in}
+      dialog[open]{
+        position: fixed;
+        inset: 50% auto auto 50%;
+        transform: translate(-50%,-50%);
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: 12px;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Satoshi', sans-serif;
+      }
+
+      /* ── Dark Mode Overrides ──────────────────────────────────── */
+      html.dark { color-scheme: dark; }
+      html.dark body { background-color: #0f172a !important; color: #e2e8f0; }
+
+      /* Backgrounds */
+      html.dark .bg-white           { background-color: #1e293b !important; }
+      html.dark .bg-gray-50         { background-color: #1e293b !important; }
+      html.dark .bg-gray-100        { background-color: #334155 !important; }
+      html.dark .bg-gray-200        { background-color: #475569 !important; }
+      html.dark .bg-\[#E5E5E5\]    { background-color: #0f172a !important; }
+
+      /* Text */
+      html.dark .text-gray-900      { color: #f1f5f9 !important; }
+      html.dark .text-gray-800      { color: #e2e8f0 !important; }
+      html.dark .text-gray-700      { color: #cbd5e1 !important; }
+      html.dark .text-gray-600      { color: #94a3b8 !important; }
+      html.dark .text-gray-500      { color: #64748b !important; }
+      html.dark .text-gray-400      { color: #94a3b8 !important; }
+
+      /* Borders */
+      html.dark .border-gray-200    { border-color: #334155 !important; }
+      html.dark .border-gray-100    { border-color: #1e293b !important; }
+      html.dark .border-b           { border-color: #334155; }
+      html.dark .divide-gray-200 > * + * { border-color: #334155 !important; }
+      html.dark .divide-gray-100 > * + * { border-color: #1e293b !important; }
+
+      /* Hover states */
+      html.dark .hover\:bg-gray-50:hover   { background-color: #334155 !important; }
+      html.dark .hover\:bg-gray-100:hover  { background-color: #475569 !important; }
+      html.dark .hover\:text-gray-600:hover { color: #94a3b8 !important; }
+      html.dark .hover\:text-gray-700:hover { color: #cbd5e1 !important; }
+
+      /* Shadows */
+      html.dark .shadow-sm   { box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; }
+      html.dark .shadow      { box-shadow: 0 2px 6px rgba(0,0,0,0.5) !important; }
+      html.dark .shadow-lg   { box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important; }
+      html.dark .shadow-2xl  { box-shadow: 0 8px 30px rgba(0,0,0,0.7) !important; }
+
+      /* Form inputs */
+      html.dark input:not([type=checkbox]):not([type=radio]):not([type=range]),
+      html.dark select,
+      html.dark textarea {
+        background-color: #0f172a !important;
+        color: #f1f5f9 !important;
+        border-color: #334155 !important;
+      }
+      html.dark input::placeholder,
+      html.dark textarea::placeholder { color: #64748b !important; }
+
+      /* Tables */
+      html.dark tr.hover\:bg-gray-50:hover { background-color: #334155 !important; }
+      html.dark thead th { background-color: #1e293b !important; }
+
+      /* Header */
+      html.dark header                  { background-color: #1e293b !important; border-color: #334155 !important; }
+
+      /* Sidebar */
+      html.dark #sidebar                { background-color: #1e293b !important; border-color: #334155 !important; }
+      html.dark #sidebar .border-t      { border-color: #334155 !important; }
+
+      /* Section/Tinted backgrounds */
+      html.dark .bg-teal-50     { background-color: rgba(20,184,166,0.1)  !important; }
+      html.dark .bg-red-50      { background-color: rgba(239,68,68,0.1)   !important; }
+      html.dark .bg-blue-50     { background-color: rgba(59,130,246,0.1)  !important; }
+      html.dark .bg-yellow-50   { background-color: rgba(234,179,8,0.1)   !important; }
+      html.dark .bg-green-50    { background-color: rgba(34,197,94,0.1)   !important; }
+      html.dark .bg-indigo-50   { background-color: rgba(99,102,241,0.1)  !important; }
+      html.dark .bg-purple-50   { background-color: rgba(168,85,247,0.1)  !important; }
+      html.dark .bg-pink-50     { background-color: rgba(236,72,153,0.1)  !important; }
+      html.dark .bg-orange-50   { background-color: rgba(249,115,22,0.1)  !important; }
+
+      /* Light tinted icons */
+      html.dark .bg-teal-100    { background-color: rgba(20,184,166,0.15)  !important; }
+      html.dark .bg-red-100     { background-color: rgba(239,68,68,0.15)   !important; }
+      html.dark .bg-blue-100    { background-color: rgba(59,130,246,0.15)  !important; }
+      html.dark .bg-green-100   { background-color: rgba(34,197,94,0.15)   !important; }
+      html.dark .bg-indigo-100  { background-color: rgba(99,102,241,0.15)  !important; }
+      html.dark .bg-purple-100  { background-color: rgba(168,85,247,0.15)  !important; }
+      html.dark .bg-yellow-100  { background-color: rgba(234,179,8,0.15)   !important; }
+      html.dark .bg-pink-100    { background-color: rgba(236,72,153,0.15)  !important; }
+
+      /* Overlay / transparent elements */
+      html.dark .border-teal-200    { border-color: rgba(20,184,166,0.3)  !important; }
+      html.dark .border-red-200     { border-color: rgba(239,68,68,0.3)   !important; }
+      html.dark .border-blue-200    { border-color: rgba(59,130,246,0.3)  !important; }
+      html.dark .border-yellow-200  { border-color: rgba(234,179,8,0.3)   !important; }
+
+      /* Select option */
+      html.dark select option       { background-color: #1e293b; }
+
+      /* Ring / focus */
+      html.dark .ring-1, html.dark .ring-2  { --tw-ring-color: #334155; }
+
+      /* Smooth transition on theme switch */
+      html.dark *, html.dark *::before, html.dark *::after {
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+      }
     </style>
   </head>
   <body class="bg-[#E5E5E5]">
@@ -29,11 +151,17 @@
           </button>
           <h1 class="text-lg lg:text-xl font-semibold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h1>
           <div class="flex items-center gap-2 lg:gap-4">
+            <!-- Dark mode toggle -->
+            <button id="darkToggle" onclick="toggleDark()"
+              class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Toggle dark mode">
+              <span class="material-symbols-outlined" id="darkIcon">dark_mode</span>
+            </button>
             <a href="{% url 'admin_notifications' %}" class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-                <span class="material-symbols-outlined">notifications</span>
-                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
-            <div class="flex items-center gap-2 lg:gap-3">
+            <a href="{% url 'admin_profile' %}" class="flex items-center gap-2 lg:gap-3 hover:opacity-80 transition-opacity">
               <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold text-sm lg:text-base">
                 {{ request.user.first_name.0|default:'A' }}{{ request.user.last_name.0|default:'' }}
               </div>
@@ -41,7 +169,7 @@
                 <p class="text-sm font-medium text-gray-900">{{ request.user.first_name|default:'Admin' }} {{ request.user.last_name|default:'' }}</p>
                 <p class="text-xs text-gray-500">{{ request.user.email }}</p>
               </div>
-            </div>
+            </a>
           </div>
         </div>
       </header>
@@ -82,7 +210,188 @@
       mobileMenuBtn?.addEventListener('click',()=>{sidebar.classList.toggle('-translate-x-full');overlay.classList.toggle('hidden');});
       overlay?.addEventListener('click',()=>{sidebar.classList.add('-translate-x-full');overlay.classList.add('hidden');});
       function dismissToast(btn){const t=btn.closest('[data-toast]');t.classList.remove('toast-enter');t.classList.add('toast-exit');setTimeout(()=>t.remove(),250);}
-      document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('[data-toast]').forEach(t=>{setTimeout(()=>{t.classList.add('toast-exit');setTimeout(()=>t.remove(),250);},2000);});});
+
+      function showToast(type, message) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const palette = type === 'success'
+          ? 'bg-teal-50 border border-teal-200'
+          : type === 'error'
+          ? 'bg-red-50 border border-red-200'
+          : 'bg-blue-50 border border-blue-200';
+        const icon = type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info';
+        const text = type === 'success' ? 'text-teal-700' : type === 'error' ? 'text-red-700' : 'text-blue-700';
+        const close = type === 'success'
+          ? 'text-teal-400 hover:text-teal-600'
+          : type === 'error'
+          ? 'text-red-400 hover:text-red-600'
+          : 'text-blue-400 hover:text-blue-600';
+
+        const toast = document.createElement('div');
+        toast.className = `toast-enter rounded-lg shadow-lg p-4 flex items-start gap-3 ${palette}`;
+        toast.setAttribute('data-toast', '');
+        toast.innerHTML = `
+          <div class="flex-shrink-0"><span class="material-symbols-outlined text-lg">${icon}</span></div>
+          <p class="text-sm ${text} flex-1">${message}</p>
+          <button class="flex-shrink-0 ${close}" type="button"><span class="material-symbols-outlined text-lg">close</span></button>
+        `;
+        toast.querySelector('button')?.addEventListener('click', () => dismissToast(toast.querySelector('button')));
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.add('toast-exit');
+          setTimeout(() => toast.remove(), 250);
+        }, 3000);
+      }
+
+      function initAdminTableInfiniteScroll() {
+        const BATCH_SIZE = 20;
+        const tables = document.querySelectorAll('main .overflow-x-auto table');
+
+        tables.forEach((table) => {
+          const tbody = table.querySelector('tbody');
+          if (!tbody) return;
+
+          // Do not interfere with HTMX server-side pagination/load-more tables.
+          if (tbody.querySelector('[hx-get]')) return;
+          if (tbody.dataset.infiniteInitialized === 'true') return;
+
+          const allRows = Array.from(tbody.querySelectorAll(':scope > tr'));
+          if (allRows.length <= BATCH_SIZE) return;
+
+          // Skip special empty-state only tables.
+          if (allRows.length === 1 && allRows[0].querySelector('[colspan]')) return;
+
+          tbody.dataset.infiniteInitialized = 'true';
+
+          let visibleCount = BATCH_SIZE;
+          allRows.forEach((row, i) => {
+            row.style.display = i < visibleCount ? '' : 'none';
+          });
+
+          const colCount = table.querySelectorAll('thead th').length || 1;
+          const sentinelRow = document.createElement('tr');
+          sentinelRow.className = 'js-infinite-sentinel';
+          sentinelRow.innerHTML = '<td colspan="' + colCount + '" class="py-4 text-center text-sm text-gray-500">Loading more...</td>';
+          tbody.appendChild(sentinelRow);
+
+          const revealMore = () => {
+            const nextCount = Math.min(visibleCount + BATCH_SIZE, allRows.length);
+            for (let i = visibleCount; i < nextCount; i++) {
+              allRows[i].style.display = '';
+            }
+            visibleCount = nextCount;
+
+            if (visibleCount >= allRows.length) {
+              observer.disconnect();
+              sentinelRow.remove();
+            }
+          };
+
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) revealMore();
+            });
+          }, { rootMargin: '200px 0px 200px 0px' });
+
+          observer.observe(sentinelRow);
+        });
+      }
+
+      function initAdminGridInfiniteScroll() {
+        const BATCH_SIZE = 12;
+        const grids = document.querySelectorAll('main [data-infinite-grid="true"]');
+
+        grids.forEach((grid) => {
+          if (grid.dataset.infiniteInitialized === 'true') return;
+
+          const items = Array.from(grid.children).filter((el) => !el.classList.contains('js-infinite-grid-sentinel'));
+          if (items.length <= BATCH_SIZE) return;
+
+          grid.dataset.infiniteInitialized = 'true';
+
+          let visibleCount = BATCH_SIZE;
+          items.forEach((item, i) => {
+            item.style.display = i < visibleCount ? '' : 'none';
+          });
+
+          const sentinel = document.createElement('div');
+          sentinel.className = 'js-infinite-grid-sentinel col-span-full py-2 text-center text-sm text-gray-500';
+          sentinel.textContent = 'Loading more...';
+          grid.appendChild(sentinel);
+
+          const revealMore = () => {
+            const nextCount = Math.min(visibleCount + BATCH_SIZE, items.length);
+            for (let i = visibleCount; i < nextCount; i++) {
+              items[i].style.display = '';
+            }
+            visibleCount = nextCount;
+
+            if (visibleCount >= items.length) {
+              observer.disconnect();
+              sentinel.remove();
+            }
+          };
+
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) revealMore();
+            });
+          }, { rootMargin: '200px 0px 200px 0px' });
+
+          observer.observe(sentinel);
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded',()=>{
+        document.querySelectorAll('[data-toast]').forEach(t=>{setTimeout(()=>{t.classList.add('toast-exit');setTimeout(()=>t.remove(),250);},3000);});
+        initAdminTableInfiniteScroll();
+        initAdminGridInfiniteScroll();
+      });
+
+      document.body.addEventListener('htmx:afterSwap', () => {
+        initAdminTableInfiniteScroll();
+        initAdminGridInfiniteScroll();
+      });
+    </script>
+    
+    <!-- Debug: Check if Alpine loads -->
+    <script>
+      console.log('Loading Alpine from:', '{% static "js/alpine.min.js" %}');
+      window.addEventListener('alpine:init', () => {
+        console.log('✅ Alpine.js initialized successfully!');
+      });
+    </script>
+    
+    <script src="{% static 'js/alpine.min.js' %}" defer></script>
+    <script src="{% static 'js/htmx.min.js' %}" defer></script>
+    {% include 'partials/shared/password_toggle_script.html' %}
+
+    <!-- Dark mode init (run before paint to avoid flash) -->
+    <script>
+      (function() {
+        if (localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.getElementById('htmlRoot').classList.add('dark');
+        }
+      })();
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- Dark mode toggle logic (after DOM is available) -->
+    <script>
+      function toggleDark() {
+        const html = document.getElementById('htmlRoot');
+        const isDark = html.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        document.getElementById('darkIcon').textContent = isDark ? 'light_mode' : 'dark_mode';
+      }
+      // Set correct icon on load
+      document.addEventListener('DOMContentLoaded', function() {
+        const isDark = document.getElementById('htmlRoot').classList.contains('dark');
+        const icon = document.getElementById('darkIcon');
+        if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+      });
     </script>
   </body>
 </html>

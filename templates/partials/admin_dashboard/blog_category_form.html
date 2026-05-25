@@ -1,0 +1,27 @@
+<form 
+  hx-post="{% if category %}{% url 'edit_blog_category' category.id %}{% else %}{% url 'add_blog_category' %}{% endif %}"
+  hx-target="#blog-category-form-container"
+  hx-on="htmx:afterSwap: (evt) => {
+    const redirectUrl = evt.detail.xhr.getResponseHeader('HX-Redirect');
+    if (redirectUrl) {
+      document.querySelector('dialog[open]')?.close();
+      setTimeout(() => window.location.href = redirectUrl, 100);
+    }
+  }"
+  class="space-y-4">
+  {% csrf_token %}
+  <div>
+    <label class="block text-sm font-medium mb-2">Category Name</label>
+    {{ form.name }}
+    {% for err in form.name.errors %}<p class="text-sm text-red-600 mt-1">{{ err }}</p>{% endfor %}
+  </div>
+  {% comment %} <div>
+    <label class="block text-sm font-medium mb-2">Parent Category</label>
+    {{ form.parent }}
+    {% for err in form.parent.errors %}<p class="text-sm text-red-600 mt-1">{{ err }}</p>{% endfor %}
+  </div> {% endcomment %}
+  <div class="flex gap-3 pt-2">
+    <button type="button" onclick="this.closest('dialog')?.close()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">Cancel</button>
+    <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg">Save</button>
+  </div>
+</form>

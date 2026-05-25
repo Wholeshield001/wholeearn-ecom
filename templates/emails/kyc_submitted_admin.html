@@ -1,0 +1,38 @@
+{% extends 'emails/email_base.html' %}
+
+{% block content %}
+<h1 style="color: #ec3183; margin-bottom: 20px;">New KYC Submission</h1>
+
+<p>A new KYC (Know Your Customer) submission has been received and requires verification.</p>
+
+<div style="background-color: #fef2f7; border-left: 4px solid #ec3183; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0;"><strong>User Information:</strong></p>
+    <ul style="margin: 10px 0; padding-left: 20px;">
+        <li>Email: <a href="mailto:{{ user.email }}">{{ user.email }}</a></li>
+        <li>Name: {{ user.get_full_name }}</li>
+        <li>Phone: {{ user.phone }}</li>
+        <li>Role: {{ user.get_role_display }}</li>
+    </ul>
+</div>
+
+<div style="background-color: #fef2f7; border-left: 4px solid #ec3183; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0;"><strong>Business Information:</strong></p>
+    <ul style="margin: 10px 0; padding-left: 20px;">
+        <li>Business Name: {{ kyc_submission.business_name }}</li>
+        <li>Business Type: {{ kyc_submission.get_user_type_display }}</li>
+        <li>Contact Number: {{ kyc_submission.contact_number }}</li>
+        <li>Address: {{ kyc_submission.business_address }}</li>
+    </ul>
+</div>
+
+<p>Please review the submitted documents and verify the business information.</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/admin-dashboard/kyc-submissions/" 
+       style="background-color: #ec3183; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">
+        Review Submission in Dashboard
+    </a>
+</div>
+
+<p style="color: #666; font-size: 14px;">Submitted on: {{ kyc_submission.created_at|date:"M d, Y h:i A" }}</p>
+{% endblock %}

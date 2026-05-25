@@ -1,0 +1,26 @@
+<div id="cartCheckoutSection" hx-swap-oob="true" class="border-t border-gray-200 p-4 space-y-3 flex-shrink-0">
+    {% if cart_items %}
+    <div id="cartTotals" class="space-y-2 text-sm">
+        <div class="flex justify-between text-gray-700"><span>Subtotal</span><span
+            class="text-[#ec3183] font-semibold">₦<span>{{ cart_total }}</span></span></div>
+        <div class="flex justify-between text-gray-700"><span>Shipping</span><span
+                class="text-green-600 font-semibold">Free</span></div>
+        <div class="flex justify-between text-gray-700"><span>Tax</span><span class="text-[#ec3183]">₦0.00</span></div>
+        <div class="flex justify-between font-semibold border-t border-gray-200 pt-2 text-gray-900">
+            <span>Total</span><span class="text-[#ec3183]">₦<span>{{ cart_total }}</span></span>
+        </div>
+    </div>
+    <a href="{% url 'checkout' %}"
+        class="w-full px-4 py-3 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white rounded-lg font-medium hover:shadow-lg transition-shadow block text-center">
+        Proceed to Checkout
+    </a>
+    {% else %}
+    <div class="text-center py-4">
+        <p class="text-gray-600 text-sm">Add items to your cart to proceed</p>
+        <a href="{% url 'products' %}"
+            class="w-full mt-3 px-4 py-3 border-2 border-[#ec3183] text-[#ec3183] rounded-lg font-medium hover:bg-pink-50 transition-colors block text-center text-sm">
+            Start Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>

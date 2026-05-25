@@ -1,0 +1,111 @@
+<!-- Delete User Modal -->
+<div id="deleteUserModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-lg max-w-sm w-full animate-in">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-gray-200 p-6">
+      <h2 class="text-lg font-semibold text-gray-900">Delete User</h2>
+      <button onclick="closeDeleteUserModal()" class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6 space-y-4">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
+          <span class="material-symbols-outlined text-red-600">warning</span>
+        </div>
+        <div>
+          <h3 class="font-medium text-gray-900">Are you sure?</h3>
+          <p class="text-sm text-gray-600 mt-1">
+            This will permanently delete the user <strong id="deleteUserName"></strong> and all associated data. This action cannot be undone.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex gap-3 border-t border-gray-200 p-6">
+      <button onclick="closeDeleteUserModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button id="confirmDeleteUserBtn" onclick="confirmDeleteUser()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors">
+        Delete User
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let deleteUserData = null;
+
+  function openDeleteUserModal(userId, userName) {
+    deleteUserData = { userId, userName };
+    document.getElementById('deleteUserName').textContent = userName;
+    document.getElementById('deleteUserModal').classList.remove('hidden');
+  }
+
+  function closeDeleteUserModal() {
+    document.getElementById('deleteUserModal').classList.add('hidden');
+    deleteUserData = null;
+  }
+
+  function confirmDeleteUser() {
+    if (!deleteUserData) return;
+    
+    const { userId } = deleteUserData;
+    const btn = document.getElementById('confirmDeleteUserBtn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+
+    fetch(`/admin/users/${userId}/delete/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        if (typeof showToast === 'function') {
+          showToast('error', data.message || 'Failed to delete user.');
+        }
+        btn.disabled = false;
+        btn.textContent = 'Delete User';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      if (typeof showToast === 'function') {
+        showToast('error', 'Failed to delete user');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Delete User';
+    });
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('deleteUserModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeDeleteUserModal();
+    }
+  });
+</script>

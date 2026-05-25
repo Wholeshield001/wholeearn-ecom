@@ -1,0 +1,84 @@
+{% extends 'ecommerce_base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} - WholeShield Blog{% endblock %}
+
+{% block content %}
+<article class="container mx-auto px-4 py-12 max-w-4xl">
+  <!-- Breadcrumb -->
+  <nav class="mb-8">
+    <ol class="flex items-center gap-2 text-sm text-gray-600">
+      <li><a href="{% url 'home' %}" class="hover:text-pink-600">Home</a></li>
+      <li>/</li>
+      <li><a href="{% url 'blog' %}" class="hover:text-pink-600">Blog</a></li>
+      <li>/</li>
+      <li class="text-gray-900">{{ post.title }}</li>
+    </ol>
+  </nav>
+
+  <!-- Cover Image -->
+  {% if post.cover_image %}
+  <div class="aspect-[16/9] bg-gray-100 rounded-xl overflow-hidden mb-8">
+    <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full h-full object-cover">
+  </div>
+  {% endif %}
+
+  <!-- Meta Info -->
+  <div class="mb-6">
+    <div class="flex items-center gap-4 text-sm text-gray-600 mb-4">
+      <span>{{ post.created_at|date:"F d, Y" }}</span>
+      {% if post.category %}
+      <span>•</span>
+      <a href="{% url 'blog' %}?category={{ post.category.slug }}" class="text-pink-600 hover:text-pink-700">
+        {{ post.category.name }}
+      </a>
+      {% endif %}
+      {% if post.author %}
+      <span>•</span>
+      <span>By {{ post.author.get_full_name|default:post.author.email }}</span>
+      {% endif %}
+    </div>
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ post.title }}</h1>
+  </div>
+
+  <!-- Content -->
+  <div class="prose prose-lg prose-pink max-w-none mb-12">
+    {{ post.content|safe }}
+  </div>
+
+  <!-- Related Posts -->
+  {% if related_posts %}
+  <div class="border-t border-gray-200 pt-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Related Articles</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {% for related in related_posts %}
+      <article class="group">
+        <a href="{% url 'blog-detail' related.slug %}" class="block">
+          <div class="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden mb-3">
+            {% if related.cover_image %}
+              <img src="{{ related.cover_image.url }}" alt="{{ related.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            {% else %}
+              <div class="w-full h-full flex items-center justify-center text-gray-400">
+                <span class="text-4xl">📝</span>
+              </div>
+            {% endif %}
+          </div>
+          <h3 class="text-base font-semibold text-pink-600 group-hover:text-pink-700 line-clamp-2">{{ related.title }}</h3>
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Back to Blog -->
+  <div class="mt-12 text-center">
+    <a href="{% url 'blog' %}" class="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-medium">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to Blog
+    </a>
+  </div>
+</article>
+{% endblock %}

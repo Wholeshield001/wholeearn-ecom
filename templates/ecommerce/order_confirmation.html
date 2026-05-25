@@ -1,0 +1,57 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}Order Confirmed - WholeShield{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4">
+  <div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm p-8 mb-6 text-center">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold text-[#ec3183] mb-2">Order Confirmed!</h1>
+      <p class="text-gray-600 mb-4">Thank you for your purchase</p>
+      <p class="text-sm text-gray-500">Order ID: <span class="font-mono">{{ order.id }}</span></p>
+      <p class="text-sm text-gray-500">Payment Reference: <span class="font-mono">{{ order.payment_reference }}</span></p>
+      {% if order.tracking_number %}
+      <p class="text-sm text-gray-500">Tracking Number: <span class="font-mono">{{ order.tracking_number }}</span></p>
+      {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-8 mb-6">
+      <h2 class="text-xl font-bold text-[#ec3183] mb-4">Order Details</h2>
+      <div class="space-y-3 mb-6 pb-6 border-b">
+        {% for item in items %}
+          <div class="flex justify-between">
+            <span class="text-gray-700">{{ item.product_name }} ×{{ item.quantity }}</span>
+            <span class="font-semibold">₦{{ item.get_total_price|floatformat:2 }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="flex justify-between text-lg font-bold">
+        <span>Total</span>
+        <span class="text-[#ec3183]">₦{{ order.total_amount|floatformat:2 }}</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-8 mb-6">
+      <h2 class="text-xl font-bold text-[#ec3183] mb-4">Shipping Address</h2>
+      <p class="text-gray-700">{{ order.shipping_address }}</p>
+      <p class="text-gray-700">{{ order.shipping_city }}, {{ order.shipping_state }}</p>
+      <p class="text-gray-700 mt-2">Phone: {{ order.shipping_phone }}</p>
+    </div>
+
+    <div class="flex gap-4">
+      <a href="{% url 'order-detail' order.id %}" class="flex-1 py-3 bg-[#ec3183] text-white text-center font-semibold rounded-lg hover:opacity-90">
+        View Order
+      </a>
+      <a href="{% url 'home' %}" class="flex-1 py-3 border-2 border-gray-300 text-gray-700 text-center font-semibold rounded-lg hover:bg-gray-50">
+        Continue Shopping
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

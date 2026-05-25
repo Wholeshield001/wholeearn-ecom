@@ -17,12 +17,19 @@ Including another URLconf
 from django.contrib import admin
 from django.conf import settings
 from django.urls import path, include
+from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('', include('ecom.urls')),
-    # path('users/', include('users.urls')),
+    path('ckeditor5/', include('django_ckeditor_5.urls')),
+    path('', include('ecom.urls')),
+    path('users/', include('users.urls')),
     path('admin-dashboard/', include('admin_dashboard.urls')),
 ]
-if settings.DEBUG:
-    urlpatterns += [path("__reload__/", include("django_browser_reload.urls"))]
+urlpatterns += staticfiles_urlpatterns()
+if settings.DEBUG and not getattr(settings, 'USE_CLOUDINARY_MEDIA', False):
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# if settings.DEBUG:
+    # urlpatterns += [path("__reload__/", include("django_browser_reload.urls"))]

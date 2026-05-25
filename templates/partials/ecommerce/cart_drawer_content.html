@@ -1,0 +1,9 @@
+{% include 'partials/ecommerce/cart_items.html' %}
+
+{% include 'partials/ecommerce/cart_checkout_section.html' %}
+
+<!-- Out of Band Swap for Navbar Cart Badge -->
+<span id="cartItemCountBadge" hx-swap-oob="true"
+  class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-[#ec3183] rounded-full {% if not cart_item_count %}hidden{% endif %}">
+  {{ cart_item_count|default:0 }}
+</span>

@@ -1,0 +1,291 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} - WholeShield{% endblock %}
+
+{% block content %}
+<section class="py-12 px-4 sm:px-6 lg:px-8 bg-white reveal opacity-0 translate-y-3">
+  <div class="max-w-7xl mx-auto">
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+      <a href="{% url 'products' %}" class="text-[#ec3183] hover:opacity-80 text-sm font-semibold">
+        ← Back to Products
+      </a>
+    </div>
+
+    <!-- Product Detail Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-16">
+      <!-- Product Images -->
+      <div class="reveal opacity-0 translate-y-3">
+        <!-- Main Image -->
+        <div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
+          {% if product.thumbnail and product.thumbnail.image %}
+          <img id="mainImage" src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
+            class="w-full h-full object-cover">
+          {% elif product.images.first %}
+          <img id="mainImage" src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
+            class="w-full h-full object-cover">
+          {% else %}
+          <div
+            class="w-full h-full bg-gradient-to-br from-[#31dec4] to-[#ec3183] opacity-20 flex items-center justify-center">
+            <span class="text-gray-400">No image</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Thumbnail Gallery -->
+        {% if product.images.all|length > 1 %}
+        <div class="grid grid-cols-4 gap-2">
+          {% for image in product.images.all %}
+          <button type="button" onclick="document.getElementById('mainImage').src='{{ image.image.url }}'"
+            class="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#ec3183] transition-colors">
+            <img src="{{ image.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+          </button>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Product Info -->
+      <div class="reveal opacity-0 translate-y-3">
+        <!-- Category Badge -->
+        {% if product.category %}
+        <p class="text-xs text-[#ec3183] opacity-70 mb-2 uppercase tracking-wide font-semibold">
+          {{ product.category.name }}
+        </p>
+        {% endif %}
+
+        <!-- Product Name -->
+        <h1 class="text-3xl sm:text-4xl font-bold text-[#ec3183] mb-4">
+          {{ product.name }}
+        </h1>
+
+        <!-- Rating Placeholder -->
+        <div class="flex items-center gap-2 mb-6">
+          <div class="flex">
+            {% for i in "12345" %}
+            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+              </path>
+            </svg>
+            {% endfor %}
+          </div>
+          <span class="text-sm text-[#ec3183] opacity-70">(128 reviews)</span>
+        </div>
+
+        <!-- Price Section -->
+        <div class="mb-6">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-3xl font-bold text-[#ec3183]">₦{{ product.price }}</span>
+            {% if product.discount > 0 %}
+            {% widthratio product.price 100 product.discount as discount_amount %}
+            <span class="text-lg text-gray-400 line-through">
+              ₦{{ product.price|add:discount_amount }}
+            </span>
+            <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+              Save {{ product.discount }}%
+            </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Stock Status -->
+        <div class="mb-6">
+          {% if product.stock > 5 %}
+          <p class="text-sm text-green-600 font-semibold">✓ In Stock - Free Shipping Available</p>
+          {% elif product.stock > 0 %}
+          <p class="text-sm text-orange-600 font-semibold">⚠ Only {{ product.stock }} left in stock</p>
+          {% else %}
+          <p class="text-sm text-red-600 font-semibold">✗ Out of Stock</p>
+          {% endif %}
+        </div>
+
+        <!-- SKU -->
+        {% if product.sku %}
+        <p class="text-sm text-[#ec3183] opacity-70 mb-6">SKU: <span class="font-mono">{{ product.sku }}</span></p>
+        {% endif %}
+
+        <!-- Description -->
+        {% if product.description %}
+        <div class="prose prose-sm mb-8 max-w-none">
+          <div class="text-[#ec3183] opacity-90 leading-relaxed">
+            {{ product.description|safe }}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Add to Cart Section -->
+        <form method="post" action="{% url 'add-to-cart' product.id %}" class="flex flex-col sm:flex-row gap-3 mb-8">
+          {% csrf_token %}
+          {% if product.stock > 0 %}
+          {% if request.user.is_authenticated %}
+          <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2">
+              <!-- Quantity selector -->
+              <div class="flex items-center border border-[#ec3183] rounded-lg overflow-hidden">
+                <button type="button" class="px-4 py-2 text-[#ec3183] hover:bg-pink-50"
+                  onclick="decrementQty()">−</button>
+                <input type="number" id="quantity" name="quantity" value="{{ min_quantity }}" min="{{ min_quantity }}"
+                  max="{{ product.stock }}"
+                  class="flex-1 text-center py-2 focus:outline-none text-[#ec3183] font-medium"
+                  onchange="validateQty()">
+                <button type="button" class="px-4 py-2 text-[#ec3183] hover:bg-pink-50"
+                  onclick="incrementQty()">+</button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" hx-post="{% url 'add-to-cart' product.id %}" hx-include="[name='quantity']"
+            hx-swap="none"
+            class="flex-1 px-6 py-3 text-white font-semibold rounded-lg hover:shadow-lg transition-shadow h-[44px]"
+            style="background-color: #C2185B !important;">
+            Add to Cart
+          </button>
+          {% else %}
+          <div class="flex flex-col gap-2 w-full">
+            <a href="{% url 'login' %}?next={{ request.path }}"
+              class="flex-1 px-6 py-3 text-white text-center font-semibold rounded-lg hover:shadow-lg transition-shadow block w-full h-[44px] flex items-center justify-center"
+              style="background-color: #C2185B !important;">
+              Login to Add to Cart
+            </a>
+          </div>
+          {% endif %}
+          {% else %}
+          <button type="button" disabled
+            class="flex-1 px-6 py-3 bg-gray-300 text-gray-500 font-semibold rounded-lg cursor-not-allowed">
+            Out of Stock
+          </button>
+          {% endif %}
+        </form>
+
+        <script>
+          function incrementQty() {
+            const input = document.getElementById('quantity');
+            const current = parseInt(input.value) || 1;
+            const max = parseInt(input.max);
+            if (current < max) input.value = current + 1;
+          }
+          function decrementQty() {
+            const input = document.getElementById('quantity');
+            const min = parseInt(input.min) || 1;
+            const current = parseInt(input.value) || 1;
+            if (current > min) input.value = current - 1;
+          }
+          function validateQty() {
+            const input = document.getElementById('quantity');
+            const max = parseInt(input.max);
+            const min = parseInt(input.min) || 1;
+            let value = parseInt(input.value) || 1;
+            if (value > max) input.value = max;
+            if (value < min) input.value = min;
+          }
+        </script>
+
+        <!-- Additional Info -->
+        {% if product.additional_info %}
+        <div class="border-t border-gray-200 pt-6">
+          <h3 class="text-sm font-semibold text-[#ec3183] mb-3">Additional Information</h3>
+          <p class="text-sm text-[#ec3183] opacity-80">
+            {{ product.additional_info }}
+          </p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Ingredients/Benefits Section -->
+    {% if product.additional_info %}
+    <div class="mb-16 pb-16 border-b border-gray-200 reveal opacity-0 translate-y-3">
+      <h2 class="text-2xl sm:text-3xl font-bold text-[#ec3183] mb-8">Key Ingredients & Benefits</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold text-[#ec3183] mb-4">Ingredients</h3>
+          <ul class="space-y-2">
+            <li class="text-sm text-[#ec3183] opacity-80">• Undenatured Type II Collagen (UC-III)</li>
+            <li class="text-sm text-[#ec3183] opacity-80">• Glucosamine HCl + N-Acetyl Glucosamine (NAG)</li>
+            <li class="text-sm text-[#ec3183] opacity-80">• Chondroitin + Hyaluronic Acid</li>
+            <li class="text-sm text-[#ec3183] opacity-80">• MSM (Methylsulfonylmethane)</li>
+            <li class="text-sm text-[#ec3183] opacity-80">• Boswellia Serrata Extract</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-[#ec3183] mb-4">Benefits</h3>
+          <ul class="space-y-2">
+            <li class="text-sm text-[#ec3183] opacity-80">• Reduces joint pain and stiffness</li>
+            <li class="text-sm text-[#ec3183] opacity-80">• Rebuilds cartilage</li>
+            <li class="text-sm text-[#ec3183] opacity-80">• Improves flexibility</li>
+            <li class="text-sm text-[#ec3183] opacity-80">• Restores comfortable movement</li>
+            <li class="text-sm text-[#ec3183] opacity-80">• Advanced multi-action formula</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Related Products Section -->
+    {% if related_products %}
+    <div>
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl sm:text-3xl font-bold text-[#ec3183]">You Might Also Like</h2>
+        <a href="{% url 'products' %}" class="text-[#ec3183] font-semibold hover:opacity-80">Shop All →</a>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+        {% for rel_product in related_products %}
+        <a href="{% url 'product-detail' rel_product.id %}"
+          class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow group">
+          <!-- Product Image -->
+          <div class="relative w-full aspect-square bg-gray-100 overflow-hidden">
+            {% if rel_product.thumbnail and rel_product.thumbnail.image %}
+            <img src="{{ rel_product.thumbnail.image.url }}" alt="{{ rel_product.name }}"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            {% elif rel_product.images.first %}
+            <img src="{{ rel_product.images.first.image.url }}" alt="{{ rel_product.name }}"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            {% else %}
+            <div class="w-full h-full bg-gradient-to-br from-[#31dec4] to-[#ec3183] opacity-20"></div>
+            {% endif %}
+
+            {% if rel_product.discount > 0 %}
+            <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+              -{{ rel_product.discount }}%
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Product Info -->
+          <div class="p-4">
+            {% if rel_product.category %}
+            <p class="text-xs text-[#ec3183] opacity-70 mb-1 uppercase">{{ rel_product.category.name }}</p>
+            {% endif %}
+            <h3 class="font-semibold text-[#ec3183] mb-2 line-clamp-2 text-sm">{{ rel_product.name }}</h3>
+            <p class="text-lg font-bold text-[#ec3183]">₦{{ rel_product.price }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    const Els = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.classList.remove('opacity-0', 'translate-y-3');
+          el.classList.add('transition', 'duration-700');
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.1 });
+    Els.forEach(el => io.observe(el));
+  })();
+</script>
+{% endblock %}

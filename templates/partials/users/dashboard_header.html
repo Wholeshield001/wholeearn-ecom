@@ -1,0 +1,17 @@
+<div class="mb-8">
+  {% if show_greeting %}
+    <h1 class="text-4xl font-bold text-[#ec3183] mb-4">Hello there, {{ user.first_name|default:"Friend" }}</h1>
+  {% else %}
+    <h1 class="text-4xl font-bold text-[#ec3183] mb-4">{{ page_title }}</h1>
+  {% endif %}
+
+  <div class="flex flex-wrap gap-6 text-sm">
+    <a href="{% url 'user-dashboard' %}" class="{% if active_tab == 'dashboard' %}text-[#ec3183] font-semibold border-b-2 border-[#ec3183]{% else %}text-gray-600 hover:text-[#ec3183] transition-colors{% endif %}">Dashboard</a>
+    <a href="{% url 'reward-dashboard' %}" class="{% if active_tab == 'reward' %}text-[#ec3183] font-semibold border-b-2 border-[#ec3183]{% else %}text-gray-600 hover:text-[#ec3183] transition-colors{% endif %}">Reward</a>
+    <a href="{% url 'order-history' %}" class="{% if active_tab == 'order' %}text-[#ec3183] font-semibold border-b-2 border-[#ec3183]{% else %}text-gray-600 hover:text-[#ec3183] transition-colors{% endif %}">Order History</a>
+    <a href="{% url 'view-tickets' %}" class="{% if active_tab == 'tickets' %}text-[#ec3183] font-semibold border-b-2 border-[#ec3183]{% else %}text-gray-600 hover:text-[#ec3183] transition-colors{% endif %}">My Tickets</a>
+    <a href="{% url 'profile' %}" class="{% if active_tab == 'settings' %}text-[#ec3183] font-semibold border-b-2 border-[#ec3183]{% else %}text-gray-600 hover:text-[#ec3183] transition-colors{% endif %}">Settings</a>
+    <a href="{% url 'create-ticket' %}" class="{% if active_tab == 'create-ticket' %}text-[#ec3183] font-semibold border-b-2 border-[#ec3183]{% else %}text-gray-600 hover:text-[#ec3183] transition-colors{% endif %}">Create Ticket</a>
+    <a href="{% url 'logout' %}" class="text-gray-600 hover:text-[#ec3183] transition-colors">Log Out</a>
+  </div>
+</div>

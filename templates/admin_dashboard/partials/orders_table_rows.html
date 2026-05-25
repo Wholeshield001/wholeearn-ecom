@@ -1,0 +1,116 @@
+{% for order in orders %}
+<tr>
+  <td class="py-3 px-4">
+    <a href="{% url 'admin_order_detail' order.id %}" class="text-blue-600 hover:text-blue-700 font-medium">{{ order.id|truncatechars:8 }}</a>
+  </td>
+  <td class="py-3 px-4">
+    {% with first_item=order.items.first %}
+      {% if first_item %}
+        <div class="flex items-center gap-2">
+          {% if first_item.product.thumbnail.image %}
+            <img src="{{ first_item.product.thumbnail.image.url }}" alt="{{ first_item.product.name }}" class="w-8 h-8 rounded object-cover">
+          {% else %}
+            <div class="w-8 h-8 rounded bg-gray-200 flex items-center justify-center text-xs text-gray-600">IMG</div>
+          {% endif %}
+          <div>
+            <p class="font-medium text-gray-900 line-clamp-1">{{ first_item.product.name }}</p>
+            <p class="text-xs text-gray-500">{% if order.items.count > 1 %}+{{ order.items.count|add:"-1" }} more item{{ order.items.count|add:"-1"|pluralize }}{% else %}{{ first_item.product.category.name|default:"" }}{% endif %}</p>
+          </div>
+        </div>
+      {% else %}
+        <span class="text-sm text-gray-500">No items</span>
+      {% endif %}
+      {% endwith %}
+  </td>
+  <td class="py-3 px-4">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-xs font-medium">
+        {{ order.user.first_name.0|default:'U'|upper }}{{ order.user.last_name.0|default:'S'|upper }}
+      </div>
+      <div>
+        <p class="font-medium text-gray-900">{{ order.user.first_name }} {{ order.user.last_name }}</p>
+        <p class="text-xs text-gray-500">{{ order.shipping_city }}</p>
+      </div>
+    </div>
+  </td>
+  <td class="py-3 px-4 text-gray-700">{{ order.shipping_phone }}</td>
+  <td class="py-3 px-4 text-gray-700">{{ order.shipping_address|truncatewords:3 }}</td>
+  <td class="py-3 px-4 text-gray-700">{{ order.created_at|date:"jS M Y" }}</td>
+  <td class="py-3 px-4">
+    {% if order.payment_status == 'refunded' %}
+      <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">Refund</span>
+    {% else %}
+      <span class="px-3 py-1 text-xs font-medium rounded-full {{ order.status_badge_class }}">{{ order.get_status_display }}</span>
+    {% endif %}
+  </td>
+  <td class="py-3 px-4">
+    <div x-data="{ open:false, width:200, pos:{top:0,left:0}, place() { 
+      const r = this.$refs.btn.getBoundingClientRect();
+      const left = Math.min(r.right - this.width, window.innerWidth - this.width - 8);
+      const top  = Math.min(r.bottom + 4, window.innerHeight - 200);
+      this.pos = { top, left };
+    }}">
+      <button 
+        x-ref="btn" 
+        @click="open=!open; $nextTick(()=>place())" 
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <span class="material-symbols-outlined text-lg">more_vert</span>
+      </button>
+      
+      <div 
+        x-show="open" 
+        @click.outside="open=false"
+        x-transition
+        class="dropdown-fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2"
+        :style="`top:${pos.top}px;left:${pos.left}px;width:${width}px`"
+        style="display:none;"
+      >
+        <a href="{% url 'admin_order_detail' order.id %}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+          <span class="material-symbols-outlined text-blue-600 text-base">visibility</span>
+          View Details
+        </a>
+        <a href="{% url 'admin_order_tracking' order.id %}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+          <span class="material-symbols-outlined text-green-600 text-base">edit</span>
+          Update Status
+        </a>
+        {% if order.status != 'delivered' and order.status != 'cancelled' %}
+        <button type="button" onclick="openCancelOrderModal({ url: '/admin-dashboard/orders/{{ order.id }}/cancel/', orderId: '{{ order.id }}' })" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+          <span class="material-symbols-outlined text-base">cancel</span>
+          Cancel Order
+        </button>
+        {% endif %}
+      </div>
+    </div>
+  </td>
+</tr>
+{% empty %}
+<tr>
+  <td colspan="8" class="py-12 text-center">
+    <div class="flex flex-col items-center justify-center text-gray-500">
+      <span class="material-symbols-outlined text-6xl mb-4">shopping_cart</span>
+      <p class="text-lg font-medium">No orders found</p>
+    </div>
+  </td>
+</tr>
+{% endfor %}
+
+<!-- Load More / Pagination -->
+{% if page_obj.has_next %}
+<tr>
+  <td colspan="8" class="py-4 text-center border-t border-gray-200">
+    <button 
+      hx-get="?page={{ page_obj.next_page_number }}&status={{ status_filter }}&q={{ search_query }}"
+      hx-target="closest tr"
+      hx-swap="outerHTML"
+      hx-indicator="#loadingIndicator"
+      class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
+    >
+      Load More Orders
+    </button>
+    <div id="loadingIndicator" class="hidden inline-block ml-2">
+      <span class="animate-spin inline-block h-4 w-4 border-2 border-teal-300 border-t-teal-600 rounded-full"></span>
+    </div>
+  </td>
+</tr>
+{% endif %}

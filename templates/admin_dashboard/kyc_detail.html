@@ -1,0 +1,203 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block title %}KYC Detail | Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="flex items-center gap-4 mb-6">
+        <a href="{% url 'kyc-submissions' %}" class="text-pink-600 hover:text-pink-700 font-semibold">← Back to KYC List</a>
+        <h1 class="text-3xl font-bold text-gray-900">KYC Verification</h1>
+    </div>
+
+    <div class="grid grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="col-span-2 space-y-6">
+            <!-- User Info -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">User Information</h2>
+                <div class="space-y-3">
+                    <p><strong>Email:</strong> <a href="mailto:{{ user.email }}" class="text-pink-600 hover:text-pink-700">{{ user.email }}</a></p>
+                    <p><strong>Name:</strong> {{ user.get_full_name }}</p>
+                    <p><strong>Phone:</strong> {{ user.phone }}</p>
+                    <p><strong>Role:</strong> <span class="font-semibold">{{ user.get_role_display }}</span></p>
+                </div>
+            </div>
+
+            <!-- Business Details -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Business Information</h2>
+                <div class="space-y-3">
+                    <p><strong>Business Name:</strong> {{ kyc_submission.business_name }}</p>
+                    <p><strong>Business Type:</strong> {{ kyc_submission.get_user_type_display }}</p>
+                    <p><strong>Contact Number:</strong> {{ kyc_submission.contact_number }}</p>
+                    <p><strong>Business Address:</strong> {{ kyc_submission.business_address }}</p>
+                </div>
+            </div>
+
+            <!-- Document -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Business Document</h2>
+                {% if kyc_submission.cac_document %}
+                    <div class="space-y-4">
+                        <a href="{{ kyc_submission.cac_document.url }}" 
+                           target="_blank"
+                           class="inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                            📄 View Document
+                        </a>
+                        <p class="text-sm text-gray-600">File: {{ kyc_submission.cac_document.name }}</p>
+                    </div>
+                {% else %}
+                    <p class="text-gray-600">No document uploaded</p>
+                {% endif %}
+            </div>
+
+            <!-- Submission Timeline -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Timeline</h2>
+                <div class="space-y-3">
+                    <p><strong>Submitted:</strong> {{ kyc_submission.created_at|date:"M d, Y h:i A" }}</p>
+                    {% if kyc_submission.verified_at %}
+                        <p><strong>Verified:</strong> {{ kyc_submission.verified_at|date:"M d, Y h:i A" }}</p>
+                        <p><strong>Verified By:</strong> {{ kyc_submission.verified_by.get_full_name|default:kyc_submission.verified_by.email }}</p>
+                    {% endif %}
+                    {% if kyc_submission.rejection_reason %}
+                        <p><strong>Rejection Reason:</strong> {{ kyc_submission.rejection_reason }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Audit Trail -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Audit Trail</h2>
+                <div class="space-y-3">
+                    {% for log in audit_logs %}
+                        <div class="rounded-lg border border-gray-200 p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">
+                                        {% if log.event_type == 'status_changed' %}
+                                            Status Change
+                                        {% else %}
+                                            Email Update
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ log.created_at|date:"M d, Y h:i A" }}
+                                        {% if log.actor %}
+                                            • by {{ log.actor.get_full_name|default:log.actor.email }}
+                                        {% else %}
+                                            • by System
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                {% if log.event_type == 'email' %}
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                                        {% if log.email_status == 'sent' %}
+                                            bg-green-100 text-green-800
+                                        {% elif log.email_status == 'failed' %}
+                                            bg-red-100 text-red-800
+                                        {% elif log.email_status == 'queued' %}
+                                            bg-yellow-100 text-yellow-800
+                                        {% else %}
+                                            bg-gray-100 text-gray-800
+                                        {% endif %}
+                                    ">
+                                        {{ log.email_status|default:'n/a'|title }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            {% if log.event_type == 'status_changed' and log.from_status and log.to_status %}
+                                <p class="text-sm text-gray-700 mt-2">
+                                    {{ log.from_status|title }} → <span class="font-semibold">{{ log.to_status|title }}</span>
+                                </p>
+                            {% endif %}
+
+                            {% if log.message %}
+                                <p class="text-sm text-gray-700 mt-2">{{ log.message }}</p>
+                            {% endif %}
+
+                            {% if log.metadata.error %}
+                                <p class="text-xs text-red-700 bg-red-50 border border-red-100 rounded-md px-2 py-1 mt-2">
+                                    {{ log.metadata.error }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
+                            No audit events yet.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Sidebar -->
+        <div>
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Status: 
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
+                        {% if kyc_submission.status == 'approved' %}
+                            bg-green-100 text-green-800
+                        {% elif kyc_submission.status == 'rejected' %}
+                            bg-red-100 text-red-800
+                        {% else %}
+                            bg-yellow-100 text-yellow-800
+                        {% endif %}
+                    ">
+                        {{ kyc_submission.get_status_display }}
+                    </span>
+                </h2>
+
+                {% if kyc_submission.status == 'pending' %}
+                    <form method="post" class="space-y-4">
+                        {% csrf_token %}
+                        
+                        <!-- Approve Button -->
+                        <button type="submit" name="action" value="approve"
+                                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                            ✓ Approve KYC
+                        </button>
+
+                        <!-- Reject Form -->
+                        <div class="border-t pt-4">
+                            <label for="rejection_reason" class="block text-sm font-semibold text-gray-900 mb-2">Rejection Reason (if needed):</label>
+                            <textarea name="rejection_reason" 
+                                      placeholder="Explain why the KYC is being rejected..."
+                                      class="w-full px-3 py-2 rounded-lg border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                      rows="4"></textarea>
+                            <button type="submit" name="action" value="reject"
+                                    class="w-full mt-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                                ✗ Reject KYC
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="p-4 rounded-lg
+                        {% if kyc_submission.status == 'approved' %}
+                            bg-green-50 text-green-800
+                        {% else %}
+                            bg-red-50 text-red-800
+                        {% endif %}
+                    ">
+                        <p class="font-semibold mb-2">
+                            {% if kyc_submission.status == 'approved' %}
+                                ✓ This KYC has been approved
+                            {% else %}
+                                ✗ This KYC has been rejected
+                            {% endif %}
+                        </p>
+                        {% if kyc_submission.verified_at %}
+                            <p class="text-sm">{{ kyc_submission.verified_at|date:"M d, Y" }}</p>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'kyc-submissions' %}" class="w-full block mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-center transition">
+                        Back to List
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

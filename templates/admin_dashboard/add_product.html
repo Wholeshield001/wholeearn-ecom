@@ -1,0 +1,332 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Product Details{% endblock %}
+
+{% block extra_head %}
+{{ form.media }}
+{% endblock %}
+
+{% block page_title %}
+<div class="flex items-center gap-3">
+  <a href="{% url 'admin_products' %}" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+    <span class="material-symbols-outlined">arrow_back</span>
+  </a>
+  <span>Product Details</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<form method="POST" enctype="multipart/form-data" action="{% url 'add_product' %}">
+    {% csrf_token %}
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Left Column -->
+    <div class="space-y-6">
+      <!-- General Information -->
+      
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-base font-semibold text-gray-900 mb-6">General Information</h3>
+        
+        <div class="space-y-6">
+          <!-- Product Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Product Name</label>
+            <input 
+              type="text" 
+              name="name"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Enter product name"
+            />
+          </div>
+
+          <!-- Product Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Product Description</label>
+            {{ form.description }}
+          </div>
+          <!-- Category -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Category</label>
+            <div class="flex gap-2">
+              {{ form.category }}
+              <a 
+                href="{% url 'admin_categories' %}"
+                target="_blank"
+                class="px-4 py-3 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 flex items-center"
+                title="Manage categories"
+              >
+                <span class="material-symbols-outlined text-base">settings</span>
+              </a>
+            </div>
+            {% if form.category.errors %}
+              <p class="mt-1 text-sm text-red-600">{{ form.category.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-base font-semibold text-gray-900 mb-6">Inventory</h3>
+        
+        <div class="space-y-6">
+          <!-- Quantity -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Quantity</label>
+            <input 
+              type="number" 
+              name="stock"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="0"
+              value="0"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Weight (kg)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              name="weight_kg"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="1.00"
+              value="1.00"
+            />
+          </div>
+
+          <!-- SKU (Optional) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">SKU (Optional)</label>
+            <input 
+              type="text"
+              name="sku"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Enter SKU"
+            />
+          </div>
+
+          <!-- Best Seller -->
+          <div>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="is_best_seller" class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+              <span class="text-sm font-medium text-gray-700">Mark as Best Seller</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="space-y-6">
+      <!-- Product Images -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-base font-semibold text-gray-900 mb-6">Product Images</h3>
+        
+
+        <input 
+            type="file"
+            id="imageUpload"
+            name="images"
+            accept="image/*"
+            multiple
+            class="hidden"
+        />
+
+        <div 
+          class="border-2 border-dashed border-teal-300 rounded-lg p-8 text-center mb-6 bg-teal-50/20 cursor-pointer"
+          onclick="document.getElementById('imageUpload').click()"
+        >
+          <span class="material-symbols-outlined text-5xl text-teal-500">cloud_upload</span>
+          <p class="mt-2">Click or drag images to upload</p>
+        </div>
+
+        <div id="previewArea" class="grid grid-cols-3 gap-4"></div>
+
+        <input type="hidden" id="thumbnail_image" name="thumbnail_image">
+
+        
+      </div>
+
+      <!-- Pricing -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-base font-semibold text-gray-900 mb-6">Pricing by Role</h3>
+        
+        <div class="space-y-6">
+          <!-- Customer Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Customer Price</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="customer_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="0.00"
+              required
+            />
+          </div>
+
+          <!-- Wholesaler Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Wholesaler Price (Optional)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="wholesaler_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Leave empty to use customer price"
+            />
+          </div>
+
+          <!-- Retailer Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Retailer Price (Optional)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="retailer_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Leave empty to use customer price"
+            />
+          </div>
+
+          <!-- Hospital Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Hospital Price (Optional)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="hospital_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Leave empty to use customer price"
+            />
+          </div>
+
+          <!-- Pharmacy Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Pharmacy Price (Optional)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="pharmacy_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Leave empty to use customer price"
+            />
+          </div>
+
+          <!-- Online Vendor Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Online Vendor Price (Optional)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              name="online_vendor_price"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Leave empty to use customer price"
+            />
+          </div>
+
+          <!-- Discount -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Discount (%)</label>
+            <input 
+              type="number" 
+              min="0"
+              max="100"
+              name="discount"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="0"
+              value="0"
+            />
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm  p-6">
+        
+        <div class="space-y-6">
+          <!-- Gender Categories -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Product Category</label>
+            <div class="space-y-2">
+              <div class="flex items-center">
+                {{ form.is_male }}
+                <label for="id_is_male" class="ml-2 text-sm text-gray-700">Male</label>
+              </div>
+              <div class="flex items-center">
+                {{ form.is_female }}
+                <label for="id_is_female" class="ml-2 text-sm text-gray-700">Female</label>
+              </div>
+              <div class="flex items-center">
+                {{ form.is_general }}
+                <label for="id_is_general" class="ml-2 text-sm text-gray-700">General (Unisex)</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Information -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Additional Information</label>
+            <textarea 
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Enter additional information about the product"
+              rows="4"
+              name="additional_info"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Action Buttons -->
+  <div class="flex justify-end gap-3 mt-6">
+    <a href="{% url 'admin_products' %}" 
+      class="px-6 py-2.5 text-red-600 font-medium rounded-lg border border-red-600 hover:bg-red-50 transition-colors">
+        Cancel
+    </a>
+
+    <button 
+      type="submit"
+      class="px-8 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+    >
+      Save Product
+    </button>
+  </div>
+</form>
+
+<script>
+const imageUpload = document.getElementById("imageUpload");
+const previewArea = document.getElementById("previewArea");
+const thumbnailInput = document.getElementById("thumbnail_image");
+
+imageUpload.addEventListener("change", function() {
+    previewArea.innerHTML = ""; // clear previous
+
+    [...this.files].forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const div = document.createElement("div");
+            div.classList.add("relative", "cursor-pointer");
+
+            div.innerHTML = `
+                <img src="${e.target.result}" 
+                     class="rounded-lg border w-full h-32 object-cover">
+                <input type="radio" name="thumb" value="${index}" 
+                       class="absolute top-2 left-2 z-10">
+            `;
+
+            // set thumbnail input on click
+            div.querySelector("input").addEventListener("change", () => {
+                thumbnailInput.value = index;
+            });
+
+            previewArea.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+</script>
+
+{% endblock %}

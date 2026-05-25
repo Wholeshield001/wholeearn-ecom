@@ -1,0 +1,456 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Analytics{% endblock %}
+{% block page_title %}
+<span>Analytics</span>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+
+  <!-- Total Sales -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-teal-600">trending_up</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-700">Total Units Sold</h3>
+      </div>
+    </div>
+    <div class="space-y-1">
+      <p class="text-3xl font-semibold text-gray-900">{{ total_sales|floatformat:0 }}</p>
+      {% if sales_mom is not None %}
+        <p class="text-sm font-medium {% if sales_mom >= 0 %}text-teal-600{% else %}text-red-500{% endif %}">
+          {% if sales_mom >= 0 %}▲{% else %}▼{% endif %} {{ sales_mom|floatformat:1 }}% vs last month
+        </p>
+      {% else %}
+        <p class="text-sm text-gray-400">No previous month data</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Total Orders -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-blue-600">shopping_cart</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-700">Total Orders</h3>
+      </div>
+    </div>
+    <div class="space-y-1">
+      <p class="text-3xl font-semibold text-gray-900">{{ total_orders }}</p>
+      {% if orders_mom is not None %}
+        <p class="text-sm font-medium {% if orders_mom >= 0 %}text-teal-600{% else %}text-red-500{% endif %}">
+          {% if orders_mom >= 0 %}▲{% else %}▼{% endif %} {{ orders_mom|floatformat:1 }}% vs last month
+        </p>
+      {% else %}
+        <p class="text-sm text-gray-400">No previous month data</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Annual Users -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-purple-600">group</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-700">Total Users</h3>
+      </div>
+    </div>
+    <div class="space-y-1">
+      <p class="text-3xl font-semibold text-gray-900">{{ total_users }}</p>
+      {% if users_yoy is not None %}
+        <p class="text-sm font-medium {% if users_yoy >= 0 %}text-teal-600{% else %}text-red-500{% endif %}">
+          {% if users_yoy >= 0 %}▲{% else %}▼{% endif %} {{ users_yoy|floatformat:1 }}% vs last year
+        </p>
+      {% else %}
+        <p class="text-sm text-gray-400">No previous year data</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Annual Revenue -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-green-600">payments</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-700">{{ current_year }} Revenue</h3>
+      </div>
+    </div>
+    <div class="space-y-1">
+      <p class="text-3xl font-semibold text-gray-900">₦{{ annual_revenue|floatformat:0 }}</p>
+      {% if revenue_yoy is not None %}
+        <p class="text-sm font-medium {% if revenue_yoy >= 0 %}text-teal-600{% else %}text-red-500{% endif %}">
+          {% if revenue_yoy >= 0 %}▲{% else %}▼{% endif %} {{ revenue_yoy|floatformat:1 }}% vs {{ prev_year }}
+        </p>
+      {% else %}
+        <p class="text-sm text-gray-400">No previous year data</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Website Visits -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-pink-600">monitoring</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-700">Visits Today</h3>
+      </div>
+    </div>
+    <div class="space-y-1">
+      <p class="text-3xl font-semibold text-gray-900">{{ visits_today }}</p>
+      <p class="text-sm text-gray-500">{{ unique_visitors_today }} unique visitors</p>
+      <p class="text-xs text-pink-600">Avg {{ avg_daily_visits }} / day (14 days)</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Sales Details Chart (revenue this year vs last year) -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900">Revenue Details</h3>
+      <div class="flex gap-4 mt-2">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-teal-500 rounded-full"></div>
+          <span class="text-xs font-medium text-gray-600">{{ current_year }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-gray-800 rounded-full"></div>
+          <span class="text-xs font-medium text-gray-600">{{ prev_year }}</span>
+        </div>
+      </div>
+    </div>
+    <span class="text-sm text-gray-500">{{ prev_year }} – {{ current_year }}</span>
+  </div>
+  <div class="w-full h-72">
+    <canvas id="salesChart"></canvas>
+  </div>
+</div>
+
+<!-- Monthly User Sign-ups Chart -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900">Monthly User Sign-ups</h3>
+      <p class="text-sm text-gray-500 mt-1">New user registrations per month in {{ current_year }}</p>
+    </div>
+  </div>
+  <div class="w-full h-72">
+    <canvas id="userSignupsChart"></canvas>
+  </div>
+</div>
+
+<!-- Website Visits Trend -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900">Website Visits Trend</h3>
+      <p class="text-sm text-gray-500 mt-1">Total visits vs unique visitors (last 14 days)</p>
+    </div>
+  </div>
+  <div class="w-full h-72">
+    <canvas id="websiteVisitsChart"></canvas>
+  </div>
+</div>
+
+<!-- Bottom Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+  <!-- Today's Highlights -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Today's Highlights</h3>
+    <div class="space-y-3">
+      {% if new_products_today > 0 %}
+      <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <p class="text-sm text-yellow-800">
+          <span class="font-semibold text-yellow-600">{{ new_products_today }} new product{{ new_products_today|pluralize }}</span>
+          added today
+        </p>
+      </div>
+      {% else %}
+      <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <p class="text-sm text-gray-500">No new products added today.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Order Completion Rate -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Order Completion Rate</h3>
+    <div class="space-y-4">
+      <p class="text-3xl font-semibold text-gray-900" id="completionRatePct">—</p>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-teal-500 h-2 rounded-full" id="completionRateBar" style="width:0%"></div>
+      </div>
+      <p class="text-xs text-gray-400">Completed orders out of all orders</p>
+    </div>
+  </div>
+
+  <!-- Last 7 Days Sales -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Last 7 Days (Completed)</h3>
+    <div class="space-y-4">
+      <div>
+        <p class="text-sm text-gray-500">Items Sold</p>
+        <p class="text-2xl font-semibold text-gray-900">{{ last7_items }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Revenue</p>
+        <p class="text-2xl font-semibold text-gray-900">₦{{ last7_revenue|floatformat:0 }}</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Average Order Value (last 7 weeks) -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+  <h3 class="text-lg font-semibold text-gray-900 mb-1">Average Order Value</h3>
+  <p class="text-sm text-gray-500 mb-6">Per week over the last 7 weeks (completed orders)</p>
+  <div class="h-56">
+    <canvas id="orderValueChart"></canvas>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const gridColor = '#e5e7eb';
+const tickColor = '#9ca3af';
+const tooltipCfg = {
+  backgroundColor: 'rgba(17,24,39,0.85)',
+  padding: 10,
+  titleFont: { size: 13, weight: '600' },
+  bodyFont: { size: 12 },
+  cornerRadius: 6,
+};
+function nairaFmt(v) {
+  if (v >= 1_000_000) return '₦' + (v / 1_000_000).toFixed(1) + 'M';
+  if (v >= 1_000)     return '₦' + (v / 1_000).toFixed(0) + 'k';
+  return '₦' + v.toLocaleString();
+}
+
+// ── 1. Revenue Details — grouped bar (this year vs last year) ────────────────
+const revCurrent = {{ monthly_rev_current|safe }};
+const revPrev    = {{ monthly_rev_prev|safe }};
+
+new Chart(document.getElementById('salesChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [
+      {
+        label: '{{ current_year }}',
+        data: revCurrent,
+        backgroundColor: '#14b8a6',
+        borderRadius: 4,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8,
+      },
+      {
+        label: '{{ prev_year }}',
+        data: revPrev,
+        backgroundColor: '#1f2937',
+        borderRadius: 4,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8,
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        ...tooltipCfg,
+        callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + nairaFmt(ctx.parsed.y) }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { font: { size: 11 }, color: tickColor, callback: v => nairaFmt(v) },
+        grid: { color: gridColor },
+      },
+      x: {
+        ticks: { font: { size: 11 }, color: tickColor },
+        grid: { display: false },
+      }
+    }
+  }
+});
+
+// ── 2. Monthly User Sign-ups ─────────────────────────────────────────────────
+const monthlySignups = {{ monthly_signups|safe }};
+
+new Chart(document.getElementById('userSignupsChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [{
+      label: 'New Users',
+      data: monthlySignups,
+      borderColor: '#8b5cf6',
+      backgroundColor: 'rgba(139,92,246,0.1)',
+      borderWidth: 2.5,
+      pointRadius: 5,
+      pointBackgroundColor: '#8b5cf6',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      tension: 0.4,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        ...tooltipCfg,
+        callbacks: { label: ctx => ' ' + ctx.parsed.y + ' new users' }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { font: { size: 11 }, color: tickColor, stepSize: 1 },
+        grid: { color: gridColor },
+      },
+      x: {
+        ticks: { font: { size: 11 }, color: tickColor },
+        grid: { display: false },
+      }
+    }
+  }
+});
+
+// ── 3. Website Visits Trend ────────────────────────────────────────────────
+const visitLabels = {{ visit_labels|safe }};
+const dailyVisits = {{ daily_visits|safe }};
+const dailyUniqueVisitors = {{ daily_unique_visitors|safe }};
+
+new Chart(document.getElementById('websiteVisitsChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: visitLabels,
+    datasets: [
+      {
+        label: 'Total Visits',
+        data: dailyVisits,
+        borderColor: '#ec3183',
+        backgroundColor: 'rgba(236,49,131,0.10)',
+        borderWidth: 2.5,
+        pointRadius: 3,
+        tension: 0.35,
+        fill: true,
+      },
+      {
+        label: 'Unique Visitors',
+        data: dailyUniqueVisitors,
+        borderColor: '#14b8a6',
+        backgroundColor: 'rgba(20,184,166,0.05)',
+        borderWidth: 2,
+        pointRadius: 3,
+        tension: 0.35,
+        fill: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, labels: { boxWidth: 12, usePointStyle: true } },
+      tooltip: {
+        ...tooltipCfg,
+        callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}` }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { color: tickColor, precision: 0 },
+        grid: { color: gridColor },
+      },
+      x: {
+        ticks: { color: tickColor, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+        grid: { display: false },
+      }
+    }
+  }
+});
+
+// ── 4. Average Order Value — last 7 weeks ────────────────────────────────────
+const weeklyLabels = {{ weekly_avg_labels|safe }};
+const weeklyData   = {{ weekly_avg_data|safe }};
+
+new Chart(document.getElementById('orderValueChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: weeklyLabels,
+    datasets: [{
+      label: 'Avg Order Value',
+      data: weeklyData,
+      borderColor: '#14b8a6',
+      backgroundColor: 'rgba(20,184,166,0.08)',
+      borderWidth: 2.5,
+      pointRadius: 5,
+      pointBackgroundColor: '#14b8a6',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      tension: 0.4,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        ...tooltipCfg,
+        callbacks: { label: ctx => ' ' + nairaFmt(ctx.parsed.y) }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { font: { size: 11 }, color: tickColor, callback: v => nairaFmt(v) },
+        grid: { color: gridColor },
+      },
+      x: {
+        ticks: { font: { size: 11 }, color: tickColor },
+        grid: { display: false },
+      }
+    }
+  }
+});
+
+// ── Completion Rate widget ────────────────────────────────────────────────────
+(function () {
+  const total     = {{ total_orders }};
+  const completed = {{ completed_orders }};
+  const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+  document.getElementById('completionRatePct').textContent = rate + '%';
+  document.getElementById('completionRateBar').style.width = rate + '%';
+})();
+</script>
+{% endblock %}

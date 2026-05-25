@@ -1,0 +1,213 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Users{% endblock %}
+{% block page_title %}Users{% endblock %}
+
+{% block content %}
+<!-- Filter Tabs -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-1">
+    <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+      <a href="?role=all{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'all' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        All <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'all' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_users }}</span>
+      </a>
+      <a href="?role=administrator{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'administrator' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Admin <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'administrator' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_administrators }}</span>
+      </a>
+      <a href="?role=wholesaler{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'wholesaler' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Wholesale <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'wholesaler' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_wholesalers }}</span>
+      </a>
+      <a href="?role=retailer{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'retailer' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Retailer <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'retailer' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_retailers }}</span>
+      </a>
+      <a href="?role=end_user{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'end_user' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        End User <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'end_user' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_customers }}</span>
+      </a>
+    </div>
+    
+    <!-- Search Bar -->
+    <form method="GET" class="w-full sm:w-auto flex gap-2">
+      <input type="hidden" name="role" value="{{ role_filter }}">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search users, email, phone..." 
+        class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+      <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </form>
+  </div>
+
+  <button class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+    <span class="material-symbols-outlined text-base">cloud_download</span>
+    Export
+  </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-6 lg:mb-8">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-teal-600 text-xl lg:text-2xl">group</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Total Users</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+    </div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_users }}</p><p class="text-xs lg:text-sm text-gray-500">All users</p></div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-blue-600 text-xl lg:text-2xl">admin_panel_settings</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Administrators</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+    </div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_administrators }}</p><p class="text-xs lg:text-sm text-gray-500">Admin users</p></div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-orange-600 text-xl lg:text-2xl">local_shipping</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Wholesalers</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+    </div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_wholesalers }}</p><p class="text-xs lg:text-sm text-gray-500">Wholesale users</p></div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-red-600 text-xl lg:text-2xl">storefront</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Retailers</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+    </div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_retailers }}</p><p class="text-xs lg:text-sm text-gray-500">Retailer users</p></div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-green-600 text-xl lg:text-2xl">person</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Customers</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+    </div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_customers }}</p><p class="text-xs lg:text-sm text-gray-500">End Users</p></div>
+  </div>
+</div>
+
+<!-- Users Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+  <h2 class="text-base lg:text-lg font-semibold text-gray-900 mb-4">All Users</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-3 px-4"><input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" /></th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">User</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Email</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Role</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Unique Code</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Referral Code</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Points</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Status</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Joined</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Orders</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-3 px-4"><input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" /></td>
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-blue-400 flex items-center justify-center text-white text-xs font-medium">
+                {{ user.first_name.0|default:user.email.0|upper }}{{ user.last_name.0|default:user.email.1|upper }}
+              </div>
+              <div>
+                <p class="font-medium text-gray-900">{{ user.first_name|default:"" }} {{ user.last_name|default:"" }}{% if not user.first_name and not user.last_name %}{{ user.email }}{% endif %}</p>
+                <p class="text-xs text-gray-500">{{ user.phone|default:"N/A" }}</p>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-gray-700">{{ user.email }}</td>
+          <td class="py-3 px-4">
+            {% if user.role == 'administrator' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-blue-50 text-blue-600 font-medium">Administrator</span>
+            {% elif user.role == 'wholesaler' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-orange-50 text-orange-600 font-medium">Wholesaler</span>
+            {% elif user.role == 'retailer' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-red-50 text-red-600 font-medium">Retailer</span>
+            {% elif user.role == 'hospital' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-blue-50 text-blue-600 font-medium">Hospital</span>
+            {% elif user.role == 'pharmacy' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-emerald-50 text-emerald-600 font-medium">Pharmacy</span>
+            {% elif user.role == 'end_user' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-green-50 text-green-600 font-medium">End User</span>
+            {% else %}
+              <span class="px-2 py-1 rounded-full text-xs bg-gray-50 text-gray-600 font-medium">Unknown</span>
+            {% endif %}
+          </td>
+          <td class="py-3 px-4 text-gray-700 font-mono text-xs">{{ user.unique_code|default:"-" }}</td>
+          <td class="py-3 px-4 text-gray-700 font-mono text-xs">{{ user.referral_code|default:"-" }}</td>
+          <td class="py-3 px-4 text-gray-700 font-semibold">{{ user.reward_points|default:0 }}</td>
+          <td class="py-3 px-4">
+            {% if user.is_active %}
+              <span class="px-2 py-1 rounded-full text-xs bg-green-50 text-green-600 font-medium">Active</span>
+            {% else %}
+              <span class="px-2 py-1 rounded-full text-xs bg-red-50 text-red-600 font-medium">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="py-3 px-4 text-gray-700">{{ user.date_joined|date:"d M Y" }}</td>
+          <td class="py-3 px-4 text-gray-700">{{ user.total_orders|default:0 }}</td>
+          <td class="py-3 px-4 relative">
+            <div x-data="{ open:false, width:200, pos:{top:0,left:0}, place() { const r = this.$refs.btn.getBoundingClientRect(); const left = Math.min(r.right - this.width, window.innerWidth - this.width - 8); const top  = Math.min(r.bottom + 4, window.innerHeight - 8); this.pos = { top, left }; }}">
+              <button x-ref="btn" @click="open=!open; $nextTick(()=>place())" class="text-gray-400 hover:text-gray-600">
+                <span class="material-symbols-outlined text-lg">more_vert</span>
+              </button>
+
+              <div x-cloak x-show="open" x-transition @click.outside="open=false" class="dropdown-fixed bg-white rounded-lg shadow-lg border border-gray-200 py-2" :style="`top:${pos.top}px;left:${pos.left}px;width:${width}px`">
+                <a href="{% url 'user_detail' user.id %}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <span class="material-symbols-outlined text-blue-600 text-base">visibility</span> View Details
+                </a>
+                <a href="" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <span class="material-symbols-outlined text-green-600 text-base">edit</span> Edit
+                </a>
+                <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                  <span class="material-symbols-outlined text-base">delete</span> Delete
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="11" class="py-12 text-center">
+            <div class="flex flex-col items-center justify-center text-gray-500">
+              <span class="material-symbols-outlined text-6xl mb-4">group</span>
+              <p class="text-lg font-medium">No users found</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

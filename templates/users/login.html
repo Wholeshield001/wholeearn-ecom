@@ -1,0 +1,272 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}Log In - WholeShield{% endblock %}
+
+{% block content %}
+<style>
+  .login-stage {
+    position: relative;
+    min-height: calc(100vh - 3.5rem);
+    overflow: hidden;
+    padding: 2rem 1rem 2.5rem;
+    background: #bfbfbf;
+    isolation: isolate;
+  }
+
+  .login-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 34%);
+    z-index: 0;
+  }
+
+  .login-shell {
+    position: relative;
+    z-index: 1;
+    min-height: calc(100vh - 8rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .login-card {
+    width: min(100%, 330px);
+    background: #ffffff;
+    padding: 1.1rem 1.4rem 1.5rem;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+  }
+
+  .login-title {
+    margin: 0 0 1.5rem;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ec3183;
+  }
+
+  .login-field {
+    margin-bottom: 1rem;
+  }
+
+  .password-toggle-wrap {
+    position: relative;
+  }
+
+  .password-toggle-wrap input {
+    padding-right: 2.75rem;
+  }
+
+  .password-toggle-btn {
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: #9ca3af;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .password-toggle-btn:hover {
+    color: #ec3183;
+  }
+
+  .password-toggle-btn .icon-hide {
+    display: none;
+  }
+
+  .password-toggle-btn[data-visible="true"] .icon-show {
+    display: none;
+  }
+
+  .password-toggle-btn[data-visible="true"] .icon-hide {
+    display: inline;
+  }
+
+  .login-label {
+    display: block;
+    margin-bottom: 0.55rem;
+    font-size: 0.68rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #f06aa6;
+  }
+
+  .login-submit {
+    display: block;
+    width: 100%;
+    height: 44px;
+    margin-top: 1.25rem;
+    border: 0;
+    border-radius: 9999px;
+    background: #d9578d;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .login-submit:hover {
+    background: #c7487c;
+    transform: translateY(-1px);
+  }
+
+  .login-footer-text {
+    margin-top: 1.4rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: rgba(236, 49, 131, 0.85);
+  }
+
+  .login-footer-text a {
+    color: #ec3183;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .login-prop {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.88;
+  }
+
+  .login-prop-left {
+    left: -5.2rem;
+    top: 5.5rem;
+    width: 18rem;
+    transform: rotate(-31deg);
+  }
+
+  .login-prop-right {
+    right: -5.5rem;
+    bottom: 2.2rem;
+    width: 18.5rem;
+    transform: rotate(29deg);
+  }
+
+  .login-prop-top {
+    left: 50%;
+    top: 0.55rem;
+    width: 4.3rem;
+    opacity: 0.22;
+    transform: translateX(-50%);
+  }
+
+  .login-prop-bottom {
+    left: 50%;
+    bottom: -2.4rem;
+    width: 6.5rem;
+    opacity: 0.18;
+    transform: translateX(-50%);
+  }
+
+  @media (max-width: 768px) {
+    .login-stage {
+      background: #d3d3d3;
+      padding-top: 1.5rem;
+    }
+
+    .login-card {
+      width: min(100%, 360px);
+      padding: 1.25rem 1.1rem 1.35rem;
+    }
+
+    .login-prop-left,
+    .login-prop-right,
+    .login-prop-top,
+    .login-prop-bottom {
+      display: none;
+    }
+  }
+</style>
+
+<section class="login-stage">
+  <img src="{% static 'images/Reposhield.png' %}" alt="" class="login-prop login-prop-left">
+  <img src="{% static 'images/Arthorshield.png' %}" alt="" class="login-prop login-prop-right">
+  <img src="{% static 'images/Magnesium.png' %}" alt="" class="login-prop login-prop-top">
+  <img src="{% static 'images/VitaminC.png' %}" alt="" class="login-prop login-prop-bottom">
+
+  <div class="login-shell">
+    <div class="login-card">
+      <div class="mb-8 text-center">
+        <h1 class="login-title">Sign In</h1>
+      </div>
+
+      {% if messages %}
+      {% for message in messages %}
+      {% if 'cart' not in message.tags %}
+      <div
+        class="flash-message mb-4 rounded-lg border p-4 text-sm {% if 'error' in message.tags %}border-red-300 bg-red-100 text-red-700{% elif 'success' in message.tags %}border-green-300 bg-green-100 text-green-700{% else %}border-blue-300 bg-blue-100 text-blue-700{% endif %}">
+        {{ message }}
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+
+      {% if form.non_field_errors %}
+      <div class="mb-4 rounded-lg border border-red-300 bg-red-100 p-4 text-sm text-red-700">
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="login-field">
+          <label for="id_email" class="login-label">
+            Email
+          </label>
+          {{ form.email }}
+          {% if form.email.errors %}
+          <p class="mt-1 text-xs text-red-500">{{ form.email.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="login-field">
+          <label for="id_password" class="login-label">
+            Password
+          </label>
+          <div class="password-toggle-wrap" data-password-wrap>
+            {{ form.password }}
+            <button type="button" class="password-toggle-btn" data-password-toggle data-visible="false" aria-label="Show password">
+              <svg class="icon-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="icon-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m3 3 18 18"></path>
+                <path d="M10.584 10.587a2 2 0 0 0 2.829 2.828"></path>
+                <path d="M9.363 5.365A9.466 9.466 0 0 1 12 5c5 0 9.27 3.11 11 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                <path d="M6.61 6.609A13.526 13.526 0 0 0 1 12c1.73 3.89 6 7 11 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+              </svg>
+            </button>
+          </div>
+          {% if form.password.errors %}
+          <p class="mt-1 text-xs text-red-500">{{ form.password.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="login-submit">
+          Sign In
+        </button>
+      </form>
+
+      <p class="login-footer-text">
+        Don't have an account?
+        <a href="{% url 'partner-signup' %}">Sign up here</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

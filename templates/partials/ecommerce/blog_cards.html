@@ -1,0 +1,17 @@
+{% for post in posts %}
+<article class="group cursor-pointer opacity-0 translate-y-2 will-animate">
+  <a href="{% url 'blog-detail' post.slug %}" class="block">
+    <div class="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden mb-4">
+      {% if post.cover_image %}
+        <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+      {% else %}
+        <div class="w-full h-full flex items-center justify-center text-gray-400">
+          <span class="text-6xl">📝</span>
+        </div>
+      {% endif %}
+    </div>
+    <h3 class="text-lg font-semibold text-pink-600 mb-2 group-hover:text-pink-700">{{ post.title }}</h3>
+    <p class="text-sm text-gray-600 line-clamp-2">{{ post.content|striptags|truncatewords:20 }}</p>
+  </a>
+</article>
+{% endfor %}

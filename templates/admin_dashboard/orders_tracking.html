@@ -1,0 +1,125 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Order Tracking{% endblock %}
+{% block page_title %}Order Tracking{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+  <div class="flex items-center gap-2 text-sm">
+    <a href="{% url 'admin_orders' %}" class="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900">
+      <span class="material-symbols-outlined text-base">arrow_back</span>
+      Back to Orders
+    </a>
+    <div class="h-5 w-px bg-gray-200"></div>
+    <p class="text-gray-500">{{ total_orders }} total orders</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <div class="relative">
+      <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-base">search</span>
+      <input type="search" placeholder="Search orders" class="pl-9 pr-3 py-2 w-64 rounded-lg bg-white border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+    </div>
+  </div>
+</div>
+
+<div class="flex items-center gap-2 mb-5">
+  <a href="?status=all" class="px-3 py-1.5 rounded-lg text-sm font-medium border {% if status_param == 'all' %}border-teal-200 bg-teal-50 text-teal-700{% else %}border-transparent bg-gray-100 text-gray-600{% endif %}">
+    All <span class="ml-1 inline-flex items-center justify-center w-7 h-6 rounded-md {% if status_param == 'all' %}bg-white text-teal-700{% else %}bg-gray-200 text-gray-600{% endif %} text-xs font-semibold">{{ total_orders }}</span>
+  </a>
+  <a href="?status=in_progress" class="px-3 py-1.5 rounded-lg text-sm font-medium border {% if status_param == 'in_progress' %}border-teal-200 bg-teal-50 text-teal-700{% else %}border-transparent bg-gray-100 text-gray-600{% endif %}">
+    In Progress <span class="ml-1 inline-flex items-center justify-center w-7 h-6 rounded-md {% if status_param == 'in_progress' %}bg-white text-teal-700{% else %}bg-gray-200 text-gray-600{% endif %} text-xs font-semibold">{{ in_progress_count }}</span>
+  </a>
+  <a href="?status=completed" class="px-3 py-1.5 rounded-lg text-sm font-medium border {% if status_param == 'completed' %}border-teal-200 bg-teal-50 text-teal-700{% else %}border-transparent bg-gray-100 text-gray-600{% endif %}">
+    Completed <span class="ml-1 inline-flex items-center justify-center w-7 h-6 rounded-md {% if status_param == 'completed' %}bg-white text-teal-700{% else %}bg-gray-200 text-gray-600{% endif %} text-xs font-semibold">{{ completed_count }}</span>
+  </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  {% for entry in orders_data %}
+  {% with order=entry.order progress=entry.progress %}
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
+    <div class="flex items-start justify-between gap-3">
+      {% with first_item=order.items.first %}
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+          <span class="material-symbols-outlined text-lg">inventory_2</span>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">{{ first_item.product_name|default:"Order" }}</p>
+          <p class="text-xs text-gray-500">{{ order.created_at|date:"jS M Y" }}</p>
+        </div>
+      </div>
+      {% endwith %}
+      {% if order.status == 'delivered' %}
+        <span class="px-3 py-1 text-xs rounded-full bg-green-50 text-green-700 font-medium">Delivered</span>
+      {% elif order.status == 'cancelled' %}
+        <span class="px-3 py-1 text-xs rounded-full bg-red-50 text-red-700 font-medium">Cancelled</span>
+      {% else %}
+        <span class="px-3 py-1 text-xs rounded-full bg-yellow-50 text-yellow-700 font-medium">In Progress</span>
+      {% endif %}
+    </div>
+
+    <div class="flex items-center gap-2 text-xs text-gray-500">
+      <div class="flex items-center gap-2 w-full">
+        <div class="flex items-center gap-2 text-teal-500">
+          <span class="material-symbols-outlined text-base">place</span>
+          <span>{{ order.shipping_city }}, {{ order.shipping_state }}</span>
+        </div>
+        <div class="h-4 w-px bg-gray-200"></div>
+        <div class="flex items-center gap-2 text-gray-700">
+          <span class="material-symbols-outlined text-base">flag</span>
+          <span class="truncate">{{ order.shipping_address|truncatechars:32 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      {% for _ in "1234" %}
+        {% if forloop.counter <= progress %}
+          <span class="w-3 h-3 rounded-full bg-teal-500"></span>
+        {% else %}
+          <span class="w-3 h-3 rounded-full bg-gray-200"></span>
+        {% endif %}
+        {% if not forloop.last %}
+          <span class="flex-1 h-0.5 bg-gray-200"></span>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 text-sm font-semibold">
+          {{ order.user.first_name|default:'U'|slice:":1" }}{{ order.user.last_name|default:'S'|slice:":1" }}
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">{{ order.user.first_name }} {{ order.user.last_name }}</p>
+          <p class="text-xs text-gray-500">{{ order.user.role|title }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <form method="post" class="flex items-center gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="order_id" value="{{ order.id }}" />
+          <select name="status" class="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            {% for status in status_choices %}
+              <option value="{{ status }}" {% if status == order.status %}selected{% endif %}>{{ status|title }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="px-3 py-2 border border-teal-500 text-teal-700 rounded-lg text-sm font-semibold hover:bg-teal-50">Update Status</button>
+        </form>
+        {% if order.status != 'delivered' and order.status != 'cancelled' %}
+        <button type="button" onclick="openCancelOrderModal({ url: '/admin-dashboard/orders/{{ order.id }}/cancel/', orderId: '{{ order.id }}' })" class="px-3 py-2 border border-red-200 text-red-700 bg-red-50 rounded-lg text-sm font-semibold hover:bg-red-100">Cancel</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+  {% empty %}
+  <div class="col-span-full bg-white rounded-xl border border-gray-200 shadow-sm p-10 text-center text-gray-500">
+    <p class="text-sm">No orders for this filter yet.</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% include "admin_dashboard/modals/cancel_order_modal.html" %}
+{% endblock %}

@@ -1,0 +1,158 @@
+<dialog id="productDeleteModal" class="rounded-xl shadow-lg max-w-md w-full">
+  <div class="bg-white rounded-xl p-6 space-y-5">
+    <div class="flex items-start justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">Delete Product</h2>
+        <p class="text-sm text-gray-600 mt-1">This action cannot be undone.</p>
+      </div>
+      <button type="button" class="text-gray-400 hover:text-gray-600" data-cancel>
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-sm text-red-700">
+        Are you sure you want to delete <span class="font-semibold" data-product-name>this product</span>? This will remove the product and its images.
+      </p>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="button" class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300" data-cancel>
+        Cancel
+      </button>
+      <button type="button" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700" data-confirm>
+        Delete Product
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  function showProductDeleteToast(type, message) {
+    const container = document.getElementById('toastContainer');
+    if (!container) {
+      alert(message);
+      return;
+    }
+
+    const base =
+      'toast-enter rounded-lg shadow-lg p-4 flex items-start gap-3';
+    const palette =
+      type === 'success'
+        ? 'bg-teal-50 border border-teal-200'
+        : type === 'error'
+        ? 'bg-red-50 border border-red-200'
+        : 'bg-blue-50 border border-blue-200';
+    const icon =
+      type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info';
+    const textColor =
+      type === 'success'
+        ? 'text-teal-700'
+        : type === 'error'
+        ? 'text-red-700'
+        : 'text-blue-700';
+    const closeColor =
+      type === 'success'
+        ? 'text-teal-400 hover:text-teal-600'
+        : type === 'error'
+        ? 'text-red-400 hover:text-red-600'
+        : 'text-blue-400 hover:text-blue-600';
+
+    const toast = document.createElement('div');
+    toast.className = `${base} ${palette}`;
+    toast.setAttribute('data-toast', '');
+
+    toast.innerHTML = `
+      <div class="flex-shrink-0">
+        <span class="material-symbols-outlined text-lg">${icon}</span>
+      </div>
+      <p class="text-sm ${textColor} flex-1">${message}</p>
+      <button class="flex-shrink-0 ${closeColor}" type="button">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    `;
+
+    const closeBtn = toast.querySelector('button');
+    closeBtn?.addEventListener('click', () => closeProductDeleteToast(toast));
+
+    container.appendChild(toast);
+    setTimeout(() => closeProductDeleteToast(toast), 2500);
+  }
+
+  function closeProductDeleteToast(toast) {
+    if (!toast || toast.dataset.closing) return;
+    toast.dataset.closing = 'true';
+    toast.classList.remove('toast-enter');
+    toast.classList.add('toast-exit');
+    setTimeout(() => toast.remove(), 250);
+  }
+
+  (function() {
+    const modal = document.getElementById('productDeleteModal');
+    if (!modal) return;
+
+    const nameEl = modal.querySelector('[data-product-name]');
+    const confirmBtn = modal.querySelector('[data-confirm]');
+    const cancelBtns = modal.querySelectorAll('[data-cancel]');
+    let ctx = { url: null, rowId: null, redirectUrl: null };
+
+    function getCsrfToken() {
+      const match = document.cookie.match(/csrftoken=([^;]+)/);
+      if (match) return match[1];
+      const input = document.querySelector('[name=csrfmiddlewaretoken]');
+      return input ? input.value : '';
+    }
+
+    window.openProductDeleteModal = function(opts) {
+      ctx = {
+        url: opts?.url || null,
+        rowId: opts?.rowId || null,
+        redirectUrl: opts?.redirectUrl || null
+      };
+      if (nameEl) nameEl.textContent = opts?.name || 'this product';
+      modal.showModal();
+    };
+
+    function resetConfirm() {
+      if (confirmBtn?.dataset.label) confirmBtn.textContent = confirmBtn.dataset.label;
+      confirmBtn?.removeAttribute('disabled');
+    }
+
+    async function handleDelete() {
+      if (!ctx.url) return;
+      if (confirmBtn) {
+        confirmBtn.dataset.label = confirmBtn.dataset.label || confirmBtn.textContent;
+        confirmBtn.textContent = 'Deleting...';
+        confirmBtn.setAttribute('disabled', 'true');
+      }
+      try {
+        const resp = await fetch(ctx.url, {
+          method: 'DELETE',
+          headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await resp.json();
+        if (data.success) {
+          if (ctx.rowId) document.getElementById(ctx.rowId)?.remove();
+          modal.close();
+          showProductDeleteToast('success', 'Product deleted successfully!');
+          if (ctx.redirectUrl) window.location.href = ctx.redirectUrl;
+        } else {
+          showProductDeleteToast('error', data.message || 'Failed to delete product');
+        }
+      } catch (err) {
+        console.error(err);
+        showProductDeleteToast('error', 'Error deleting product');
+      } finally {
+        resetConfirm();
+        ctx = { url: null, rowId: null, redirectUrl: null };
+      }
+    }
+
+    confirmBtn?.addEventListener('click', handleDelete);
+    cancelBtns.forEach(btn => btn.addEventListener('click', () => modal.close()));
+    modal.addEventListener('close', () => {
+      resetConfirm();
+      ctx = { url: null, rowId: null, redirectUrl: null };
+    });
+  })();
+</script>

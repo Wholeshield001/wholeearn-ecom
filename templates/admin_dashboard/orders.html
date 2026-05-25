@@ -1,0 +1,152 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Orders{% endblock %}
+{% block page_title %}Orders{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <!-- Filter Tabs + Search -->
+  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-1">
+    <!-- Filter Tabs -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-1 inline-flex">
+      <a href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'all' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        All <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'all' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_orders }}</span>
+      </a>
+      <a href="?status=processing{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'processing' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        In Progress <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'processing' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ processing_orders }}</span>
+      </a>
+      <a href="?status=completed{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'completed' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Completed <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'completed' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ completed_orders }}</span>
+      </a>
+      <a href="?status=cancelled{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'cancelled' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Cancelled <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'cancelled' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ cancelled_orders }}</span>
+      </a>
+    </div>
+
+    <!-- Search Bar -->
+    <form method="GET" class="w-full sm:w-auto flex gap-2">
+      <input type="hidden" name="status" value="{{ status_filter }}">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search orders, customer, email..." 
+        class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+      <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex items-center gap-2">
+    <button class="px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">location_on</span>
+      Track
+    </button>
+    <a href="{% url 'admin_export_orders' %}?status={{ status_filter }}{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">cloud_download</span>
+      Export CSV
+    </a>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-teal-600">shopping_cart</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-600">Total Orders</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-lg">more_vert</span>
+      </button>
+    </div>
+    <div>
+      <p class="text-3xl font-bold text-gray-900">{{ total_orders }}</p>
+      <p class="text-sm text-gray-500 mt-1">All time orders</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-red-600">cancel</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-600">Cancelled Orders</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-lg">more_vert</span>
+      </button>
+    </div>
+    <div>
+      <p class="text-3xl font-bold text-gray-900">{{ cancelled_orders }}</p>
+      <p class="text-sm text-gray-500 mt-1">Cancelled orders</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-blue-600">pending</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-600">Active Orders</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-lg">more_vert</span>
+      </button>
+    </div>
+    <div>
+      <p class="text-3xl font-bold text-gray-900">{{ active_orders }}</p>
+      <p class="text-sm text-gray-500 mt-1">Active orders</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-green-600">check_circle</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-600">Completed Orders</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-lg">more_vert</span>
+      </button>
+    </div>
+    <div>
+      <p class="text-3xl font-bold text-gray-900">{{ completed_orders }}</p>
+      <p class="text-sm text-gray-500 mt-1">Completed orders</p>
+    </div>
+  </div>
+</div>
+
+<!-- Orders Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+  <h2 class="text-lg font-semibold text-gray-900 mb-4">Orders</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-3 px-4">
+            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
+          </th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Product</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Customer</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Phone Number</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Location</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Order Date</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Status</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% include "admin_dashboard/partials/orders_table_rows.html" %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include "admin_dashboard/modals/cancel_order_modal.html" %}
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}Shopping Cart - Whole Earn{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12 sm:py-16">
+  <!-- Page Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl sm:text-4xl font-bold text-[#ec3183] mb-2">Shopping Cart</h1>
+    <p class="text-[#ec3183] opacity-80">{{ item_count }} item{{ item_count|pluralize }} in your cart</p>
+  </div>
+
+  {% if items %}
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Cart Items -->
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-lg border border-pink-100 overflow-hidden">
+        {% for item in items %}
+        <div class="flex gap-4 p-6 border-b border-pink-100 last:border-b-0 hover:bg-pink-50 transition-colors">
+          <!-- Product Image -->
+          <div class="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+            {% if item.product.thumbnail and item.product.thumbnail.image %}
+            <img src="{{ item.product.thumbnail.image.url }}" alt="{{ item.product.name }}"
+              class="w-full h-full object-cover">
+            {% elif item.product.images.first %}
+            <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}"
+              class="w-full h-full object-cover">
+            {% else %}
+            <div
+              class="w-full h-full bg-gradient-to-br from-[#ec3183] to-[#31dec4] opacity-20 flex items-center justify-center">
+              <span class="text-xs text-gray-400">No image</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Product Details -->
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-[#ec3183] mb-1">
+              <a href="{% url 'product-detail' item.product.id %}" class="hover:opacity-80">
+                {{ item.product.name }}
+              </a>
+            </h3>
+            <p class="text-sm text-[#ec3183] opacity-70 mb-2">{{ item.product.category.name }}</p>
+            <p class="text-sm text-[#ec3183] opacity-80 mb-3">SKU: {{ item.product.sku }}</p>
+
+            <!-- Quantity and Price -->
+            <div class="flex items-center gap-4">
+              <form method="post" action="{% url 'update-cart-item' item.id %}" class="flex items-center gap-2">
+                {% csrf_token %}
+                <label for="qty-{{ item.id }}" class="text-sm font-medium text-[#ec3183]">Qty:</label>
+                <input type="number" id="qty-{{ item.id }}" name="quantity" value="{{ item.quantity }}" min="1"
+                  max="{{ item.product.stock }}"
+                  class="w-16 px-2 py-1 border border-pink-200 rounded text-center text-[#ec3183]"
+                  onchange="this.form.submit()">
+              </form>
+
+              <form method="post" action="{% url 'remove-from-cart' item.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit"
+                  class="no-global-style text-sm text-red-600 hover:text-red-800 font-medium">Remove</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Item Total -->
+          <div class="flex flex-col items-end justify-between flex-shrink-0">
+            <p class="text-xl font-bold text-[#ec3183]">₦{{ item.get_total_price }}</p>
+            <p class="text-sm text-[#ec3183] opacity-70">₦{{ item.price }} each</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-lg border border-pink-100 p-6 sticky top-20">
+        <h2 class="text-2xl font-bold text-[#ec3183] mb-6">Order Summary</h2>
+
+        <!-- Summary Items -->
+        <div class="space-y-4 mb-6 pb-6 border-b border-pink-100">
+          <div class="flex justify-between text-[#ec3183]">
+            <span>Subtotal</span>
+            <span>₦{{ total_price }}</span>
+          </div>
+          <div class="flex justify-between text-[#ec3183]">
+            <span>Shipping</span>
+            <span class="text-green-600 font-semibold">Free</span>
+          </div>
+          <div class="flex justify-between text-[#ec3183]">
+            <span>Tax</span>
+            <span>TBD</span>
+          </div>
+        </div>
+
+        <!-- Total -->
+        <div class="flex justify-between items-center mb-6 pb-6 border-b border-pink-100">
+          <span class="text-xl font-bold text-[#ec3183]">Total</span>
+          <span class="text-2xl font-bold text-[#ec3183]">₦{{ total_price }}</span>
+        </div>
+
+        <!-- Checkout Button -->
+        <a href="{% url 'checkout' %}"
+          class="w-full py-3 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow text-center block">
+          Proceed to Checkout
+        </a>
+
+        <!-- Continue Shopping -->
+        <a href="{% url 'products' %}"
+          class="w-full mt-3 py-3 border-2 border-[#ec3183] text-[#ec3183] font-semibold rounded-lg hover:bg-pink-50 transition-colors text-center block">
+          Continue Shopping
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- Empty Cart -->
+  <div class="text-center py-20">
+    <div class="inline-block p-4 bg-gradient-to-br from-[#ec3183] to-[#31dec4] rounded-full mb-6 opacity-20">
+      <svg class="w-16 h-16 text-[#ec3183]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+        </path>
+      </svg>
+    </div>
+    <h2 class="text-3xl font-bold text-[#ec3183] mb-3">Your Cart is Empty</h2>
+    <p class="text-[#ec3183] opacity-80 mb-8 text-lg">Start shopping to add items to your cart</p>
+    <a href="{% url 'products' %}"
+      class="inline-block px-8 py-3 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow">
+      Shop Now
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Messages -->
+{% if messages %}
+<div class="fixed bottom-4 right-4 z-50 space-y-2 max-w-md">
+  {% for message in messages %}
+  <div
+    class="flash-message {% if message.tags %}{{ message.tags }}{% endif %} bg-white rounded-lg shadow-lg p-4 border-l-4 {% if 'success' in message.tags %}border-green-500{% else %}border-red-500{% endif %}">
+    <p class="text-sm font-medium">{{ message }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

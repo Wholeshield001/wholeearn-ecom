@@ -1,0 +1,36 @@
+{% for order in orders %}
+<tr class="hover:bg-gray-50">
+  <td class="px-6 py-4 whitespace-nowrap">
+    <span class="text-sm font-mono text-gray-900">#{{ order.id|slice:":8" }}</span>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+    {{ order.created_at|date:"M d, Y" }}
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+    {{ order.items.count }} item{{ order.items.count|pluralize }}
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+    ₦{{ order.total_amount|floatformat:2 }}
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap">
+    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ order.status_badge_class }}">{{ order.get_status_display }}</span>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+    <a href="{% url 'order-detail' order.id %}" class="text-[#ec3183] hover:opacity-80">View Details</a>
+  </td>
+</tr>
+{% endfor %}
+{% if has_more %}
+<tr id="order-load-more-row">
+  <td colspan="6" class="py-6 px-4 text-center">
+    <button
+      hx-get="{% url 'order-history-more' %}?offset={{ next_offset }}"
+      hx-target="#order-load-more-row"
+      hx-swap="outerHTML"
+      class="px-6 py-2.5 bg-[#ec3183] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition focus:outline-none"
+    >
+      Load more
+    </button>
+  </td>
+</tr>
+{% endif %}

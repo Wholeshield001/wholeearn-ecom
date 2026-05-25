@@ -1,0 +1,169 @@
+{% load static %}
+
+<!-- Products Grid Partial -->
+{% if products %}
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-12" id="productsGrid"
+  data-current-page="{{ page_obj.number }}" data-total-pages="{{ page_obj.paginator.num_pages }}">
+  {% for product in products %}
+  <div
+    class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow group flex flex-col reveal will-change-transform">
+    <!-- Product Link (Image + Info) -->
+    <a href="{% url 'product-detail' product.id %}" class="flex-1 flex flex-col">
+      <!-- Product Image -->
+      <div class="relative w-full aspect-square bg-gray-100 overflow-hidden">
+        {% if product.thumbnail and product.thumbnail.image %}
+        <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+        {% elif product.images.first %}
+        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+        {% else %}
+        <div
+          class="w-full h-full bg-gradient-to-br from-[#31dec4] to-[#ec3183] opacity-20 flex items-center justify-center">
+          <span class="text-gray-400">No image</span>
+        </div>
+        {% endif %}
+
+        <!-- Best Seller Badge -->
+        {% if product.is_best_seller %}
+        <div
+          class="absolute top-2 right-2 bg-[#ec3183] text-white px-2 py-1 rounded-full text-xs font-semibold">
+          Best Seller
+        </div>
+        {% endif %}
+
+        <!-- Discount Badge -->
+        {% if product.discount > 0 %}
+        <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+          -{{ product.discount }}%
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Product Info -->
+      <div class="p-4 flex-1 flex flex-col">
+        <!-- Category -->
+        {% if product.category %}
+        <p class="text-xs text-[#ec3183] opacity-70 mb-1 uppercase tracking-wide">
+          {{ product.category.name }}
+        </p>
+        {% endif %}
+
+        <!-- Product Name -->
+        <h3 class="font-semibold text-[#ec3183] mb-2 line-clamp-2 text-sm sm:text-base">
+          {{ product.name }}
+        </h3>
+
+        <!-- Price Section -->
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-lg sm:text-xl font-bold text-[#ec3183]">₦{{ product.price }}</span>
+          {% if product.discount > 0 %}
+          {% widthratio product.price 100 product.discount as discount_amount %}
+          <span class="text-sm text-gray-400 line-through">
+            ₦{{ product.price|add:discount_amount }}
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- Stock Status -->
+        <div class="mb-3">
+          {% if product.stock > 5 %}
+          <p class="text-xs text-green-600 font-semibold">In Stock</p>
+          {% elif product.stock > 0 %}
+          <p class="text-xs text-orange-600 font-semibold">Only {{ product.stock }} left</p>
+          {% else %}
+          <p class="text-xs text-red-600 font-semibold">Out of Stock</p>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+
+    <!-- Add to Cart Button (Outside link) -->
+    <div class="p-4 pt-0">
+      {% if request.user.is_authenticated %}
+      {% with min_qty=product.get_min_quantity_for_role|add:request.user.role %}
+      <form method="post" action="{% url 'add-to-cart' product.id %}" class="cart-form">
+        {% csrf_token %}
+        <input type="hidden" name="quantity" value="{{ min_qty }}">
+        {% if product.stock > 0 %}
+        <button type="submit" hx-post="{% url 'add-to-cart' product.id %}" hx-include="[name='quantity']" hx-swap="none"
+          class="w-full py-2 bg-[#ec3183] hover:bg-[#d41e6e] text-white font-semibold rounded-lg hover:shadow-lg transition-all text-sm sm:text-base"
+          {% if min_qty > 1 %}title="Minimum quantity: {{ min_qty }}"{% endif %}>
+          Add to Cart
+        </button>
+        {% else %}
+        <button type="button" disabled
+          class="w-full py-2 bg-gray-300 text-gray-500 font-semibold rounded-lg cursor-not-allowed text-sm sm:text-base">
+          Out of Stock
+        </button>
+        {% endif %}
+      </form>
+      {% endwith %}
+      {% else %}
+      <a href="{% url 'login' %}?next={{ request.path }}"
+        class="block w-full text-center py-2 bg-[#ec3183] hover:bg-[#d41e6e] text-white font-semibold rounded-lg hover:shadow-lg transition-all text-sm sm:text-base">
+        Login to Add to Cart
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="flex justify-center items-center gap-2 mb-12" id="paginationContainer">
+  <!-- Previous Page -->
+  {% if page_obj.has_previous %}
+  <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+    hx-get="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+    hx-target="#productsGrid" hx-swap="outerHTML swap:0.5s"
+    class="px-3 py-2 rounded-lg border border-pink-200 text-[#ec3183] hover:bg-pink-50 transition-colors text-sm">
+    First
+  </a>
+  <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+    hx-get="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+    hx-target="#productsGrid" hx-swap="outerHTML swap:0.5s"
+    class="px-3 py-2 rounded-lg border border-pink-200 text-[#ec3183] hover:bg-pink-50 transition-colors text-sm">
+    ← Previous
+  </a>
+  {% endif %}
+
+  <!-- Page Info -->
+  <span class="px-4 py-2 text-sm text-[#ec3183] font-semibold">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  </span>
+
+  <!-- Next Page -->
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+    hx-get="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+    hx-target="#productsGrid" hx-swap="outerHTML swap:0.5s"
+    class="px-3 py-2 rounded-lg border border-pink-200 text-[#ec3183] hover:bg-pink-50 transition-colors text-sm">
+    Next →
+  </a>
+  <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+    hx-get="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+    hx-target="#productsGrid" hx-swap="outerHTML swap:0.5s"
+    class="px-3 py-2 rounded-lg border border-pink-200 text-[#ec3183] hover:bg-pink-50 transition-colors text-sm">
+    Last
+  </a>
+  {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<!-- No Products Found -->
+<div class="text-center py-16" id="productsGrid">
+  <div class="inline-block p-4 bg-gradient-to-br from-[#ec3183] to-[#31dec4] rounded-full mb-4 opacity-20">
+    <svg class="w-12 h-12 text-[#ec3183]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M20 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 3.5a7.5 7.5 0 0010.15 10.15z"></path>
+    </svg>
+  </div>
+  <h3 class="text-2xl font-bold text-[#ec3183] mb-2">No Products Found</h3>
+  <p class="text-[#ec3183] opacity-80">
+    We couldn't find any products matching your search.
+  </p>
+</div>
+{% endif %}

@@ -1,7 +1,16 @@
 from django import forms
 from django.contrib.auth import authenticate
 from users.models import User
+from .models import Category, Product, BlogPost, BlogCategory
+from ecom.models import RewardPointConfig, PaymentProviderConfig
+from django.forms.widgets import ClearableFileInput
+from django_ckeditor_5.widgets import CKEditor5Widget
 
+
+
+
+class MultipleFileInput(ClearableFileInput):
+    allow_multiple_selected = True
 
 class AdminLoginForm(forms.Form):
     email = forms.EmailField(
@@ -54,6 +63,67 @@ class AdminLoginForm(forms.Form):
 
     def get_user(self):
         return self.user_cache
+
+
+class AdminInviteForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'First name'}),
+            'last_name': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'Last name'}),
+            'email': forms.EmailInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'Email'}),
+            'phone': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'Phone (optional)'}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('An account with this email already exists.')
+        return email
+
+
+class AdminProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'phone', 'email']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'First name'}),
+            'last_name': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'Last name'}),
+            'email': forms.EmailInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100', 'readonly': 'readonly'}),
+            'phone': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'Phone'}),
+        }
+
+
+class AdminPasswordChangeForm(forms.Form):
+    current_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'Current password'})
+    )
+    new_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'New password', 'minlength': '8'}),
+        min_length=8
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'Confirm new password'})
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_current_password(self):
+        pwd = self.cleaned_data.get('current_password')
+        if not self.user.check_password(pwd):
+            raise forms.ValidationError('Current password is incorrect.')
+        return pwd
+
+    def clean(self):
+        cleaned = super().clean()
+        new_pwd = cleaned.get('new_password')
+        confirm = cleaned.get('confirm_password')
+        if new_pwd and confirm and new_pwd != confirm:
+            raise forms.ValidationError('New passwords do not match.')
+        return cleaned
     
 
 class ForgotPasswordForm(forms.Form):
@@ -121,3 +191,144 @@ class ResetPasswordForm(forms.Form):
                 raise forms.ValidationError("Password must be at least 8 characters long.")
 
         return cleaned_data
+    
+
+
+
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'placeholder': 'Category name'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg resize-none',
+                'rows': 4,
+                'placeholder': 'Description (optional)'
+            })
+        }
+
+
+class BlogCategoryForm(forms.ModelForm):
+    class Meta:
+        model = BlogCategory
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'placeholder': 'Category name'
+            }),
+        }
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = [
+            'name', 'description', 'category', 'customer_price', 'wholesaler_price', 
+            'retailer_price', 'hospital_price', 'pharmacy_price', 'online_vendor_price', 'discount', 'stock', 'weight_kg',
+            'is_best_seller', 'is_male', 'is_female', 'is_general', 'additional_info'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'description': CKEditor5Widget(attrs={'class':'django_ckeditor_5'}, config_name='default'),
+            'category': forms.Select(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'customer_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Customer Price'}),
+            'wholesaler_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Wholesaler Price (optional)'}),
+            'retailer_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Retailer Price (optional)'}),
+            'hospital_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Hospital Price (optional)'}),
+            'pharmacy_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Pharmacy Price (optional)'}),
+            'online_vendor_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Online Vendor Price (optional)'}),
+            'discount': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0','max':'100'}),
+            'stock': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0'}),
+            'weight_kg': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0.01','step':'0.01','placeholder':'1.00'}),
+            'is_best_seller': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
+            'is_male': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
+            'is_female': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
+            'is_general': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
+            'additional_info': forms.Textarea(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','rows':4}),
+        }
+
+
+class ProductImageForm(forms.Form):
+    images = forms.FileField(
+        widget=MultipleFileInput(attrs={"multiple": True}),
+        required=False
+    )
+
+    def clean_images(self):
+        images = self.files.getlist('images')
+        # Remove the required validation - images are optional
+        for image in images:
+            if image.size > 5 * 1024 * 1024:  # 5MB limit
+                raise forms.ValidationError("Each image must be less than 5MB.")
+        return images
+
+
+class BlogPostForm(forms.ModelForm):
+    class Meta:
+        model = BlogPost
+        fields = ['title', 'content', 'category', 'cover_image', 'is_published', 'parent']
+        widgets = {
+            'content': CKEditor5Widget(attrs={'class': 'django_ckeditor_5'}, config_name='extends'),
+            'title': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'category': forms.Select(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'form': 'blog-form'}),
+            'parent': forms.Select(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'form': 'blog-form'}),
+            'is_published': forms.CheckboxInput(attrs={'class': 'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
+            'cover_image': forms.FileInput(attrs={'class': 'w-full', 'form': 'blog-form'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].queryset = BlogCategory.objects.all().order_by('name')
+        self.fields['category'].required = False
+        self.fields['parent'].queryset = BlogPost.objects.all().order_by('title')
+        self.fields['parent'].required = False
+        self.fields['is_published'].required = False
+
+
+class RewardPointConfigForm(forms.ModelForm):
+    class Meta:
+        model = RewardPointConfig
+        fields = [
+            'points_per_purchase',
+            'referral_bonus_points',
+            'points_to_naira_rate',
+            'minimum_withdrawal_amount',
+        ]
+        widgets = {
+            'points_per_purchase': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+            }),
+            'referral_bonus_points': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+            }),
+            'points_to_naira_rate': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+                'step': '0.0001',
+            }),
+            'minimum_withdrawal_amount': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+                'step': '0.01',
+            }),
+        }
+
+
+class PaymentProviderConfigForm(forms.ModelForm):
+    class Meta:
+        model = PaymentProviderConfig
+        fields = ['active_provider']
+        widgets = {
+            'active_provider': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg bg-white',
+            }),
+        }

@@ -21,7 +21,7 @@
       </button>
     </div>
     <div class="space-y-1">
-      <p class="text-2xl lg:text-3xl font-bold text-gray-900">12,250</p>
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_orders }}</p>
       <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
     </div>
   </div>
@@ -40,7 +40,7 @@
       </button>
     </div>
     <div class="space-y-1">
-      <p class="text-2xl lg:text-3xl font-bold text-gray-900">560</p>
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ pending_orders }}</p>
       <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
     </div>
   </div>
@@ -59,7 +59,7 @@
       </button>
     </div>
     <div class="space-y-1">
-      <p class="text-2xl lg:text-3xl font-bold text-gray-900">12,250</p>
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_users }}</p>
       <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
     </div>
   </div>
@@ -78,30 +78,108 @@
       </button>
     </div>
     <div class="space-y-1">
-      <p class="text-2xl lg:text-3xl font-bold text-gray-900">₦12,250</p>
+      <p class="text-2xl lg:text-3xl font-bold text-gray-900">₦{{ total_revenue }}</p>
       <p class="text-xs lg:text-sm text-green-600">+12% to last month</p>
     </div>
   </div>
 </div>
 
+<!-- Reward Program Summary -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-10 h-10 lg:w-12 lg:h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+        <span class="material-symbols-outlined text-indigo-600 text-xl lg:text-2xl">workspace_premium</span>
+      </div>
+      <h3 class="text-xs lg:text-sm font-medium text-gray-600">Points Issued</h3>
+    </div>
+    <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_points_issued }}</p>
+    <p class="text-xs lg:text-sm text-gray-500 mt-1">Total reward points across all users</p>
+    <a href="{% url 'admin_reward_settings' %}" class="inline-flex items-center gap-1 mt-3 text-xs font-medium text-teal-600 hover:text-teal-700">
+      Configure rewards
+      <span class="material-symbols-outlined text-sm">arrow_forward</span>
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-10 h-10 lg:w-12 lg:h-12 bg-pink-100 rounded-lg flex items-center justify-center">
+        <span class="material-symbols-outlined text-pink-600 text-xl lg:text-2xl">group_add</span>
+      </div>
+      <h3 class="text-xs lg:text-sm font-medium text-gray-600">Referral Orders</h3>
+    </div>
+    <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ successful_referral_orders }}</p>
+    <p class="text-xs lg:text-sm text-gray-500 mt-1">Paid orders completed with referral codes</p>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-sm font-semibold text-gray-900">Top Referrers</h3>
+      <a href="{% url 'admin_customers' %}" class="text-xs text-teal-600 hover:text-teal-700">View users</a>
+    </div>
+    <div class="space-y-3">
+      {% for referrer in top_referrers %}
+      <div class="flex items-center justify-between">
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-gray-900 truncate">
+            {{ referrer.first_name|default:"" }} {{ referrer.last_name|default:"" }}{% if not referrer.first_name and not referrer.last_name %}{{ referrer.email }}{% endif %}
+          </p>
+          <p class="text-xs text-gray-500">{{ referrer.referral_orders_count }} referral order{{ referrer.referral_orders_count|pluralize }}</p>
+        </div>
+        <p class="text-sm font-semibold text-indigo-600">{{ referrer.reward_points }} pts</p>
+      </div>
+      {% empty %}
+      <p class="text-sm text-gray-500">No referral orders yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-10 h-10 lg:w-12 lg:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+        <span class="material-symbols-outlined text-purple-600 text-xl lg:text-2xl">monitoring</span>
+      </div>
+      <h3 class="text-xs lg:text-sm font-medium text-gray-600">Website Visits</h3>
+    </div>
+    <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ today_visits }}</p>
+    <p class="text-xs lg:text-sm text-gray-500 mt-1">today • {{ unique_visitors_today }} unique visitors</p>
+    <p class="text-xs text-purple-600 mt-2">{{ last_7_days_visits }} visits in last 7 days</p>
+  </div>
+</div>
+
 <!-- Sales Chart & Notifications -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
-  <!-- Sales Details Chart -->
+  <!-- Sales Chart -->
   <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
         <h2 class="text-base lg:text-lg font-semibold text-gray-900">Sales Details</h2>
-        <p class="text-xs lg:text-sm text-green-600">+12% this month</p>
+        {% if mom_change is not None %}
+          <p class="text-xs lg:text-sm {% if mom_change >= 0 %}text-green-600{% else %}text-red-500{% endif %}">
+            {% if mom_change >= 0 %}▲{% else %}▼{% endif %} {{ mom_change|floatformat:1 }}% vs last month
+          </p>
+        {% else %}
+          <p class="text-xs lg:text-sm text-gray-400">No previous month data</p>
+        {% endif %}
       </div>
-      <select class="px-3 lg:px-4 py-2 border border-gray-300 rounded-lg text-xs lg:text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-        <option>March</option>
-        <option>April</option>
-        <option>May</option>
-      </select>
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-teal-500 inline-block"></span>
+          <span class="text-xs font-medium text-gray-600">{{ current_year }} Revenue</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-gray-800 inline-block"></span>
+          <span class="text-xs font-medium text-gray-600">{{ current_year|add:"-1" }} Revenue</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-6 h-0.5 bg-orange-400 inline-block"></span>
+          <span class="text-xs font-medium text-gray-600">Orders</span>
+        </div>
+      </div>
     </div>
-    <!-- Placeholder for chart -->
-    <div class="h-48 lg:h-64 bg-gradient-to-r from-teal-50 to-teal-100 rounded-lg flex items-center justify-center">
-      <p class="text-sm text-gray-500">Chart will be added here</p>
+    <!-- Chart Container -->
+    <div class="w-full h-56 lg:h-72">
+      <canvas id="dashboardSalesChart"></canvas>
     </div>
   </div>
 
@@ -109,21 +187,103 @@
   <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
     <div class="flex items-center justify-between mb-4 lg:mb-6">
       <h2 class="text-base lg:text-lg font-semibold text-gray-900">Notifications</h2>
-      <a href="#" class="text-xs lg:text-sm text-teal-600 hover:text-teal-700">See more</a>
+      <a href="{% url 'admin_notifications' %}" class="text-xs lg:text-sm text-teal-600 hover:text-teal-700">See more</a>
     </div>
     <div class="space-y-3 lg:space-y-4">
-      {% for i in "12345" %}
+      {% for notification in notifications %}
       <div class="flex items-start gap-2 lg:gap-3">
-        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex-shrink-0"></div>
-        <div class="flex-1 min-w-0">
-          <p class="text-xs lg:text-sm text-gray-900">Moni Yahwehson has paid for Optishield</p>
-          <p class="text-xs text-gray-500 mt-1">Thursday 4:20pm</p>
+        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br {% if notification.type == 'ticket' %}from-yellow-400 to-yellow-600{% else %}from-teal-400 to-teal-600{% endif %} rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+          {% if notification.type == 'ticket' %}
+            <span class="material-symbols-outlined text-sm">support</span>
+          {% else %}
+            {{ notification.user.first_name|default:'U'|slice:":1" }}{{ notification.user.last_name|default:'S'|slice:":1" }}
+          {% endif %}
         </div>
-        <span class="text-xs text-gray-400 whitespace-nowrap">3h ago</span>
+        <div class="flex-1 min-w-0">
+          {% if notification.type == 'ticket' %}
+            <p class="text-xs lg:text-sm text-gray-900">
+              <strong>{{ notification.user.first_name|default:"User" }} {{ notification.user.last_name|default:"" }}</strong> created a 
+              {% if notification.priority == 'urgent' %}<span class="text-red-600 font-semibold">URGENT</span>{% endif %}
+              ticket: "{{ notification.subject|truncatewords:5 }}"
+            </p>
+            <p class="text-xs text-gray-500 mt-1">
+              <a href="{% url 'admin_ticket_detail' notification.ticket_id %}" class="text-teal-600 hover:text-teal-700">View Ticket #{{ notification.ticket_id|slice:":8" }}</a>
+            </p>
+          {% else %}
+            <p class="text-xs lg:text-sm text-gray-900">{{ notification.user.first_name }} {{ notification.user.last_name }} has ordered {{ notification.product_name }}</p>
+            <p class="text-xs text-gray-500 mt-1">{{ notification.created_at|date:"l g:iA" }}</p>
+          {% endif %}
+        </div>
+        <span class="text-xs text-gray-400 whitespace-nowrap">{{ notification.created_at|timesince }} ago</span>
+      </div>
+      {% empty %}
+      <div class="text-center py-8 text-gray-500">
+        <p class="text-sm">No recent notifications</p>
       </div>
       {% endfor %}
     </div>
   </div>
+</div>
+
+<!-- Orders by Status  +  Revenue by User Role -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
+
+  <!-- Orders by Status — doughnut -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <h2 class="text-base lg:text-lg font-semibold text-gray-900 mb-1">Orders by Status</h2>
+    <p class="text-xs text-gray-500 mb-5">Breakdown of all orders</p>
+    <div class="flex flex-col sm:flex-row items-center gap-6">
+      <div class="w-48 h-48 flex-shrink-0">
+        <canvas id="statusDoughnutChart"></canvas>
+      </div>
+      <!-- Legend -->
+      <div id="statusLegend" class="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-700"></div>
+    </div>
+  </div>
+
+  <!-- Revenue by User Role — horizontal bar -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <h2 class="text-base lg:text-lg font-semibold text-gray-900 mb-1">Revenue by User Role</h2>
+    <p class="text-xs text-gray-500 mb-5">Completed orders only</p>
+    <div class="w-full h-48 lg:h-56">
+      <canvas id="roleRevenueChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<!-- Top 5 Products Bar  +  Payment Status Pie -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
+
+  <!-- Top 5 Products — grouped vertical bar (units sold vs stock left) -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-start justify-between mb-1">
+      <div>
+        <h2 class="text-base lg:text-lg font-semibold text-gray-900">Top Products</h2>
+        <p class="text-xs text-gray-500">Units sold vs. stock remaining</p>
+      </div>
+      <div class="flex flex-wrap gap-3 text-xs mt-1">
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-teal-500 inline-block"></span>Sold</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-orange-400 inline-block"></span>Stock</span>
+      </div>
+    </div>
+    <div class="w-full h-56 lg:h-64 mt-4">
+      <canvas id="topProductsBarChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Payment Status — pie chart -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <h2 class="text-base lg:text-lg font-semibold text-gray-900 mb-1">Payment Status</h2>
+    <p class="text-xs text-gray-500 mb-4">All orders by payment outcome</p>
+    <div class="flex flex-col sm:flex-row items-center gap-6">
+      <div class="w-48 h-48 flex-shrink-0">
+        <canvas id="paymentStatusPieChart"></canvas>
+      </div>
+      <div id="payLegend" class="flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-700"></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Top Selling Products -->
@@ -132,24 +292,36 @@
   
   <!-- Mobile Card View -->
   <div class="block lg:hidden space-y-4">
+    {% for item in top_products %}
     <div class="border border-gray-200 rounded-lg p-4">
       <div class="flex items-center gap-3 mb-3">
-        <div class="w-12 h-12 bg-teal-100 rounded-lg flex-shrink-0"></div>
+        {% if item.product.thumbnail and item.product.thumbnail.image %}
+          <img src="{{ item.product.thumbnail.image.url }}" alt="{{ item.product.name }}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+        {% elif item.product.images.first %}
+          <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+        {% else %}
+          <div class="w-12 h-12 bg-teal-100 rounded-lg flex-shrink-0"></div>
+        {% endif %}
         <div class="flex-1">
-          <p class="text-sm font-medium text-gray-900">Wholeshield Arthoshield</p>
-          <p class="text-xs text-gray-500">Omega-3, Curcumin</p>
+          <p class="text-sm font-medium text-gray-900">{{ item.product.name }}</p>
+          <p class="text-xs text-gray-500">{{ item.product.category.name|default:"Uncategorized" }}</p>
         </div>
-        <button class="text-gray-400 hover:text-gray-600">
+        <a href="{% url 'edit_product' item.product.id %}" class="text-gray-400 hover:text-gray-600">
           <span class="material-symbols-outlined text-lg">more_vert</span>
-        </button>
+        </a>
       </div>
       <div class="grid grid-cols-2 gap-2 text-xs">
-        <div><span class="text-gray-500">SKU:</span> <span class="font-medium">#WA4859604</span></div>
-        <div><span class="text-gray-500">Sold:</span> <span class="text-green-600 font-medium">1,200</span></div>
-        <div><span class="text-gray-500">Left:</span> <span class="text-red-600 font-medium">200</span></div>
-        <div><span class="text-gray-500">Added:</span> <span>10 Mar 2025</span></div>
+        <div><span class="text-gray-500">SKU:</span> <span class="font-medium">{{ item.product.sku|default:"-" }}</span></div>
+        <div><span class="text-gray-500">Sold:</span> <span class="text-green-600 font-medium">{{ item.total_sold }}</span></div>
+        <div><span class="text-gray-500">Left:</span> <span class="text-red-600 font-medium">{{ item.stock_left }}</span></div>
+        <div><span class="text-gray-500">Added:</span> <span>{{ item.product.created_at|date:"jS M Y" }}</span></div>
       </div>
     </div>
+    {% empty %}
+    <div class="text-center py-8 text-gray-500">
+      <p class="text-sm">No products sold yet</p>
+    </div>
+    {% endfor %}
   </div>
 
   <!-- Desktop Table View -->
@@ -169,31 +341,355 @@
         </tr>
       </thead>
       <tbody>
+        {% for item in top_products %}
         <tr class="border-b border-gray-100 hover:bg-gray-50">
           <td class="py-4 px-4">
             <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
           </td>
           <td class="py-4 px-4">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-teal-100 rounded-lg flex-shrink-0"></div>
+              {% if item.product.thumbnail and item.product.thumbnail.image %}
+                <img src="{{ item.product.thumbnail.image.url }}" alt="{{ item.product.name }}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+              {% elif item.product.images.first %}
+                <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+              {% else %}
+                <div class="w-10 h-10 bg-teal-100 rounded-lg flex-shrink-0"></div>
+              {% endif %}
               <div>
-                <p class="text-sm font-medium text-gray-900">Wholeshield Arthoshield</p>
-                <p class="text-xs text-gray-500">Omega-3, Curcumin</p>
+                <p class="text-sm font-medium text-gray-900">{{ item.product.name }}</p>
+                <p class="text-xs text-gray-500">{{ item.product.category.name|default:"Uncategorized" }}</p>
               </div>
             </div>
           </td>
-          <td class="py-4 px-4 text-sm text-gray-700">#WA4859604</td>
-          <td class="py-4 px-4 text-sm text-green-600">1,200</td>
-          <td class="py-4 px-4 text-sm text-red-600">200</td>
-          <td class="py-4 px-4 text-sm text-gray-700">10th Mar 2025</td>
+          <td class="py-4 px-4 text-sm text-gray-700">{{ item.product.sku|default:"-" }}</td>
+          <td class="py-4 px-4 text-sm text-green-600">{{ item.total_sold }}</td>
+          <td class="py-4 px-4 text-sm text-red-600">{{ item.stock_left }}</td>
+          <td class="py-4 px-4 text-sm text-gray-700">{{ item.product.created_at|date:"jS M Y" }}</td>
           <td class="py-4 px-4">
-            <button class="text-gray-400 hover:text-gray-600">
+            <a href="{% url 'edit_product' item.product.id %}" class="text-gray-400 hover:text-gray-600">
               <span class="material-symbols-outlined text-lg">more_vert</span>
-            </button>
+            </a>
           </td>
         </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="py-8 text-center text-gray-500">
+            <p class="text-sm">No products sold yet</p>
+          </td>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ── Shared helpers ──────────────────────────────────────────────────────────
+function nairaFmt(v) {
+  if (v >= 1_000_000) return '₦' + (v / 1_000_000).toFixed(1) + 'M';
+  if (v >= 1_000)     return '₦' + (v / 1_000).toFixed(0) + 'k';
+  return '₦' + v.toLocaleString();
+}
+
+const gridColor  = '#e5e7eb';
+const tickColor  = '#9ca3af';
+const tooltipCfg = {
+  backgroundColor: 'rgba(17,24,39,0.85)',
+  padding: 10,
+  titleFont: { size: 13, weight: '600' },
+  bodyFont: { size: 12 },
+  cornerRadius: 6,
+};
+
+// ── 1. Sales Details — grouped bar + order-count line ───────────────────────
+const monthly2025Data  = {{ monthly_sales_2025|safe }};
+const monthly2024Data  = {{ monthly_sales_2024|safe }};
+const monthlyOrderData = {{ monthly_orders_year|safe }};
+
+const salesCtx = document.getElementById('dashboardSalesChart').getContext('2d');
+new Chart(salesCtx, {
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [
+      {
+        type: 'bar',
+        label: 'This Year Revenue',
+        data: monthly2025Data,
+        backgroundColor: '#14b8a6',
+        borderRadius: 4,
+        barPercentage: 0.65,
+        categoryPercentage: 0.75,
+        yAxisID: 'yRevenue',
+      },
+      {
+        type: 'bar',
+        label: 'Last Year Revenue',
+        data: monthly2024Data,
+        backgroundColor: '#1f2937',
+        borderRadius: 4,
+        barPercentage: 0.65,
+        categoryPercentage: 0.75,
+        yAxisID: 'yRevenue',
+      },
+      {
+        type: 'line',
+        label: 'Orders',
+        data: monthlyOrderData,
+        borderColor: '#f97316',
+        backgroundColor: 'rgba(249,115,22,0.08)',
+        borderWidth: 2,
+        pointRadius: 4,
+        pointBackgroundColor: '#f97316',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        tension: 0.4,
+        fill: false,
+        yAxisID: 'yOrders',
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        ...tooltipCfg,
+        callbacks: {
+          label: function(ctx) {
+            if (ctx.dataset.yAxisID === 'yRevenue') return ctx.dataset.label + ': ' + nairaFmt(ctx.parsed.y);
+            return 'Orders: ' + ctx.parsed.y;
+          }
+        }
+      }
+    },
+    scales: {
+      yRevenue: {
+        type: 'linear',
+        position: 'left',
+        beginAtZero: true,
+        ticks: { font: { size: 11 }, color: tickColor, callback: v => nairaFmt(v) },
+        grid: { color: gridColor },
+      },
+      yOrders: {
+        type: 'linear',
+        position: 'right',
+        beginAtZero: true,
+        ticks: { font: { size: 11 }, color: '#f97316' },
+        grid: { display: false },
+      },
+      x: {
+        ticks: { font: { size: 11 }, color: tickColor },
+        grid: { display: false },
+      }
+    }
+  }
+});
+
+// ── 3. Orders by Status — doughnut ─────────────────────────────────────────
+const statusLabels = {{ orders_by_status_labels|safe }};
+const statusData   = {{ orders_by_status_data|safe }};
+
+const statusColors = [
+  '#14b8a6','#3b82f6','#f97316','#a855f7','#ef4444',
+  '#eab308','#6366f1','#ec4899','#22c55e','#64748b',
+  '#0ea5e9','#f43f5e','#84cc16','#8b5cf6','#fb923c',
+];
+
+const doughnutCtx = document.getElementById('statusDoughnutChart').getContext('2d');
+new Chart(doughnutCtx, {
+  type: 'doughnut',
+  data: {
+    labels: statusLabels,
+    datasets: [{
+      data: statusData,
+      backgroundColor: statusColors.slice(0, statusData.length),
+      borderWidth: 2,
+      borderColor: '#fff',
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        ...tooltipCfg,
+        callbacks: {
+          label: ctx => ' ' + ctx.label + ': ' + ctx.parsed + ' orders'
+        }
+      }
+    }
+  }
+});
+
+// Build custom legend
+const legendEl = document.getElementById('statusLegend');
+statusLabels.forEach((label, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'flex items-center gap-1.5';
+  dot.innerHTML = `<span style="background:${statusColors[i % statusColors.length]}" class="w-2.5 h-2.5 rounded-full flex-shrink-0"></span>${label} <span class="text-gray-400">(${statusData[i]})</span>`;
+  legendEl.appendChild(dot);
+});
+
+// ── 4. Revenue by User Role — horizontal bar ────────────────────────────────
+const roleLabels = {{ revenue_by_role_labels|safe }};
+const roleData   = {{ revenue_by_role_data|safe }};
+
+const roleCtx = document.getElementById('roleRevenueChart').getContext('2d');
+new Chart(roleCtx, {
+  type: 'bar',
+  data: {
+    labels: roleLabels,
+    datasets: [{
+      label: 'Revenue',
+      data: roleData,
+      backgroundColor: [
+        '#14b8a6','#3b82f6','#f97316','#a855f7','#ef4444','#eab308'
+      ].slice(0, roleData.length),
+      borderRadius: 4,
+      barThickness: 22,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        ...tooltipCfg,
+        callbacks: { label: ctx => nairaFmt(ctx.parsed.x) }
+      }
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        ticks: { font: { size: 11 }, color: tickColor, callback: v => nairaFmt(v) },
+        grid: { color: gridColor },
+      },
+      y: {
+        ticks: { font: { size: 12 }, color: '#374151' },
+        grid: { display: false },
+      }
+    }
+  }
+});
+
+// ── 5. Top 5 Products — grouped vertical bar (sold vs stock) ─────────────────
+const topProdLabels = {{ top_product_labels|safe }};
+const topProdSold   = {{ top_product_sold|safe }};
+const topProdStock  = {{ top_product_stock|safe }};
+
+const topProdCtx = document.getElementById('topProductsBarChart').getContext('2d');
+new Chart(topProdCtx, {
+  type: 'bar',
+  data: {
+    labels: topProdLabels.map(l => l.length > 16 ? l.slice(0, 14) + '…' : l),
+    datasets: [
+      {
+        label: 'Units Sold',
+        data: topProdSold,
+        backgroundColor: '#14b8a6',
+        borderRadius: 4,
+        barPercentage: 0.65,
+        categoryPercentage: 0.75,
+      },
+      {
+        label: 'Stock Left',
+        data: topProdStock,
+        backgroundColor: '#f97316',
+        borderRadius: 4,
+        barPercentage: 0.65,
+        categoryPercentage: 0.75,
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        ...tooltipCfg,
+        callbacks: {
+          title: ctx => topProdLabels[ctx[0].dataIndex],
+          label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + ' units',
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { font: { size: 11 }, color: tickColor, stepSize: 1 },
+        grid: { color: gridColor },
+      },
+      x: {
+        ticks: { font: { size: 11 }, color: tickColor },
+        grid: { display: false },
+      }
+    }
+  }
+});
+
+// ── 6. Payment Status — pie chart ───────────────────────────────────────────
+const payLabels = {{ pay_status_labels|safe }};
+const payData   = {{ pay_status_data|safe }};
+
+const payColors = {
+  'Completed': '#22c55e',
+  'Pending':   '#eab308',
+  'Failed':    '#ef4444',
+  'Refunded':  '#3b82f6',
+};
+const payBgColors = payLabels.map(l => payColors[l] || '#9ca3af');
+
+const payCtx = document.getElementById('paymentStatusPieChart').getContext('2d');
+new Chart(payCtx, {
+  type: 'pie',
+  data: {
+    labels: payLabels,
+    datasets: [{
+      data: payData,
+      backgroundColor: payBgColors,
+      borderWidth: 2,
+      borderColor: '#fff',
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        ...tooltipCfg,
+        callbacks: {
+          label: ctx => ' ' + ctx.label + ': ' + ctx.parsed + ' orders'
+        }
+      }
+    }
+  }
+});
+
+// Build payment legend
+const payLegendEl = document.getElementById('payLegend');
+payLabels.forEach((label, i) => {
+  const total = payData.reduce((a, b) => a + b, 0);
+  const pct   = total ? ((payData[i] / total) * 100).toFixed(1) : 0;
+  const el = document.createElement('div');
+  el.className = 'flex items-center gap-1.5';
+  el.innerHTML = `<span style="background:${payBgColors[i]}" class="w-3 h-3 rounded-full flex-shrink-0"></span>
+    <span class="font-medium">${label}</span>
+    <span class="text-gray-400">${payData[i]} (${pct}%)</span>`;
+  payLegendEl.appendChild(el);
+});
+</script>
 {% endblock %}

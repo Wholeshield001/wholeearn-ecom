@@ -1,0 +1,258 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}Settings - WholeShield{% endblock %}
+
+{% block content %}
+<style>
+  .password-toggle-wrap {
+    position: relative;
+  }
+
+  .password-toggle-wrap input {
+    padding-right: 2.75rem;
+  }
+
+  .password-toggle-btn {
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: #9ca3af;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    z-index: 2;
+  }
+
+  .password-toggle-btn:hover {
+    color: #ec3183;
+  }
+</style>
+<section class="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+    {% include "partials/users/dashboard_header.html" with show_greeting=False page_title='Settings' active_tab='settings' %}
+
+    {% if messages %}
+      {% for message in messages %}
+        {% if 'cart' not in message.tags %}
+          <div class="flash-message mb-6 p-4 rounded-lg {% if 'error' in message.tags %}bg-red-100 text-red-700 border border-red-300{% elif 'success' in message.tags %}bg-green-100 text-green-700 border border-green-300{% else %}bg-blue-100 text-blue-700 border border-blue-300{% endif %}">
+            {{ message }}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="space-y-8">
+      <!-- Page Title -->
+      <h2 class="text-3xl font-bold text-[#ec3183] text-center pb-4 border-b-2 border-gray-200">Manage Your Account</h2>
+
+      <!-- Contact Information Section -->
+      <div>
+        <h3 class="text-xl font-semibold text-[#ec3183] mb-6">Contact Information</h3>
+        
+        <form method="POST" action="{% url 'profile' %}" class="space-y-6">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="profile">
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Last Name -->
+            <div>
+              <label for="id_last_name" class="block text-sm font-medium text-[#ec3183] mb-2">Last Name</label>
+              <input type="text" name="last_name" id="id_last_name" value="{{ user.last_name }}" 
+                     class="w-full px-4 py-3 rounded-lg border-2 border-[#ec3183] focus:outline-none focus:ring-2 focus:ring-pink-500">
+            </div>
+
+            <!-- First Name -->
+            <div>
+              <label for="id_first_name" class="block text-sm font-medium text-[#ec3183] mb-2">First Name</label>
+              <input type="text" name="first_name" id="id_first_name" value="{{ user.first_name }}" 
+                     class="w-full px-4 py-3 rounded-lg border-2 border-[#ec3183] focus:outline-none focus:ring-2 focus:ring-pink-500">
+            </div>
+          </div>
+
+          <!-- Email & Phone -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:pr-3">
+              <label class="block text-sm font-medium text-[#ec3183] mb-2">Email</label>
+              <input type="email" value="{{ user.email }}" disabled 
+                     class="w-full px-4 py-3 rounded-lg border-2 border-[#ec3183] bg-gray-50 text-gray-500">
+            </div>
+            <div class="md:pl-3">
+              <label for="id_phone" class="block text-sm font-medium text-[#ec3183] mb-2">Phone Number</label>
+              <input type="text" name="phone" id="id_phone" value="{{ user.phone }}" 
+                     class="w-full px-4 py-3 rounded-lg border-2 border-[#ec3183] focus:outline-none focus:ring-2 focus:ring-pink-500"
+                     placeholder="Enter phone number">
+            </div>
+          </div>
+
+          <!-- Role -->
+          <div class="md:w-1/2 md:pr-3">
+            <label class="block text-sm font-medium text-[#ec3183] mb-2">Account Type</label>
+            <input type="text" value="{{ user.get_role_display }}" disabled 
+                   class="w-full px-4 py-3 rounded-lg border-2 border-[#ec3183] bg-gray-50 text-gray-500 capitalize">
+          </div>
+
+          <button type="submit" class="px-8 py-3 bg-[#ec3183] text-white font-semibold rounded-full hover:bg-opacity-90 transition-colors">
+            Save Changes
+          </button>
+        </form>
+      </div>
+
+      <!-- Divider -->
+      <div class="border-t-2 border-gray-200"></div>
+
+      <!-- Update Password Section -->
+      <div>
+        <h3 class="text-xl font-semibold text-[#ec3183] mb-6">Update Password</h3>
+        
+        <form method="POST" action="{% url 'profile' %}" class="space-y-6">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="password">
+          
+          <div class="md:w-1/2">
+            <!-- Current Password -->
+            <div class="mb-6">
+              <label for="id_current_password" class="block text-sm font-medium text-[#ec3183] mb-2">Current Password</label>
+              <div class="password-toggle-wrap" data-password-wrap>
+                <input type="password" name="current_password" id="id_current_password" 
+                       class="w-full px-4 py-3 pr-12 rounded-lg border-2 border-[#ec3183] focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <button type="button" class="password-toggle-btn" data-password-toggle data-visible="false" aria-label="Show current password">
+                  <svg class="icon-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <svg class="icon-hide hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18"></path><path d="M10.584 10.587a2 2 0 0 0 2.829 2.828"></path><path d="M9.363 5.365A9.466 9.466 0 0 1 12 5c5 0 9.27 3.11 11 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.609A13.526 13.526 0 0 0 1 12c1.73 3.89 6 7 11 7a9.74 9.74 0 0 0 5.39-1.61"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- New Password -->
+            <div class="mb-6">
+              <label for="id_new_password" class="block text-sm font-medium text-[#ec3183] mb-2">New Password</label>
+              <div class="password-toggle-wrap" data-password-wrap>
+                <input type="password" name="new_password" id="id_new_password" 
+                       class="w-full px-4 py-3 pr-12 rounded-lg border-2 border-[#ec3183] focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <button type="button" class="password-toggle-btn" data-password-toggle data-visible="false" aria-label="Show new password">
+                  <svg class="icon-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <svg class="icon-hide hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18"></path><path d="M10.584 10.587a2 2 0 0 0 2.829 2.828"></path><path d="M9.363 5.365A9.466 9.466 0 0 1 12 5c5 0 9.27 3.11 11 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.609A13.526 13.526 0 0 0 1 12c1.73 3.89 6 7 11 7a9.74 9.74 0 0 0 5.39-1.61"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Confirm New Password -->
+            <div class="mb-6">
+              <label for="id_new_password_confirm" class="block text-sm font-medium text-[#ec3183] mb-2">Confirm New Password</label>
+              <div class="password-toggle-wrap" data-password-wrap>
+                <input type="password" name="new_password_confirm" id="id_new_password_confirm" 
+                       class="w-full px-4 py-3 pr-12 rounded-lg border-2 border-[#ec3183] focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <button type="button" class="password-toggle-btn" data-password-toggle data-visible="false" aria-label="Show confirm new password">
+                  <svg class="icon-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <svg class="icon-hide hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18"></path><path d="M10.584 10.587a2 2 0 0 0 2.829 2.828"></path><path d="M9.363 5.365A9.466 9.466 0 0 1 12 5c5 0 9.27 3.11 11 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.609A13.526 13.526 0 0 0 1 12c1.73 3.89 6 7 11 7a9.74 9.74 0 0 0 5.39-1.61"></path></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="px-8 py-3 bg-[#ec3183] text-white font-semibold rounded-full hover:bg-opacity-90 transition-colors">
+            Update
+          </button>
+        </form>
+      </div>
+
+      <!-- Divider -->
+      <div class="border-t-2 border-gray-200"></div>
+
+      <!-- Rewards & Referral Section -->
+      <div>
+        <h3 class="text-xl font-semibold text-[#ec3183] mb-6">Rewards &amp; Referral</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <!-- Points Balance -->
+          <div class="rounded-xl border-2 border-[#ec3183] p-5 text-center">
+            <p class="text-sm font-medium text-gray-500 mb-1">Reward Points</p>
+            <p class="text-4xl font-bold text-[#ec3183]">{{ user.reward_points|default:0 }}</p>
+            <p class="text-xs text-gray-400 mt-1">points balance</p>
+          </div>
+
+          <!-- Unique Code -->
+          <div class="rounded-xl border-2 border-gray-200 p-5 text-center">
+            <p class="text-sm font-medium text-gray-500 mb-1">Your Unique Code</p>
+            <div class="flex items-center justify-center gap-2 mt-1">
+              <p id="unique-code" class="text-2xl font-bold text-gray-800 font-mono tracking-widest">{{ user.unique_code|default:"—" }}</p>
+              {% if user.unique_code %}
+              <button onclick="copyCode('unique-code', this)" title="Copy" class="text-gray-400 hover:text-[#ec3183] transition flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+              {% endif %}
+            </div>
+            <p class="text-xs text-gray-400 mt-1">your account code</p>
+          </div>
+
+          <!-- Referral Code -->
+          <div class="rounded-xl border-2 border-gray-200 p-5 text-center">
+            <p class="text-sm font-medium text-gray-500 mb-2">Your Referral Code</p>
+            <div class="flex items-center justify-center gap-2 mt-1">
+              <p id="referral-code" class="text-2xl font-bold text-gray-800 font-mono tracking-widest">{{ user.referral_code|default:"—" }}</p>
+              {% if user.referral_code %}
+              <button onclick="copyCode('referral-code', this)" title="Copy" class="text-gray-400 hover:text-[#ec3183] transition flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+              {% endif %}
+            </div>
+            <p class="text-xs text-gray-400 mt-1">share to earn bonus points</p>
+          </div>
+        </div>
+
+        <!-- Points History -->
+        <h4 class="text-base font-semibold text-gray-700 mb-3">Points History</h4>
+        <div class="overflow-x-auto rounded-xl border-2 border-gray-200">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="text-left py-3 px-4 text-gray-600 font-medium">Date</th>
+                <th class="text-left py-3 px-4 text-gray-600 font-medium">Reason</th>
+                <th class="text-right py-3 px-4 text-gray-600 font-medium">Points</th>
+              </tr>
+            </thead>
+            <tbody id="reward-rows">
+              {% if not point_ledger %}
+              <tr>
+                <td colspan="3" class="py-6 px-4 text-center text-gray-400">No points earned yet — make a purchase or refer a friend!</td>
+              </tr>
+              {% else %}
+              {% include "users/partials/reward_rows.html" %}
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+function copyCode(elementId, btn) {
+  const text = document.getElementById(elementId).textContent.trim();
+  navigator.clipboard.writeText(text).then(function () {
+    const svg = btn.querySelector('svg');
+    svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>';
+    btn.classList.add('text-green-500');
+    btn.classList.remove('text-gray-400');
+    setTimeout(function () {
+      svg.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>';
+      btn.classList.remove('text-green-500');
+      btn.classList.add('text-gray-400');
+    }, 2000);
+  });
+}
+</script>
+
+{% endblock %}

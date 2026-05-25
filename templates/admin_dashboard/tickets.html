@@ -1,0 +1,201 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Support Tickets{% endblock %}
+{% block page_title %}Support Tickets{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <!-- Filter Tabs -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-1 inline-flex overflow-x-auto">
+    <a href="?status=all{% if priority_filter != 'all' %}&priority={{ priority_filter }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap {% if status_filter == 'all' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+      All <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'all' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_tickets }}</span>
+    </a>
+    <a href="?status=open{% if priority_filter != 'all' %}&priority={{ priority_filter }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap {% if status_filter == 'open' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+      Open <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'open' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ open_tickets }}</span>
+    </a>
+    <a href="?status=in_progress{% if priority_filter != 'all' %}&priority={{ priority_filter }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap {% if status_filter == 'in_progress' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+      In Progress <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'in_progress' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ in_progress_tickets }}</span>
+    </a>
+    <a href="?status=resolved{% if priority_filter != 'all' %}&priority={{ priority_filter }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap {% if status_filter == 'resolved' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+      Resolved <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'resolved' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ resolved_tickets }}</span>
+    </a>
+    <a href="?status=closed{% if priority_filter != 'all' %}&priority={{ priority_filter }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap {% if status_filter == 'closed' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+      Closed <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'closed' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ closed_tickets }}</span>
+    </a>
+  </div>
+
+  <!-- Priority Filter -->
+  <div class="flex items-center gap-2">
+    <select onchange="window.location.href='?status={{ status_filter }}&priority='+this.value" class="px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm font-medium">
+      <option value="all" {% if priority_filter == 'all' %}selected{% endif %}>All Priorities</option>
+      <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+      <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+      <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+      <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+    </select>
+    <button class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">cloud_download</span>
+      Export
+    </button>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-teal-600">support</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-600">Total Tickets</h3>
+      </div>
+    </div>
+    <div>
+      <p class="text-3xl font-bold text-gray-900">{{ total_tickets }}</p>
+      <p class="text-sm text-gray-500 mt-1">All time tickets</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-yellow-600">mail</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-600">Open Tickets</h3>
+      </div>
+    </div>
+    <div>
+      <p class="text-3xl font-bold text-gray-900">{{ open_tickets }}</p>
+      <p class="text-sm text-gray-500 mt-1">Awaiting response</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-blue-600">pending</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-600">In Progress</h3>
+      </div>
+    </div>
+    <div>
+      <p class="text-3xl font-bold text-gray-900">{{ in_progress_tickets }}</p>
+      <p class="text-sm text-gray-500 mt-1">Being handled</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-red-600">warning</span>
+        </div>
+        <h3 class="text-sm font-medium text-gray-600">Urgent</h3>
+      </div>
+    </div>
+    <div>
+      <p class="text-3xl font-bold text-gray-900">{{ urgent_tickets }}</p>
+      <p class="text-sm text-gray-500 mt-1">Needs attention</p>
+    </div>
+  </div>
+</div>
+
+<!-- Tickets Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+  <h2 class="text-lg font-semibold text-gray-900 mb-4">Tickets</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-3 px-4">
+            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
+          </th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Ticket ID</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Customer</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Subject</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Priority</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Assigned To</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Created</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Status</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if tickets %}
+          {% for ticket in tickets %}
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="py-3 px-4">
+              <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" />
+            </td>
+            <td class="py-3 px-4">
+              <a href="{% url 'admin_ticket_detail' ticket.id %}" class="font-medium text-teal-600 hover:text-teal-700">#{{ ticket.id|slice:":8" }}</a>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                  {{ ticket.user.first_name.0|default:'U'|upper }}{{ ticket.user.last_name.0|default:'S'|upper }}
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">{{ ticket.contact_name|default:ticket.user.get_full_name }}</p>
+                  <p class="text-xs text-gray-500">{{ ticket.contact_email|default:ticket.user.email }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-4">
+              <p class="font-medium text-gray-900">{{ ticket.title|default:"Support Request"|truncatewords:5 }}</p>
+              <p class="text-xs text-gray-500">{{ ticket.description|truncatewords:8|default:"-" }}</p>
+            </td>
+            <td class="py-3 px-4">
+              {% if ticket.priority == 'urgent' %}
+                <span class="px-2 py-1 bg-red-50 text-red-700 text-xs font-medium rounded-full">Urgent</span>
+              {% elif ticket.priority == 'high' %}
+                <span class="px-2 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-full">High</span>
+              {% elif ticket.priority == 'medium' %}
+                <span class="px-2 py-1 bg-yellow-50 text-yellow-700 text-xs font-medium rounded-full">Medium</span>
+              {% else %}
+                <span class="px-2 py-1 bg-gray-50 text-gray-700 text-xs font-medium rounded-full">Low</span>
+              {% endif %}
+            </td>
+            <td class="py-3 px-4 text-gray-700">
+              {% if ticket.assigned_to %}
+                <span class="text-sm">{{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.email }}</span>
+              {% else %}
+                <span class="text-gray-400 text-xs">Unassigned</span>
+              {% endif %}
+            </td>
+            <td class="py-3 px-4 text-gray-700">{{ ticket.created_at|date:"jS M Y" }}</td>
+            <td class="py-3 px-4">
+              {% if ticket.status == 'resolved' %}
+                <span class="px-3 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full">Resolved</span>
+              {% elif ticket.status == 'closed' %}
+                <span class="px-3 py-1 bg-gray-50 text-gray-700 text-xs font-medium rounded-full">Closed</span>
+              {% elif ticket.status == 'in_progress' %}
+                <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">In Progress</span>
+              {% else %}
+                <span class="px-3 py-1 bg-yellow-50 text-yellow-700 text-xs font-medium rounded-full">Open</span>
+              {% endif %}
+            </td>
+            <td class="py-3 px-4">
+              <a href="{% url 'admin_ticket_detail' ticket.id %}" class="text-teal-600 hover:text-teal-700 font-medium text-sm">
+                View
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="9" class="py-12 text-center text-gray-500">
+              <span class="material-symbols-outlined text-5xl text-gray-300 mb-2">support</span>
+              <p>No tickets found</p>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

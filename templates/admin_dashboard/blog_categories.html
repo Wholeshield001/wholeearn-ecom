@@ -1,0 +1,117 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Blog Categories{% endblock %}
+{% block page_title %}Blog Categories{% endblock %}
+
+{% block content %}
+<div x-data x-cloak>
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-xl font-semibold text-gray-900">Blog Categories</h2>
+    <button @click="$refs.blogCategoryModal.showModal()" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">add</span>
+      Add Category
+    </button>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="text-left py-3 px-4 text-gray-600 font-medium">Name</th>
+            <th class="text-left py-3 px-4 text-gray-600 font-medium">Posts</th>
+            <th class="text-left py-3 px-4 text-gray-600 font-medium">Created</th>
+            <th class="text-left py-3 px-4 text-gray-600 font-medium">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in categories %}
+          <tr class="border-b border-gray-100 hover:bg-gray-50" id="blog-category-row-{{ c.id }}">
+            <td class="py-3 px-4 font-medium text-gray-900">{{ c.name }}</td>
+            <td class="py-3 px-4 text-gray-700">{{ c.posts.count }}</td>
+            <td class="py-3 px-4 text-gray-700">{{ c.created_at|date:"jS M Y" }}</td>
+            <td class="py-3 px-4 relative">
+              <div
+                x-data="{
+                  open:false,
+                  width:192,
+                  pos:{ top:0, left:0 },
+                  place() {
+                    const r = this.$refs.btn.getBoundingClientRect();
+                    const left = Math.min(r.right - this.width, window.innerWidth - this.width - 8);
+                    const top  = Math.min(r.bottom + 4, window.innerHeight - 8);
+                    this.pos = { top, left };
+                  }
+                }"
+                class="relative"
+              >
+                <button
+                  x-ref="btn"
+                  @click="open = !open; $nextTick(() => place())"
+                  class="text-gray-400 hover:text-gray-600"
+                  aria-haspopup="true"
+                  :aria-expanded="open"
+                >
+                  <span class="material-symbols-outlined text-lg">more_vert</span>
+                </button>
+
+                <div
+                  x-cloak
+                  x-show="open"
+                  x-transition
+                  @click.outside="open=false"
+                  @keydown.escape.window="open=false"
+                  class="fixed bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                  :style="`top:${pos.top}px;left:${pos.left}px;width:${width}px`"
+                >
+                  <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          hx-get="{% url 'edit_blog_category' c.id %}"
+                          hx-target="#blog-category-form-container"
+                          @click="$refs.blogCategoryModal.showModal(); open=false">
+                    <span class="material-symbols-outlined text-green-600 text-base">edit</span>
+                    Edit
+                  </button>
+                  <button 
+                    hx-delete="{% url 'delete_blog_category' c.id %}"
+                    hx-confirm="Delete this category?"
+                    hx-target="#blog-category-row-{{ c.id }}"
+                    hx-swap="outerHTML swap:0.3s"
+                    class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <span class="material-symbols-outlined text-base">delete</span>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="py-8 text-center text-gray-500">No categories found</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <dialog x-ref="blogCategoryModal" class="w-full max-w-md">
+    <div class="bg-white rounded-xl p-6 shadow-xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Add New Category</h3>
+        <button @click="$refs.blogCategoryModal.close()" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div id="blog-category-form-container"
+           hx-get="{% url 'add_blog_category' %}"
+           hx-trigger="load"
+           hx-target="#blog-category-form-container">
+        <div class="animate-pulse space-y-4">
+          <div class="h-10 bg-gray-200 rounded"></div>
+          <div class="h-10 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</div>
+{% endblock %}

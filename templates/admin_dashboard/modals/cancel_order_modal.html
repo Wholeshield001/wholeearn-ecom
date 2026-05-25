@@ -1,0 +1,97 @@
+<dialog id="cancelOrderModal" class="rounded-xl shadow-lg max-w-md w-full">
+  <div class="bg-white rounded-xl p-6 space-y-5">
+    <div class="flex items-start justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">Cancel Order</h2>
+        <p class="text-sm text-gray-600 mt-1">This action cannot be undone.</p>
+      </div>
+      <button type="button" class="text-gray-400 hover:text-gray-600" data-cancel>
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+      <p class="text-sm text-yellow-700">
+        Are you sure you want to cancel order <span class="font-semibold" data-order-id>#</span>? The customer will be notified about this cancellation.
+      </p>
+    </div>
+
+    <div class="flex gap-3">
+      <button type="button" class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300" data-cancel>
+        Keep Order
+      </button>
+      <button type="button" class="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg font-medium hover:bg-yellow-700" data-confirm>
+        Cancel Order
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  (function() {
+    const modal = document.getElementById('cancelOrderModal');
+    if (!modal) return;
+
+    const orderIdEl = modal.querySelector('[data-order-id]');
+    const confirmBtn = modal.querySelector('[data-confirm]');
+    const cancelBtns = modal.querySelectorAll('[data-cancel]');
+    let ctx = { url: null, orderId: null };
+
+    function getCsrfToken() {
+      const match = document.cookie.match(/csrftoken=([^;]+)/);
+      if (match) return match[1];
+      const input = document.querySelector('[name=csrfmiddlewaretoken]');
+      return input ? input.value : '';
+    }
+
+    window.openCancelOrderModal = function(opts) {
+      ctx = {
+        url: opts?.url || null,
+        orderId: opts?.orderId || null
+      };
+      if (orderIdEl) orderIdEl.textContent = opts?.orderId || '?';
+      modal.showModal();
+    };
+
+    function resetConfirm() {
+      if (confirmBtn?.dataset.label) confirmBtn.textContent = confirmBtn.dataset.label;
+      confirmBtn?.removeAttribute('disabled');
+    }
+
+    async function handleCancel() {
+      if (!ctx.url) return;
+      if (confirmBtn) {
+        confirmBtn.dataset.label = confirmBtn.dataset.label || confirmBtn.textContent;
+        confirmBtn.textContent = 'Cancelling...';
+        confirmBtn.setAttribute('disabled', 'true');
+      }
+      try {
+        const resp = await fetch(ctx.url, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCsrfToken() },
+          body: JSON.stringify({ action: 'cancel' })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          modal.close();
+          window.location.reload();
+        } else {
+          alert(data.message || 'Failed to cancel order');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error cancelling order');
+      } finally {
+        resetConfirm();
+        ctx = { url: null, orderId: null };
+      }
+    }
+
+    confirmBtn?.addEventListener('click', handleCancel);
+    cancelBtns.forEach(btn => btn.addEventListener('click', () => modal.close()));
+    modal.addEventListener('close', () => {
+      resetConfirm();
+      ctx = { url: null, orderId: null };
+    });
+  })();
+</script>

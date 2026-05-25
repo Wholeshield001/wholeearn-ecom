@@ -1,0 +1,197 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Blog{% endblock %}
+{% block page_title %}Blog{% endblock %}
+
+{% block content %}
+<!-- Filter Bar -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-1">
+    <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+      <a href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md transition-colors {% if active_status == 'all' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+        All <span class="ml-1.5 px-1.5 py-0.5 text-xs rounded {% if active_status == 'all' %}bg-white{% else %}bg-gray-100{% endif %}">{{ total }}</span>
+      </a>
+      <a href="?status=published{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md transition-colors {% if active_status == 'published' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+        Publish <span class="ml-1.5 px-1.5 py-0.5 text-xs rounded {% if active_status == 'published' %}bg-white{% else %}bg-gray-100{% endif %}">{{ published }}</span>
+      </a>
+      <a href="?status=drafts{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md transition-colors {% if active_status == 'drafts' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+        Drafts <span class="ml-1.5 px-1.5 py-0.5 text-xs rounded {% if active_status == 'drafts' %}bg-white{% else %}bg-gray-100{% endif %}">{{ drafts }}</span>
+      </a>
+    </div>
+    
+    <!-- Search Bar -->
+    <form method="GET" class="w-full sm:w-auto flex gap-2">
+      <input type="hidden" name="status" value="{{ active_status }}">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search articles, title, category..." 
+        class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+      <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </form>
+  </div>
+  
+  <div class="flex items-center gap-2">
+    <button class="px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">cloud_download</span>
+      Export
+    </button>
+    <a href="{% url 'admin_blog_add' %}" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">add</span>
+      Add New Article
+    </a>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-infinite-grid="true">
+  {% for post in posts %}
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="aspect-[4/3] bg-gray-100">
+      {% if post.cover_image %}
+        <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full h-full object-cover">
+      {% else %}
+        <div class="w-full h-full flex items-center justify-center text-gray-400">No Cover Image</div>
+      {% endif %}
+    </div>
+    <div class="p-4">
+      <h3 class="text-sm font-semibold text-gray-900 mb-1">{{ post.title }}</h3>
+      <p class="text-xs text-gray-500 mb-3">{{ post.category.name|default:"No Category" }}</p>
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-gray-500">{{ post.created_at|date:"d M Y" }}</div>
+        <div class="flex items-center gap-2">
+          {% if post.is_published %}
+            <span class="px-2 py-1 rounded-full bg-teal-100 text-teal-800 text-xs">Published</span>
+          {% else %}
+            <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">Draft</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="mt-4 flex items-center gap-3">
+        <a href="{% url 'admin_blog_edit' post.id %}" class="px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-800 hover:bg-gray-200">Edit</a>
+        <form action="{% url 'admin_blog_toggle_publish' post.id %}" method="post" class="inline">
+          {% csrf_token %}
+          <button type="submit" class="px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-800 hover:bg-gray-200">
+            {% if post.is_published %}Unpublish{% else %}Publish{% endif %}
+          </button>
+        </form>
+        <button onclick="openDeleteBlogModal({{ post.id }}, '{{ post.title }}')" class="px-3 py-2 bg-red-100 rounded-lg text-sm text-red-800 hover:bg-red-200">Delete</button>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <div class="col-span-full text-center text-gray-500">No articles yet.</div>
+  {% endfor %}
+</div>
+
+<!-- Delete Blog Modal -->
+<div id="deleteBlogModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-lg max-w-sm w-full animate-in">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-gray-200 p-6">
+      <h2 class="text-lg font-semibold text-gray-900">Delete Article</h2>
+      <button onclick="closeDeleteBlogModal()" class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6 space-y-4">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
+          <span class="material-symbols-outlined text-red-600">warning</span>
+        </div>
+        <div>
+          <h3 class="font-medium text-gray-900">Are you sure?</h3>
+          <p class="text-sm text-gray-600 mt-1">
+            This will permanently delete the article <strong id="deleteBlogTitle"></strong> and all associated data. This action cannot be undone.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex gap-3 border-t border-gray-200 p-6">
+      <button onclick="closeDeleteBlogModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button id="confirmDeleteBlogBtn" onclick="confirmDeleteBlog()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors">
+        Delete Article
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let deleteBlogData = null;
+
+  function openDeleteBlogModal(blogId, blogTitle) {
+    deleteBlogData = { blogId, blogTitle };
+    document.getElementById('deleteBlogTitle').textContent = blogTitle;
+    document.getElementById('deleteBlogModal').classList.remove('hidden');
+  }
+
+  function closeDeleteBlogModal() {
+    document.getElementById('deleteBlogModal').classList.add('hidden');
+    deleteBlogData = null;
+  }
+
+  function confirmDeleteBlog() {
+    if (!deleteBlogData) return;
+    
+    const { blogId } = deleteBlogData;
+    const btn = document.getElementById('confirmDeleteBlogBtn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+
+    fetch(`/admin/blog/${blogId}/delete/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        if (typeof showToast === 'function') {
+          showToast('error', data.message || 'Failed to delete article.');
+        }
+        btn.disabled = false;
+        btn.textContent = 'Delete Article';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      if (typeof showToast === 'function') {
+        showToast('error', 'Failed to delete article');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Delete Article';
+    });
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('deleteBlogModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeDeleteBlogModal();
+    }
+  });
+</script>
+{% endblock %}

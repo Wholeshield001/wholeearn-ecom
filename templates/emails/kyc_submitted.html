@@ -1,0 +1,38 @@
+{% extends 'emails/email_base.html' %}
+
+{% block content %}
+<h1 style="color: #ec3183; margin-bottom: 20px;">KYC Submission Received</h1>
+
+<p>Hi {{ user.get_full_name|default:user.email }},</p>
+
+<p>Thank you for submitting your KYC (Know Your Customer) documents to WholeShield.</p>
+
+<div style="background-color: #fef2f7; border-left: 4px solid #ec3183; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0;"><strong>Submission Details:</strong></p>
+    <ul style="margin: 10px 0; padding-left: 20px;">
+        <li>Business Name: {{ kyc_submission.business_name }}</li>
+        <li>Business Type: {{ kyc_submission.get_user_type_display }}</li>
+        <li>Submitted on: {{ kyc_submission.created_at|date:"M d, Y" }}</li>
+    </ul>
+</div>
+
+<p>Our team will review your documents and verify your information. This typically takes 1-2 business days.</p>
+
+<p>Once your KYC is verified and approved, you'll receive a confirmation email and can start placing orders on WholeShield.</p>
+
+<p>You can check your KYC status at any time by logging into your account and visiting the "KYC Status" page.</p>
+
+<div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
+    <p style="margin: 0;"><strong>What happens next?</strong></p>
+    <ol style="margin: 10px 0; padding-left: 20px;">
+        <li>Our team reviews your documents</li>
+        <li>We verify your business information</li>
+        <li>You receive an approval or rejection email</li>
+        <li>Upon approval, you can start ordering</li>
+    </ol>
+</div>
+
+<p>If you have any questions or need to update your information, please contact our support team.</p>
+
+<p>Thank you for choosing WholeShield!</p>
+{% endblock %}

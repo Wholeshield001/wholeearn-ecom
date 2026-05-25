@@ -1,0 +1,200 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Pharmacies{% endblock %}
+{% block page_title %}Pharmacies{% endblock %}
+
+{% block content %}
+<!-- Filter Bar -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-1">
+    <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+      <a href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'all' %}bg-emerald-50 text-emerald-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        All <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'all' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_pharmacies }}</span>
+      </a>
+      <a href="?status=inactive{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'inactive' %}bg-emerald-50 text-emerald-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Inactive <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'inactive' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ inactive_pharmacies }}</span>
+      </a>
+      <a href="?status=active{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'active' %}bg-emerald-50 text-emerald-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Active <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'active' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ active_pharmacies }}</span>
+      </a>
+    </div>
+    
+    <!-- Search Bar -->
+    <form method="GET" class="w-full sm:w-auto flex gap-2">
+      <input type="hidden" name="status" value="{{ status_filter }}">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search pharmacies, email, phone..." 
+        class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+      <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </form>
+  </div>
+  
+  <a href="{% url 'admin_export_pharmacies' %}?status={{ status_filter }}{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2 w-fit">
+    <span class="material-symbols-outlined text-base">cloud_download</span>
+    Export CSV
+  </a>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-emerald-600 text-xl lg:text-2xl">group</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Total Partners</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+    </div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ total_pharmacies }}</p><p class="text-xs lg:text-sm text-gray-500">Total pharmacies</p></div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-red-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-red-600 text-xl lg:text-2xl">do_not_disturb_on</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Inactive Partners</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+    </div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ inactive_pharmacies }}</p><p class="text-xs lg:text-sm text-gray-500">Inactive pharmacies</p></div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-lime-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-lime-600 text-xl lg:text-2xl">verified</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Active Partners</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+    </div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ active_pharmacies }}</p><p class="text-xs lg:text-sm text-gray-500">Active pharmacies</p></div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+    <div class="flex items-center justify-between mb-3 lg:mb-4">
+      <div class="flex items-center gap-2 lg:gap-3">
+        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-teal-600 text-xl lg:text-2xl">inventory</span>
+        </div>
+        <h3 class="text-xs lg:text-sm font-medium text-gray-600">Product Ordered</h3>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+    </div>
+    <div class="space-y-1"><p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ products_ordered }}</p><p class="text-xs lg:text-sm text-gray-500">Total units ordered</p></div>
+  </div>
+</div>
+
+<!-- Pharmacies Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+  <h2 class="text-base lg:text-lg font-semibold text-gray-900 mb-4">Pharmacies</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-3 px-4"><input type="checkbox" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /></th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Date</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Pharmacy</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Product</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Price</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Units Ordered</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Status</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Purchase</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pharmacy in pharmacies %}
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-3 px-4"><input type="checkbox" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /></td>
+          <td class="py-3 px-4 text-gray-700">{{ pharmacy.date_joined|date:"jS M Y" }}</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-green-400 flex items-center justify-center text-white text-xs font-medium">
+                {{ pharmacy.first_name.0|default:'P'|upper }}{{ pharmacy.last_name.0|default:'S'|upper }}
+              </div>
+              <div>
+                <p class="font-medium text-gray-900">{{ pharmacy.first_name|default:"" }} {{ pharmacy.last_name|default:"Pharmacy" }}</p>
+                <p class="text-xs text-gray-500">{{ pharmacy.email }}</p>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center">
+                <span class="material-symbols-outlined text-emerald-600 text-sm">inventory_2</span>
+              </div>
+              <p class="text-gray-900">{{ pharmacy.total_orders|default:0 }} order{{ pharmacy.total_orders|pluralize }}</p>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-gray-700">₦{{ pharmacy.total_spent|default:0|floatformat:0 }}</td>
+          <td class="py-3 px-4"><span class="text-emerald-600">{{ pharmacy.total_orders|default:0 }}</span></td>
+          <td class="py-3 px-4">
+            {% if pharmacy.is_active %}
+              <span class="px-2 py-1 rounded-full text-xs bg-green-50 text-green-600">Active</span>
+            {% else %}
+              <span class="px-2 py-1 rounded-full text-xs bg-red-50 text-red-600">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="py-3 px-4 text-gray-700">₦{{ pharmacy.total_spent|default:0|floatformat:0 }}</td>
+          <td class="py-3 px-4 relative">
+            <div
+              x-data="{
+                open:false, width:200, pos:{top:0,left:0},
+                place() {
+                  const r = this.$refs.btn.getBoundingClientRect();
+                  const left = Math.min(r.right - this.width, window.innerWidth - this.width - 8);
+                  const top  = Math.min(r.bottom + 4, window.innerHeight - 8);
+                  this.pos = { top, left };
+                }
+              }"
+              class="relative"
+            >
+              <button x-ref="btn" @click="open=!open; $nextTick(()=>place())" class="text-gray-400 hover:text-gray-600" :aria-expanded="open">
+                <span class="material-symbols-outlined text-lg">more_vert</span>
+              </button>
+
+              <div x-cloak x-show="open" x-transition @click.outside="open=false" @keydown.escape.window="open=false"
+                  class="dropdown-fixed bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                  :style="`top:${pos.top}px;left:${pos.left}px;width:${width}px`">
+                <a href="{% url 'pharmacy_detail' pharmacy.id %}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <span class="material-symbols-outlined text-emerald-600 text-base">visibility</span> View Details
+                </a>
+                <a href="" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <span class="material-symbols-outlined text-green-600 text-base">edit</span> Edit
+                </a>
+                <button hx-delete="" hx-confirm="Delete this pharmacy?"
+                        class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                  <span class="material-symbols-outlined text-base">delete</span> Delete
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="py-12 text-center">
+            <div class="flex flex-col items-center justify-center text-gray-500">
+              <span class="material-symbols-outlined text-6xl mb-4">local_pharmacy</span>
+              <p class="text-lg font-medium">No pharmacies found</p>
+              <p class="text-sm">Pharmacies will appear here once they register</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}

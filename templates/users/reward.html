@@ -1,0 +1,410 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}Reward - WholeShield{% endblock %}
+
+{% block content %}
+<section class="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+    {% include "partials/users/dashboard_header.html" with show_greeting=False page_title='Reward' active_tab='reward' %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white border border-pink-200 rounded-xl p-6">
+        <p class="text-sm text-gray-500">Reward Points</p>
+        <p class="mt-2 text-4xl font-bold text-[#ec3183]">{{ user.reward_points|default:0 }}</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-6">
+        <p class="text-sm text-gray-500">Total Referrals</p>
+        <p class="mt-2 text-4xl font-bold text-gray-900">{{ total_referrals }}</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-6">
+        <p class="text-sm text-gray-500">Completed Referral Purchases</p>
+        <p class="mt-2 text-4xl font-bold text-green-600">{{ completed_referrals }}</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white border border-gray-200 rounded-xl p-6">
+        <p class="text-sm text-gray-500">Wallet Available</p>
+        <p class="mt-2 text-3xl font-bold text-gray-900">N{{ wallet.available_balance|default:0|floatformat:2 }}</p>
+        <p class="mt-1 text-xs text-gray-500">Pending: N{{ wallet.pending_balance|default:0|floatformat:2 }}</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-6">
+        <p class="text-sm text-gray-500">Point to Naira Rate</p>
+        <p class="mt-2 text-3xl font-bold text-[#ec3183]">{{ reward_config.points_to_naira_rate|floatformat:4 }}</p>
+        <p class="mt-1 text-xs text-gray-500">1 point = N{{ reward_config.points_to_naira_rate|floatformat:4 }}</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-6">
+        <p class="text-sm text-gray-500">Minimum Withdrawal</p>
+        <p class="mt-2 text-3xl font-bold text-gray-900">N{{ reward_config.minimum_withdrawal_amount|floatformat:2 }}</p>
+        <p class="mt-1 text-xs text-gray-500">Set by admin</p>
+      </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="grid grid-cols-3 gap-2 mb-8">
+      <button onclick="openModal('convertModal')"
+        class="group flex flex-col items-center gap-2 rounded-lg bg-[#ec3183] px-2 py-2.5 text-white hover:bg-[#d62a75] transition-colors shadow-sm">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/20 shrink-0">
+          <span class="material-symbols-outlined text-lg">currency_exchange</span>
+        </span>
+        <p class="text-xs font-semibold text-center leading-tight">Convert</p>
+      </button>
+
+      <button onclick="openModal('bankModal')"
+        class="group flex flex-col items-center gap-2 rounded-lg bg-gray-900 px-2 py-2.5 text-white hover:bg-black transition-colors shadow-sm">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/15 shrink-0">
+          <span class="material-symbols-outlined text-lg">account_balance</span>
+        </span>
+        <p class="text-xs font-semibold text-center leading-tight">Add Bank</p>
+      </button>
+
+      <button onclick="openModal('withdrawModal')"
+        class="group flex flex-col items-center gap-2 rounded-lg bg-green-600 px-2 py-2.5 text-white hover:bg-green-700 transition-colors shadow-sm">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/20 shrink-0">
+          <span class="material-symbols-outlined text-lg">payments</span>
+        </span>
+        <p class="text-xs font-semibold text-center leading-tight">Withdraw</p>
+      </button>
+    </div>
+
+    <!-- Convert Points Modal -->
+    <div id="convertModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/50" onclick="closeModal('convertModal')"></div>
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-lg font-bold text-[#ec3183]">Convert Points to Wallet</h2>
+          <button onclick="closeModal('convertModal')" class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <span class="material-symbols-outlined text-gray-500">close</span>
+          </button>
+        </div>
+        <form method="post" action="{% url 'reward-convert' %}" class="space-y-4">
+          {% csrf_token %}
+          <div class="bg-pink-50 rounded-lg p-3 text-sm text-pink-700">
+            You have <strong>{{ user.reward_points|default:0 }} points</strong>. Rate: 1 pt = ₦{{ reward_config.points_to_naira_rate|floatformat:4 }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Points to convert</label>
+            {{ conversion_form.points }}
+          </div>
+          <button type="submit" class="w-full rounded-lg bg-[#ec3183] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#d62a75] transition-colors">
+            Convert to Wallet
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Bank Account Modal -->
+    <div id="bankModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/50" onclick="closeModal('bankModal')"></div>
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-lg font-bold text-gray-900">Add Bank Account</h2>
+          <button onclick="closeModal('bankModal')" class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <span class="material-symbols-outlined text-gray-500">close</span>
+          </button>
+        </div>
+        <form method="post" action="{% url 'reward-bank-account-add' %}" class="space-y-4">
+          {% csrf_token %}
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Account Number</label>
+            {{ bank_account_form.account_number }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Bank</label>
+            {{ bank_account_form.bank_code }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Account Name</label>
+            <input id="id_account_name" type="text" readonly placeholder="Auto-filled after verification" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 focus:outline-none text-sm">
+            <input id="id_bank_name_hidden" type="hidden" name="bank_name" value="">
+          </div>
+          <label class="inline-flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            {{ bank_account_form.set_default }}
+            <span>Set as default account</span>
+          </label>
+          <button type="submit" class="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black transition-colors">
+            Save Account
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/50" onclick="closeModal('withdrawModal')"></div>
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-lg font-bold text-green-700">Withdraw from Wallet</h2>
+          <button onclick="closeModal('withdrawModal')" class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <span class="material-symbols-outlined text-gray-500">close</span>
+          </button>
+        </div>
+        <form method="post" action="{% url 'reward-withdraw' %}" class="space-y-4">
+          {% csrf_token %}
+          <div class="bg-green-50 rounded-lg p-3 text-sm text-green-700">
+            Available balance: <strong>₦{{ wallet.available_balance|default:0|floatformat:2 }}</strong>. Min: ₦{{ reward_config.minimum_withdrawal_amount|floatformat:2 }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Amount (₦)</label>
+            {{ withdrawal_form.amount }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Destination account</label>
+            {{ withdrawal_form.bank_account_id }}
+          </div>
+          <button type="submit" class="w-full rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700 transition-colors">
+            Withdraw Funds
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-[#ec3183] font-semibold">Recent Conversions</h2>
+        </div>
+        <div class="p-6 space-y-3 text-sm">
+          {% for row in recent_conversions %}
+          <div class="flex items-center justify-between">
+            <span class="text-gray-600">{{ row.created_at|date:"d M Y H:i" }}</span>
+            <span class="font-medium text-gray-900">{{ row.points }} pts -> N{{ row.naira_amount|floatformat:2 }}</span>
+          </div>
+          {% empty %}
+          <p class="text-gray-500">No conversion history yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-[#ec3183] font-semibold">Recent Withdrawals</h2>
+        </div>
+        <div class="p-6 space-y-3 text-sm">
+          {% for row in recent_withdrawals %}
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-gray-600">{{ row.created_at|date:"d M Y H:i" }}</span>
+            <span class="font-medium text-gray-900">N{{ row.amount|floatformat:2 }}</span>
+            <span class="px-2 py-0.5 rounded-full text-xs {% if row.status == 'success' %}bg-green-100 text-green-700{% elif row.status == 'failed' %}bg-red-100 text-red-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
+              {{ row.status|title }}
+            </span>
+          </div>
+          {% empty %}
+          <p class="text-gray-500">No withdrawal history yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          ['convertModal', 'bankModal', 'withdrawModal'].forEach(closeModal);
+        }
+      });
+
+      // Auto-open a modal when page loads with a matching URL hash
+      (function () {
+        const hashMap = { '#convert': 'convertModal', '#bank': 'bankModal', '#withdraw': 'withdrawModal' };
+        const target = hashMap[window.location.hash];
+        if (target) openModal(target);
+      })();
+
+      (function () {
+        const bankSelect = document.getElementById('id_bank_code');
+        const accountNumberInput = document.getElementById('id_account_number');
+        const accountNameInput = document.getElementById('id_account_name');
+        const bankNameHiddenInput = document.getElementById('id_bank_name_hidden');
+        if (!bankSelect || !accountNumberInput || !accountNameInput) return;
+
+        let lookupTimer = null;
+        let lookupRequestId = 0;
+
+        function setAccountName(value) {
+          accountNameInput.value = value || '';
+        }
+
+        function selectedBankLabel() {
+          const selected = bankSelect.options[bankSelect.selectedIndex];
+          return selected ? (selected.textContent || '').trim() : '';
+        }
+
+        function maybeLookupAccountName() {
+          const accountNumber = (accountNumberInput.value || '').replace(/\D/g, '');
+          const bankCode = (bankSelect.value || '').trim();
+
+          if (accountNumberInput.value !== accountNumber) {
+            accountNumberInput.value = accountNumber;
+          }
+
+          if (accountNumber.length !== 10 || !bankCode) {
+            setAccountName('');
+            if (bankNameHiddenInput) bankNameHiddenInput.value = selectedBankLabel();
+            return;
+          }
+
+          if (lookupTimer) {
+            clearTimeout(lookupTimer);
+          }
+
+          lookupTimer = setTimeout(() => {
+            const currentId = ++lookupRequestId;
+            setAccountName('Resolving account name...');
+
+            const params = new URLSearchParams({
+              account_number: accountNumber,
+              bank_code: bankCode,
+            });
+
+            fetch(`{% url "reward-account-lookup" %}?${params.toString()}`, { credentials: 'same-origin' })
+              .then((res) => res.json())
+              .then((data) => {
+                if (currentId !== lookupRequestId) return;
+                if (!data.ok) {
+                  throw new Error(data.error || 'Unable to verify account details');
+                }
+                setAccountName(data.account_name || '');
+                if (bankNameHiddenInput) {
+                  bankNameHiddenInput.value = (data.bank_name || selectedBankLabel());
+                }
+              })
+              .catch((err) => {
+                if (currentId !== lookupRequestId) return;
+                setAccountName('');
+                if (bankNameHiddenInput) bankNameHiddenInput.value = selectedBankLabel();
+                showToast('error', err?.message || 'Unable to verify account details right now.');
+              });
+          }, 350);
+        }
+
+        bankSelect.innerHTML = '<option value="">Loading banks...</option>';
+
+        fetch('{% url "reward-banks" %}', { credentials: 'same-origin' })
+          .then((res) => res.json())
+          .then((data) => {
+            if (!data.ok || !Array.isArray(data.banks)) {
+              throw new Error(data.error || 'Unable to load banks');
+            }
+            bankSelect.innerHTML = '<option value="">Select bank</option>';
+            data.banks.forEach((bank) => {
+              const option = document.createElement('option');
+              option.value = bank.code;
+              option.textContent = bank.name;
+              bankSelect.appendChild(option);
+            });
+          })
+          .catch((err) => {
+            bankSelect.innerHTML = '<option value="">Unable to load banks</option>';
+            showToast('error', err?.message || 'Unable to load banks right now.');
+          });
+
+        accountNumberInput.addEventListener('input', maybeLookupAccountName);
+        bankSelect.addEventListener('change', maybeLookupAccountName);
+      })();
+
+      // Reopen modal after failed POST (server sets messages with a special tag)
+      (function () {
+        {% if conversion_form.errors %}openModal('convertModal');{% endif %}
+        {% if bank_account_form.errors %}openModal('bankModal');{% endif %}
+        {% if withdrawal_form.errors %}openModal('withdrawModal');{% endif %}
+      })();
+    </script>
+
+    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 class="text-[#ec3183] font-semibold">Your Referral Link</h2>
+          <p class="mt-1 text-sm text-gray-500">Share this link. You earn 1 point when a referred user completes their first purchase.</p>
+        </div>
+        <div class="text-sm text-gray-500">Code: <span class="font-semibold text-[#ec3183]">{{ referral_code }}</span></div>
+      </div>
+      <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+        <input id="referral-link" type="text" value="{{ referral_link }}" readonly class="w-full rounded-full border border-pink-200 px-4 py-3 text-sm text-gray-700 focus:outline-none">
+        <button type="button" class="rounded-full bg-[#ec3183] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#d62a75]" onclick="navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => showToast('success', 'Referral link copied.'));
+        ">
+          Copy Link
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h2 class="text-[#ec3183] font-semibold">Referred Users</h2>
+        <span class="text-xs text-gray-400">{{ referred_users|length }} referral{{ referred_users|length|pluralize }}</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left font-medium text-gray-500">Name</th>
+              <th class="px-6 py-3 text-left font-medium text-gray-500">Email</th>
+              <th class="px-6 py-3 text-left font-medium text-gray-500">Joined</th>
+              <th class="px-6 py-3 text-left font-medium text-gray-500">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {% for referred in referred_users %}
+            <tr>
+              <td class="px-6 py-4 text-gray-800 font-medium">{{ referred.get_full_name|default:referred.email }}</td>
+              <td class="px-6 py-4 text-gray-600">{{ referred.email }}</td>
+              <td class="px-6 py-4 text-gray-500">{{ referred.date_joined|date:"d M Y" }}</td>
+              <td class="px-6 py-4">
+                {% if referred.has_purchased %}
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 text-xs font-medium">Completed</span>
+                {% else %}
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 text-xs font-medium">Pending purchase</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="px-6 py-8 text-center text-gray-500">No referrals yet. Share your referral link to earn points.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-[#ec3183] font-semibold">Points History</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left py-3 px-4 text-gray-600 font-medium">Date</th>
+              <th class="text-left py-3 px-4 text-gray-600 font-medium">Reason</th>
+              <th class="text-right py-3 px-4 text-gray-600 font-medium">Points</th>
+            </tr>
+          </thead>
+          <tbody id="reward-rows">
+            {% if not point_ledger %}
+            <tr>
+              <td colspan="3" class="py-6 px-4 text-center text-gray-400">No points earned yet.</td>
+            </tr>
+            {% else %}
+            {% include "users/partials/reward_rows.html" %}
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

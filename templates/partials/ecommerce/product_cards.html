@@ -1,0 +1,95 @@
+{% load static %}
+
+{% for product in products %}
+<div
+  class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow group flex flex-col opacity-0 translate-y-3 will-change-transform">
+  <!-- Product Link (Image + Info) -->
+  <a href="{% url 'product-detail' product.id %}" class="flex-1 flex flex-col">
+    <!-- Product Image -->
+    <div class="relative w-full aspect-square bg-gray-100 overflow-hidden">
+      {% if product.thumbnail and product.thumbnail.image %}
+      <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+      {% elif product.images.first %}
+      <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+      {% else %}
+      <div
+        class="w-full h-full bg-gradient-to-br from-[#31dec4] to-[#ec3183] opacity-20 flex items-center justify-center">
+        <span class="text-gray-400">No image</span>
+      </div>
+      {% endif %}
+
+      {% if product.is_best_seller %}
+      <div
+        class="absolute top-2 right-2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white px-2 py-1 rounded-full text-xs font-semibold">
+        Best Seller
+      </div>
+      {% endif %}
+
+      {% if product.discount > 0 %}
+      <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+        -{{ product.discount }}%
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="p-4 flex-1 flex flex-col">
+      {% if product.category %}
+      <p class="text-xs text-[#ec3183] opacity-70 mb-1 uppercase tracking-wide">
+        {{ product.category.name }}
+      </p>
+      {% endif %}
+      <h3 class="font-semibold text-[#ec3183] mb-2 line-clamp-2 text-sm sm:text-base">
+        {{ product.name }}
+      </h3>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-lg sm:text-xl font-bold text-[#ec3183]">₦{{ product.price }}</span>
+        {% if product.discount > 0 %}
+        {% widthratio product.price 100 product.discount as discount_amount %}
+        <span class="text-sm text-gray-400 line-through">
+          ₦{{ product.price|add:discount_amount }}
+        </span>
+        {% endif %}
+      </div>
+      <div class="mb-3">
+        {% if product.stock > 5 %}
+        <p class="text-xs text-green-600 font-semibold">In Stock</p>
+        {% elif product.stock > 0 %}
+        <p class="text-xs text-orange-600 font-semibold">Only {{ product.stock }} left</p>
+        {% else %}
+        <p class="text-xs text-red-600 font-semibold">Out of Stock</p>
+        {% endif %}
+      </div>
+    </div>
+  </a>
+
+  <div class="p-4 pt-0">
+    {% if request.user.is_authenticated %}
+    {% with min_qty=product.get_min_quantity_for_role|add:request.user.role %}
+    <form method="post" action="{% url 'add-to-cart' product.id %}" class="cart-form">
+      {% csrf_token %}
+      <input type="hidden" name="quantity" value="{{ min_qty }}">
+      {% if product.stock > 0 %}
+      <button type="submit" hx-post="{% url 'add-to-cart' product.id %}" hx-include="[name='quantity']" hx-swap="none"
+        class="w-full py-2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow text-sm sm:text-base"
+        {% if min_qty > 1 %}title="Minimum quantity: {{ min_qty }}"{% endif %}>
+        Add to Cart
+      </button>
+      {% else %}
+      <button type="button" disabled
+        class="w-full py-2 bg-gray-300 text-gray-500 font-semibold rounded-lg cursor-not-allowed text-sm sm:text-base">
+        Out of Stock
+      </button>
+      {% endif %}
+    </form>
+    {% endwith %}
+    {% else %}
+    <a href="{% url 'login' %}?next={{ request.path }}"
+      class="block w-full text-center py-2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow text-sm sm:text-base">
+      Login to Add to Cart
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}

@@ -1,0 +1,145 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}WholeShield | Return Policy{% endblock %}
+
+{% block content %}
+<section
+    style="background-color: white; padding-top: 120px; padding-bottom: 100px; color: #C2185B; font-family: 'Inter', sans-serif;">
+    <div style="max-width: 1400px; margin: 0 auto; padding: 0 40px;">
+
+        <!-- Big Header -->
+        <div style="text-align: center; margin-bottom: 120px;">
+            <h1 class="policy-header"
+                style="font-size: 64px; font-weight: 700; display: inline-block; padding-bottom: 20px; border-bottom: 8px solid #C2185B; margin: 0;">
+                Wholeshield Policies
+            </h1>
+        </div>
+
+        <!-- Layout Container -->
+        <div style="display: flex; flex-wrap: wrap; gap: 100px; align-items: flex-start;">
+
+            <!-- Sidebar: Fixed/Sticky -->
+            <aside
+                style="width: 280px; flex-shrink: 0; position: -webkit-sticky; position: sticky; top: 120px; background-color: #f9f9f9; padding: 40px; border-radius: 20px;">
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 32px;">
+                    <li>
+                        <a href="{% url 'terms-of-service' %}"
+                            style="color: #C2185B; text-decoration: none; font-weight: 500; font-size: 18px; opacity: 0.7;">Terms
+                            of Service</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'privacy-policy' %}"
+                            style="color: #C2185B; text-decoration: none; font-weight: 500; font-size: 18px; opacity: 0.7;">Privacy
+                            Policy</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'return-policy' %}"
+                            style="color: #C2185B; text-decoration: underline; text-underline-offset: 8px; font-weight: 600; font-size: 18px;">Return
+                            Policy</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'delivery-policy' %}"
+                            style="color: #C2185B; text-decoration: none; font-weight: 500; font-size: 18px; opacity: 0.7;">Delivery
+                            Policy</a>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div style="flex: 1; min-width: 600px; padding-bottom: 100px;">
+                <h2 style="font-size: 56px; font-weight: 500; margin-top: 0; margin-bottom: 24px; color: #C2185B;">
+                    Return Policy</h2>
+                <p
+                    style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 48px; color: #C2185B;">
+                    LAST UPDATED: 5TH OF MARCH 2026</p>
+
+                <div
+                    style="display: flex; flex-direction: column; gap: 40px; font-size: 18px; line-height: 1.8; font-weight: 500;">
+
+                    <div>
+                        <h3 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px;">
+                            RETURNS ELIGIBILITY</h3>
+                        <p>Due to the nature of nutraceuticals and dietary supplements, opened or used products are not
+                            eligible for return or refund, except where required by law.</p>
+                        <p style="margin-top: 20px;">Returns may be accepted where:</p>
+                        <ol style="list-style-type: decimal; padding-left: 20px; margin-top: 10px;">
+                            <li>The product was delivered damaged or defective.</li>
+                            <li>The wrong product was delivered.</li>
+                            <li>The product is unused, unopened, and in its original packaging.</li>
+                        </ol>
+                        <p style="margin-top: 20px; font-weight: 700;">All return requests must be made within 7 days of
+                            delivery.</p>
+                    </div>
+
+                    <div>
+                        <h3 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px;">
+                            REFUNDS</h3>
+                        <p>Approved refunds will be processed using the original payment method within a reasonable
+                            timeframe after inspection of the returned product. Shipping fees are non-refundable, except
+                            where the error is attributable to Wholeshield.</p>
+                    </div>
+
+                    <div>
+                        <h3 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px;">
+                            NON-RETURNABLE ITEMS</h3>
+                        <ul style="list-style-type: none; padding-left: 0; margin-top: 10px;">
+                            <li>a. Opened or used products.</li>
+                            <li>b. Products damaged due to misuse or improper storage.</li>
+                            <li>c. Promotional or discounted items (unless defective)</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px;">
+                            RETURN REQUEST PROCESS</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 40px; margin-top: 20px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span>📧</span>
+                                <span>Email: <a href="mailto:hello@wholeshieldwellness.com"
+                                        style="color: #C2185B; text-decoration: underline;">hello@wholeshieldwellness.com</a></span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span>📞</span>
+                                <span>Phone Numbers: 07039648273</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Ensure smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Reset link colors strictly */
+    .policy-sidebar a {
+        color: #C2185B !important;
+    }
+
+    @media (min-width: 1024px) {
+        .policy-header {
+            font-size: 84px !important;
+        }
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 1024px) {
+        aside {
+            position: static !important;
+            width: 100% !important;
+            margin-bottom: 40px;
+        }
+
+        div[style*="min-width: 600px"] {
+            min-width: 100% !important;
+        }
+    }
+</style>
+{% endblock %}

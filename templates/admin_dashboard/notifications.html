@@ -5,88 +5,111 @@
 {% block page_title %}Notifications{% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
-  <!-- Filters -->
-  <div class="flex flex-wrap items-center gap-2 mb-6">
-    <a href="?type=all" class="px-3 py-1.5 {% if filter_type == 'all' %}bg-teal-600 text-white{% else %}bg-gray-100 text-gray-700{% endif %} rounded-lg text-xs font-medium transition-colors">
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
+
+  <!-- Filters — scrollable on mobile so all pills stay on one row -->
+  <div class="flex items-center gap-2 mb-5 overflow-x-auto pb-1 -mx-3 sm:mx-0 px-3 sm:px-0 sm:flex-wrap">
+    <a href="?type=all" class="flex-shrink-0 px-3 py-1.5 {% if filter_type == 'all' %}bg-teal-600 text-white{% else %}bg-gray-100 text-gray-700{% endif %} rounded-lg text-xs font-medium transition-colors">
       All <span class="ml-1 bg-{% if filter_type == 'all' %}teal{% else %}gray{% endif %}-200 rounded px-1.5">{{ total_notifications }}</span>
     </a>
-    <a href="?type=orders" class="px-3 py-1.5 {% if filter_type == 'orders' %}bg-teal-600 text-white{% else %}bg-gray-100 text-gray-700{% endif %} rounded-lg text-xs font-medium transition-colors">
+    <a href="?type=orders" class="flex-shrink-0 px-3 py-1.5 {% if filter_type == 'orders' %}bg-teal-600 text-white{% else %}bg-gray-100 text-gray-700{% endif %} rounded-lg text-xs font-medium transition-colors">
       Orders <span class="ml-1 bg-{% if filter_type == 'orders' %}teal{% else %}gray{% endif %}-200 rounded px-1.5">{{ orders_count }}</span>
     </a>
-    <a href="?type=tickets" class="px-3 py-1.5 {% if filter_type == 'tickets' %}bg-teal-600 text-white{% else %}bg-gray-100 text-gray-700{% endif %} rounded-lg text-xs font-medium transition-colors">
+    <a href="?type=tickets" class="flex-shrink-0 px-3 py-1.5 {% if filter_type == 'tickets' %}bg-teal-600 text-white{% else %}bg-gray-100 text-gray-700{% endif %} rounded-lg text-xs font-medium transition-colors">
       Tickets <span class="ml-1 bg-{% if filter_type == 'tickets' %}teal{% else %}gray{% endif %}-200 rounded px-1.5">{{ tickets_count }}</span>
     </a>
   </div>
 
   <!-- Notification List -->
-  <div class="space-y-3 lg:space-y-4">
+  <div class="space-y-3">
     {% if notifications %}
       {% for notification in notifications %}
+
         {% if notification.type == 'order' %}
-          <div data-notification="order-{{ notification.order_id }}" class="flex items-start gap-3 bg-blue-50 hover:bg-blue-100 rounded-lg p-4 transition-colors border border-blue-200 group">
-            <a href="{% url 'admin_order_detail' notification.order_id %}" class="flex-1 flex items-start gap-3 cursor-pointer">
-              <div class="w-9 h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex-shrink-0 flex items-center justify-center text-white">
+          <div data-notification="order-{{ notification.order_id }}"
+               class="flex items-start gap-2 sm:gap-3 bg-blue-50 hover:bg-blue-100 rounded-lg p-3 sm:p-4 transition-colors border border-blue-200 group">
+
+            <a href="{% url 'admin_order_detail' notification.order_id %}"
+               class="flex-1 flex items-start gap-2 sm:gap-3 min-w-0 cursor-pointer">
+
+              <!-- Icon — hidden on the smallest phones to save space -->
+              <div class="hidden sm:flex w-9 h-9 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex-shrink-0 items-center justify-center text-white">
                 <span class="material-symbols-outlined text-lg">shopping_cart</span>
               </div>
+
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900">
-                  <span class="group-hover:text-blue-700">{{ notification.user.email }}</span> ordered <span class="font-semibold">{{ notification.product_name }}</span>
+                <!-- Email wraps on mobile instead of overflowing -->
+                <p class="text-sm font-medium text-gray-900 break-all sm:break-words">
+                  <span class="group-hover:text-blue-700">{{ notification.user.email }}</span>
+                  ordered <span class="font-semibold">{{ notification.product_name }}</span>
                 </p>
                 <p class="text-xs text-gray-600 mt-1">
-                  Order #{{ notification.order_id|stringformat:"s"|slice:":8" }} • ₦{{ notification.total_amount|floatformat:2 }}
+                  Order #{{ notification.order_id|stringformat:"s"|slice:":8" }} &bull; ₦{{ notification.total_amount|floatformat:2 }}
                 </p>
-                <p class="text-xs text-gray-500 mt-0.5">
+                <!-- Status badge + timestamp stacked on mobile -->
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
                   {% if notification.status == 'pending' %}
-                    <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs">Pending</span>
-                  {% elif notification.status == 'processing' %}
-                    <span class="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">Processing</span>
-                  {% elif notification.status == 'shipped' %}
-                    <span class="inline-block bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs">Shipped</span>
+                    <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs">Pending</span>
+                  {% elif notification.status == 'ordered' or notification.status == 'processing' %}
+                    <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">Ordered</span>
+                  {% elif notification.status == 'in_delivery' %}
+                    <span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs">Out for Delivery</span>
                   {% elif notification.status == 'delivered' %}
-                    <span class="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">Delivered</span>
+                    <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">Delivered</span>
+                  {% else %}
+                    <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs">{{ notification.status|title }}</span>
                   {% endif %}
-                </p>
+                  <span class="text-xs text-gray-400">{{ notification.created_at|timesince }} ago</span>
+                </div>
               </div>
-              <span class="text-xs text-gray-400 whitespace-nowrap">{{ notification.created_at|timesince }} ago</span>
             </a>
-            <button class="delete-btn flex-shrink-0 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" data-type="order" data-id="{{ notification.order_id }}" title="Delete notification">
+
+            <button class="delete-btn flex-shrink-0 p-1.5 sm:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                    data-type="order" data-id="{{ notification.order_id }}" title="Delete notification">
               <span class="material-symbols-outlined text-lg">delete_outline</span>
             </button>
           </div>
+
         {% elif notification.type == 'ticket' %}
-          <div data-notification="ticket-{{ notification.ticket_id }}" class="flex items-start gap-3 bg-red-50 hover:bg-red-100 rounded-lg p-4 transition-colors border border-red-200 group">
-            <a href="{% url 'admin_ticket_detail' notification.ticket_id %}" class="flex-1 flex items-start gap-3 cursor-pointer">
-              <div class="w-9 h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex-shrink-0 flex items-center justify-center text-white">
+          <div data-notification="ticket-{{ notification.ticket_id }}"
+               class="flex items-start gap-2 sm:gap-3 bg-red-50 hover:bg-red-100 rounded-lg p-3 sm:p-4 transition-colors border border-red-200 group">
+
+            <a href="{% url 'admin_ticket_detail' notification.ticket_id %}"
+               class="flex-1 flex items-start gap-2 sm:gap-3 min-w-0 cursor-pointer">
+
+              <div class="hidden sm:flex w-9 h-9 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex-shrink-0 items-center justify-center text-white">
                 <span class="material-symbols-outlined text-lg">support_agent</span>
               </div>
+
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900">
-                  <span class="group-hover:text-red-700">{{ notification.user.email }}</span> submitted support ticket
+                <p class="text-sm font-medium text-gray-900 break-all sm:break-words">
+                  <span class="group-hover:text-red-700">{{ notification.user.email }}</span>
+                  submitted a support ticket
                 </p>
-                <p class="text-xs text-gray-600 mt-1">
-                  {{ notification.subject }}
-                </p>
-                <p class="text-xs text-gray-500 mt-0.5">
+                <p class="text-xs text-gray-600 mt-1 truncate">{{ notification.subject }}</p>
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
                   {% if notification.priority == 'urgent' %}
-                    <span class="inline-block bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs font-medium">🔴 Urgent</span>
+                    <span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs font-medium">🔴 Urgent</span>
                   {% elif notification.priority == 'high' %}
-                    <span class="inline-block bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-xs font-medium">🟠 High</span>
+                    <span class="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-xs font-medium">🟠 High</span>
                   {% elif notification.priority == 'medium' %}
-                    <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs font-medium">🟡 Medium</span>
+                    <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs font-medium">🟡 Medium</span>
                   {% else %}
-                    <span class="inline-block bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs font-medium">⚪ Low</span>
+                    <span class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs font-medium">⚪ Low</span>
                   {% endif %}
-                  • Status: {{ notification.status|title }}
-                </p>
+                  <span class="text-xs text-gray-500">{{ notification.status|title }}</span>
+                  <span class="text-xs text-gray-400">{{ notification.created_at|timesince }} ago</span>
+                </div>
               </div>
-              <span class="text-xs text-gray-400 whitespace-nowrap">{{ notification.created_at|timesince }} ago</span>
             </a>
-            <button class="delete-btn flex-shrink-0 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" data-type="ticket" data-id="{{ notification.ticket_id }}" title="Delete notification">
+
+            <button class="delete-btn flex-shrink-0 p-1.5 sm:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                    data-type="ticket" data-id="{{ notification.ticket_id }}" title="Delete notification">
               <span class="material-symbols-outlined text-lg">delete_outline</span>
             </button>
           </div>
         {% endif %}
+
       {% endfor %}
     {% else %}
       <div class="text-center py-12">

@@ -9,27 +9,53 @@
 
     <div class="flex items-center gap-4">
       {% if user.is_authenticated %}
-      <a href="{% url 'user-dashboard' %}" class="hidden sm:inline-flex" aria-label="My Dashboard">
-        <span
-          class="inline-block w-8 h-8 rounded-full bg-gradient-to-br from-[#31dec4] to-[#5aa8ff] ring-2 ring-blue-200"></span>
+      <a href="{% url 'user-dashboard' %}" class="inline-flex" aria-label="My Dashboard">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#31dec4] ring-2 ring-[#31dec4]/30 hover:ring-[#31dec4]/60 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-white" aria-hidden="true">
+            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.76-3.58-5-8-5Z" />
+          </svg>
+        </span>
       </a>
       {% else %}
-      <a href="{% url 'login' %}" class="hidden sm:inline-flex" aria-label="Login">
-        <span
-          class="inline-block w-8 h-8 rounded-full bg-gradient-to-br from-[#31dec4] to-[#5aa8ff] ring-2 ring-blue-200"></span>
+      <a href="{% url 'login' %}" class="inline-flex" aria-label="Login">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#31dec4] ring-2 ring-[#31dec4]/30 hover:ring-[#31dec4]/60 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-white" aria-hidden="true">
+            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.76-3.58-5-8-5Z" />
+          </svg>
+        </span>
       </a>
       {% endif %}
+
       <!-- Cart Icon with Badge -->
       <button id="openCartBtn" class="relative p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
         aria-label="Shopping cart">
         <span class="material-symbols-outlined text-[#ec3183]">shopping_bag</span>
         <span id="cartItemCountBadge"
-          class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] rounded-full {% if not cart_item_count %}hidden{% endif %}">
+          class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-[#ec3183] rounded-full {% if not cart_item_count %}hidden{% endif %}">
           {{ cart_item_count|default:0 }}
         </span>
       </button>
     </div>
   </div>
+
+
+  {% if show_kyc_cta %}
+  <div id="kycCtaBadge" class="fixed right-4 top-16 md:top-20 z-40 inline-flex max-w-[18rem] items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 shadow-lg transition-colors hover:bg-emerald-100">
+    <a href="{% url kyc_cta_url_name %}" class="flex items-center gap-2 flex-1">
+      <span class="material-symbols-outlined text-base leading-none">verified_user</span>
+      <span class="leading-4">
+        {% if user.kyc_status == 'rejected' %}
+        KYC failed. Update your details.
+        {% else %}
+        Complete your KYC.
+        {% endif %}
+      </span>
+    </a>
+    <button id="dismissKycCtaBtn" class="ml-2 p-1 rounded hover:bg-emerald-100 focus:outline-none" title="Dismiss">
+      <span class="material-symbols-outlined text-base">close</span>
+    </button>
+  </div>
+  {% endif %}
 
   <!-- Mobile Menu Overlay -->
   <div id="menuDrawer" class="hidden fixed inset-0 z-50">
@@ -40,7 +66,7 @@
     <div id="drawerContainer"
       class="fixed top-0 left-0 h-screen w-80 max-w-[85vw] bg-white shadow-2xl transition-transform duration-300 -translate-x-full overflow-y-auto flex flex-col">
       <!-- Close Button -->
-      <div class="flex justify-end items-center p-6 pb-4 border-b border-gray-200 flex-shrink-0">
+      <div class="flex justify-end items-center p-6 pb-4 border-b border-gray-200 shrink-0">
         <button id="closeMenuBtn" class="p-2 rounded-lg hover:bg-gray-50 transition-colors">
           <span class="material-symbols-outlined text-[#ec3183] text-3xl">close</span>
         </button>
@@ -49,16 +75,49 @@
       <!-- Menu Items -->
       <nav class="px-6 py-4 space-y-0 flex-1">
         <a href="{% url 'products' %}"
-          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop
-          All</a>
+          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop All</a>
         <a href="{% url 'products' %}?gender=men"
-          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop
-          for Men</a>
+          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop for Men</a>
         <a href="{% url 'products' %}?gender=women"
-          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop
-          for Women</a>
+          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Shop for Women</a>
         <a href="{% url 'blog' %}"
-          class="block text-[#ec3183] text-3xl font-bold py-4 hover:opacity-80 transition-opacity">Our Blog</a>
+          class="block text-[#ec3183] text-3xl font-bold py-4 border-b border-gray-200 hover:opacity-80 transition-opacity">Our Blog</a>
+
+        <!-- Account / Dashboard links -->
+        <div class="pt-4 mt-2 space-y-1">
+          {% if user.is_authenticated %}
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">My Account</p>
+          <a href="{% url 'user-dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-pink-50 hover:text-[#ec3183] transition-colors">
+            <span class="material-symbols-outlined text-xl">dashboard</span>
+            Dashboard
+          </a>
+          <a href="{% url 'reward-dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-pink-50 hover:text-[#ec3183] transition-colors">
+            <span class="material-symbols-outlined text-xl">stars</span>
+            Rewards
+          </a>
+          <a href="{% url 'order-history' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-pink-50 hover:text-[#ec3183] transition-colors">
+            <span class="material-symbols-outlined text-xl">receipt_long</span>
+            Orders
+          </a>
+          <a href="{% url 'profile' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-pink-50 hover:text-[#ec3183] transition-colors">
+            <span class="material-symbols-outlined text-xl">manage_accounts</span>
+            Settings
+          </a>
+          <a href="{% url 'logout' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 font-medium hover:bg-red-50 transition-colors">
+            <span class="material-symbols-outlined text-xl">logout</span>
+            Log Out
+          </a>
+          {% else %}
+          <a href="{% url 'login' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-pink-50 hover:text-[#ec3183] transition-colors">
+            <span class="material-symbols-outlined text-xl">login</span>
+            Log In
+          </a>
+          <a href="{% url 'signup' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-pink-50 hover:text-[#ec3183] transition-colors">
+            <span class="material-symbols-outlined text-xl">person_add</span>
+            Sign Up
+          </a>
+          {% endif %}
+        </div>
       </nav>
     </div>
   </div>
@@ -98,6 +157,16 @@
           closeMenu();
         }
       });
+
+      // KYC CTA dismiss logic
+      const kycCtaBadge = document.getElementById('kycCtaBadge');
+      const dismissKycCtaBtn = document.getElementById('dismissKycCtaBtn');
+      if (kycCtaBadge && dismissKycCtaBtn) {
+        dismissKycCtaBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          kycCtaBadge.style.display = 'none';
+        });
+      }
     });
   </script>
 </nav>

@@ -1,0 +1,141 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Reward Withdrawals{% endblock %}
+{% block page_title %}Reward Withdrawals{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <p class="text-sm text-gray-600">Requests</p>
+    <p class="text-3xl font-bold text-gray-900 mt-1">{{ total_count }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <p class="text-sm text-gray-600">Total Amount</p>
+    <p class="text-3xl font-bold text-gray-900 mt-1">N{{ total_amount|floatformat:2 }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <p class="text-sm text-gray-600">Pending/Processing</p>
+    <p class="text-3xl font-bold text-yellow-600 mt-1">{{ pending_count }} / {{ processing_count }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <p class="text-sm text-gray-600">Successful</p>
+    <p class="text-3xl font-bold text-green-600 mt-1">{{ success_count }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <p class="text-sm text-gray-600">Failed</p>
+    <p class="text-3xl font-bold text-red-600 mt-1">{{ failed_count }}</p>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+  <form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+    <div class="md:col-span-2">
+      <label for="q" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+      <input id="q" name="q" type="text" value="{{ search_query }}" placeholder="Email, reference, account..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+    </div>
+    <div>
+      <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+      <select id="status" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">
+        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="processing" {% if status_filter == 'processing' %}selected{% endif %}>Processing</option>
+        <option value="success" {% if status_filter == 'success' %}selected{% endif %}>Success</option>
+        <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Failed</option>
+      </select>
+    </div>
+    <div>
+      <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+      <input id="start_date" name="start_date" type="date" value="{{ start_date }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+    </div>
+    <div>
+      <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+      <input id="end_date" name="end_date" type="date" value="{{ end_date }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+    </div>
+    <div class="flex gap-2">
+      <button type="submit" class="px-4 py-2.5 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors">Apply</button>
+      <a href="{% url 'admin_reward_withdrawals' %}" class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">Reset</a>
+    </div>
+  </form>
+
+  <div class="mt-4 md:text-right">
+    <a href="{% url 'admin_export_reward_withdrawals' %}?q={{ search_query }}&status={{ status_filter }}&start_date={{ start_date }}&end_date={{ end_date }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors">
+      <span class="material-symbols-outlined text-base">download</span>
+      Export CSV
+    </a>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[980px]">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Created</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">User</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Status</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Reference</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Destination</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for row in withdrawals %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 text-sm text-gray-700">{{ row.created_at|date:"d M Y, H:i" }}</td>
+          <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ row.user.email }}</td>
+          <td class="px-6 py-4 text-sm text-gray-900 font-semibold">N{{ row.amount|floatformat:2 }}</td>
+          <td class="px-6 py-4 text-sm">
+            <span class="px-2.5 py-1 rounded-full text-xs font-medium {% if row.status == 'success' %}bg-green-100 text-green-700{% elif row.status == 'failed' %}bg-red-100 text-red-700{% elif row.status == 'processing' %}bg-blue-100 text-blue-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
+              {{ row.status|title }}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-xs text-gray-700">
+            <div>{{ row.reference }}</div>
+            {% if row.monnify_reference %}<div class="text-gray-500">{{ row.monnify_reference }}</div>{% endif %}
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-700">
+            <div>{{ row.bank_account.account_name }}</div>
+            <div class="text-xs text-gray-500">{{ row.bank_account.account_number }} ({{ row.bank_account.bank_name|default:row.bank_account.bank_code }})</div>
+          </td>
+          <td class="px-6 py-4 text-sm">
+            {% if row.status == 'failed' %}
+            <form method="post" action="{% url 'admin_retry_reward_withdrawal' row.id %}">
+              {% csrf_token %}
+              <button type="submit" class="px-3 py-1.5 rounded-md bg-teal-600 text-white text-xs font-medium hover:bg-teal-700 transition-colors">Retry</button>
+            </form>
+            {% else %}
+            <span class="text-gray-400 text-xs">No action</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% if row.failure_reason %}
+        <tr>
+          <td colspan="7" class="px-6 pb-4 text-xs text-red-600">Failure: {{ row.failure_reason }}</td>
+        </tr>
+        {% endif %}
+        {% empty %}
+        <tr>
+          <td colspan="7" class="px-6 py-10 text-center text-gray-500">No withdrawal requests found for this filter.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+  <div class="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50">
+    <p class="text-sm text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+    <div class="flex gap-2">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-3 py-1.5 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-white">Previous</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&status={{ status_filter }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-3 py-1.5 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-white">Next</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

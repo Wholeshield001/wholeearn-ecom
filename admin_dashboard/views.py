@@ -17,18 +17,25 @@ from .forms import (AdminLoginForm,
                     BlogCategoryForm,
                     AdminInviteForm,
                     AdminProfileForm,
-                    AdminPasswordChangeForm)
-from users.models import User
+                    AdminPasswordChangeForm,
+                    RewardPointConfigForm,
+                    PaymentProviderConfigForm)
+from users.models import User, KYCSubmission, KYCSubmissionAuditLog
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
-from .models import Product, Category, ProductImage, BlogPost, BlogCategory
-from django.db.models import Count
+from .models import Product, Category, ProductImage, BlogPost, BlogCategory, DailyWebsiteVisit
+from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth
 from datetime import datetime
 from decimal import Decimal
 import json
 import secrets
+from django.utils import timezone
+from ecom.models import RewardPointConfig, PaymentProviderConfig, Order, WalletWithdrawalRequest
+from ecom.services.wallets import process_withdrawal_request, WalletOperationError
+from users.emails import send_kyc_approved_email, send_kyc_rejected_email
+from users.tasks import send_kyc_status_update_email_task
 
 
 # Custom decorator to require admin role
@@ -99,6 +106,22 @@ def admin_dashboard(request):
     total_revenue = Order.objects.filter(
         payment_status='completed'
     ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
+    total_points_issued = User.objects.aggregate(total=Sum('reward_points'))['total'] or 0
+    successful_referral_orders = Order.objects.filter(
+        payment_status='completed',
+        referrer__isnull=False,
+    ).count()
+    today_local = timezone.localdate()
+    today_visit_stat = DailyWebsiteVisit.objects.filter(date=today_local).first()
+    today_visits = today_visit_stat.total_visits if today_visit_stat else 0
+    unique_visitors_today = today_visit_stat.unique_visitors if today_visit_stat else 0
+    last_7_days_visits = DailyWebsiteVisit.objects.filter(
+        date__gte=today_local - timedelta(days=6),
+        date__lte=today_local,
+    ).aggregate(total=Sum('total_visits'))['total'] or 0
+    top_referrers = User.objects.annotate(
+        referral_orders_count=Count('referred_orders', filter=Q(referred_orders__payment_status='completed')),
+    ).filter(referral_orders_count__gt=0).order_by('-referral_orders_count', '-reward_points')[:5]
     
     # Get top selling products (based on order items)
     from ecom.models import OrderItem
@@ -202,17 +225,114 @@ def admin_dashboard(request):
     # Sort all notifications by created_at
     notifications.sort(key=lambda x: x['created_at'], reverse=True)
     notifications = notifications[:5]  # Keep only top 5
-    
+
+    # ── Extra chart data ──────────────────────────────────────────────────────
+
+    # Actual date labels for the last-7-days revenue chart
+    daily_labels = [d.strftime('%b %d') for d in last_7_days]
+
+    # Monthly order *counts* for current year (overlay line on Sales Details chart)
+    monthly_orders_year = [0] * 12
+    for o in Order.objects.filter(created_at__year=current_year).annotate(
+        month=TruncMonth('created_at')
+    ).values('month').annotate(count=Count('id')).order_by('month'):
+        monthly_orders_year[o['month'].month - 1] = o['count']
+
+    # Orders by status (doughnut chart)
+    status_display_map = dict(Order.STATUS_CHOICES) if hasattr(Order, 'STATUS_CHOICES') else {}
+    status_qs = Order.objects.values('status').annotate(count=Count('id')).order_by('-count')
+    orders_by_status_labels = [
+        status_display_map.get(sc['status'], sc['status'].replace('_', ' ').title())
+        for sc in status_qs
+    ]
+    orders_by_status_data = [sc['count'] for sc in status_qs]
+
+    # Revenue by user role (horizontal bar chart)
+    role_display_map = dict(User.ROLE_CHOICES)
+    role_rev_qs = (
+        Order.objects.filter(payment_status='completed')
+        .values('user__role')
+        .annotate(total=Sum('total_amount'))
+        .order_by('-total')
+    )
+    revenue_by_role_labels = [
+        role_display_map.get(rr['user__role'] or '', rr['user__role'] or 'Unknown')
+        for rr in role_rev_qs
+    ]
+    revenue_by_role_data = [float(rr['total'] or 0) for rr in role_rev_qs]
+
+    # Last 30 days revenue + labels (for toggle on revenue trend chart)
+    last_30_days_list = [today - timedelta(days=i) for i in range(29, -1, -1)]
+    last_30_labels = [d.strftime('%b %d') for d in last_30_days_list]
+    last_30_revenue = []
+    for day in last_30_days_list:
+        rev = Order.objects.filter(
+            created_at__date=day, payment_status='completed'
+        ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
+        last_30_revenue.append(float(rev))
+
+    # Month-over-month revenue change for the Sales Details subtitle
+    import calendar
+    this_month = datetime.now().month
+    prev_month = this_month - 1 if this_month > 1 else 12
+    prev_year = current_year if this_month > 1 else current_year - 1
+    rev_this_month = Order.objects.filter(
+        created_at__year=current_year, created_at__month=this_month, payment_status='completed'
+    ).aggregate(t=Sum('total_amount'))['t'] or Decimal('0')
+    rev_prev_month = Order.objects.filter(
+        created_at__year=prev_year, created_at__month=prev_month, payment_status='completed'
+    ).aggregate(t=Sum('total_amount'))['t'] or Decimal('0')
+    if rev_prev_month > 0:
+        mom_change = round(float((rev_this_month - rev_prev_month) / rev_prev_month * 100), 1)
+    else:
+        mom_change = None  # no previous month data
+
+    # Top 5 products — bar chart (units sold)
+    top_product_labels = [item['product'].name for item in top_products_data]
+    top_product_sold   = [item['total_sold'] for item in top_products_data]
+    top_product_stock  = [item['stock_left'] for item in top_products_data]
+
+    # Orders by payment status — pie chart
+    pay_status_qs = (
+        Order.objects.values('payment_status')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    pay_status_label_map = {'pending': 'Pending', 'completed': 'Completed', 'failed': 'Failed', 'refunded': 'Refunded'}
+    pay_status_labels = [pay_status_label_map.get(r['payment_status'], r['payment_status'].title()) for r in pay_status_qs]
+    pay_status_data   = [r['count'] for r in pay_status_qs]
+
     context = {
         'user': request.user,
         'total_orders': total_orders,
         'pending_orders': pending_orders,
         'total_users': total_users,
         'total_revenue': total_revenue,
+        'total_points_issued': total_points_issued,
+        'successful_referral_orders': successful_referral_orders,
+        'today_visits': today_visits,
+        'unique_visitors_today': unique_visitors_today,
+        'last_7_days_visits': last_7_days_visits,
+        'top_referrers': top_referrers,
         'top_products': top_products_data,
         'monthly_sales_2025': json.dumps(monthly_sales_2025),
         'monthly_sales_2024': json.dumps(monthly_sales_2024),
+        'monthly_orders_year': json.dumps(monthly_orders_year),
         'daily_revenue': json.dumps(daily_revenue),
+        'daily_labels': json.dumps(daily_labels),
+        'last_30_days_revenue': json.dumps(last_30_revenue),
+        'last_30_days_labels': json.dumps(last_30_labels),
+        'orders_by_status_labels': json.dumps(orders_by_status_labels),
+        'orders_by_status_data': json.dumps(orders_by_status_data),
+        'revenue_by_role_labels': json.dumps(revenue_by_role_labels),
+        'revenue_by_role_data': json.dumps(revenue_by_role_data),
+        'top_product_labels': json.dumps(top_product_labels),
+        'top_product_sold': json.dumps(top_product_sold),
+        'top_product_stock': json.dumps(top_product_stock),
+        'pay_status_labels': json.dumps(pay_status_labels),
+        'pay_status_data': json.dumps(pay_status_data),
+        'mom_change': mom_change,
+        'current_year': current_year,
         'notifications': notifications,
     }
     return render(request, 'admin_dashboard/dashboard.html', context)
@@ -303,6 +423,57 @@ def admin_profile(request):
         'password_form': password_form,
     }
     return render(request, 'admin_dashboard/admin_profile.html', context)
+
+
+@admin_required
+def reward_settings(request):
+    """Admin page to configure points awarded for purchases and referrals."""
+    config = RewardPointConfig.get_solo()
+
+    if request.method == 'POST':
+        form = RewardPointConfigForm(request.POST, instance=config)
+        if form.is_valid():
+            reward_config = form.save(commit=False)
+            reward_config.updated_by = request.user
+            reward_config.save()
+            messages.success(request, 'Reward settings updated successfully.')
+            return redirect('admin_reward_settings')
+    else:
+        form = RewardPointConfigForm(instance=config)
+
+    context = {
+        'page_title': 'Reward Settings',
+        'form': form,
+        'config': config,
+        'users_with_points': User.objects.filter(reward_points__gt=0).count(),
+        'total_points_issued': User.objects.aggregate(total=Sum('reward_points'))['total'] or 0,
+        'total_referral_orders': Order.objects.filter(payment_status='completed', referrer__isnull=False).count(),
+    }
+    return render(request, 'admin_dashboard/reward_settings.html', context)
+
+
+@admin_required
+def payment_settings(request):
+    """Admin page to switch active payment provider."""
+    config = PaymentProviderConfig.get_solo()
+
+    if request.method == 'POST':
+        form = PaymentProviderConfigForm(request.POST, instance=config)
+        if form.is_valid():
+            provider_config = form.save(commit=False)
+            provider_config.updated_by = request.user
+            provider_config.save()
+            messages.success(request, 'Payment provider updated successfully.')
+            return redirect('admin_payment_settings')
+    else:
+        form = PaymentProviderConfigForm(instance=config)
+
+    context = {
+        'page_title': 'Payment Settings',
+        'form': form,
+        'config': config,
+    }
+    return render(request, 'admin_dashboard/payment_settings.html', context)
 
 
 def forgot_password(request):
@@ -508,8 +679,9 @@ def wholesalers_page(request):
     from ecom.models import Order
     from django.db.models import Sum, Count, Q
     
-    # Get filter parameter
+    # Get filter and search parameters
     status_filter = request.GET.get('status', 'all')
+    search_query = request.GET.get('q', '').strip()
     
     # Get all wholesalers
     wholesalers = User.objects.filter(role=User.WHOLESALER).annotate(
@@ -522,6 +694,16 @@ def wholesalers_page(request):
         wholesalers = wholesalers.filter(is_active=True)
     elif status_filter == 'inactive':
         wholesalers = wholesalers.filter(is_active=False)
+    
+    # Apply search filter
+    if search_query:
+        wholesalers = wholesalers.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(company_name__icontains=search_query)
+        )
     
     # Calculate statistics
     total_wholesalers = User.objects.filter(role=User.WHOLESALER).count()
@@ -542,6 +724,7 @@ def wholesalers_page(request):
         'active_wholesalers': active_wholesalers,
         'products_distributed': products_distributed,
         'status_filter': status_filter,
+        'search_query': search_query,
     }
     return render(request, 'admin_dashboard/wholesalers.html', context)
 
@@ -565,12 +748,13 @@ def export_wholesalers_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="wholesalers.csv"'
     writer = csv.writer(response)
-    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent'])
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent', 'Unique Code', 'Referral Code', 'Reward Points'])
     for u in qs:
         writer.writerow([
             str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'wholesaler',
             'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'),
             int(u.total_orders or 0), float(u.total_spent or 0),
+            u.unique_code or '', u.referral_code or '', u.reward_points,
         ])
     return response
 
@@ -581,8 +765,9 @@ def retailers_page(request):
     from ecom.models import Order
     from django.db.models import Sum, Count, Q
     
-    # Get filter parameter
+    # Get filter and search parameters
     status_filter = request.GET.get('status', 'all')
+    search_query = request.GET.get('q', '').strip()
     
     # Get all retailers
     retailers = User.objects.filter(role=User.RETAILER).annotate(
@@ -595,6 +780,16 @@ def retailers_page(request):
         retailers = retailers.filter(is_active=True)
     elif status_filter == 'inactive':
         retailers = retailers.filter(is_active=False)
+    
+    # Apply search filter
+    if search_query:
+        retailers = retailers.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(company_name__icontains=search_query)
+        )
     
     # Calculate statistics
     total_retailers = User.objects.filter(role=User.RETAILER).count()
@@ -615,6 +810,7 @@ def retailers_page(request):
         'active_retailers': active_retailers,
         'products_distributed': products_distributed,
         'status_filter': status_filter,
+        'search_query': search_query,
     }
     return render(request, 'admin_dashboard/retailers.html', context)
 
@@ -638,12 +834,13 @@ def export_retailers_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="retailers.csv"'
     writer = csv.writer(response)
-    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent'])
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent', 'Unique Code', 'Referral Code', 'Reward Points'])
     for u in qs:
         writer.writerow([
             str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'retailer',
             'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'),
             int(u.total_orders or 0), float(u.total_spent or 0),
+            u.unique_code or '', u.referral_code or '', u.reward_points,
         ])
     return response
 
@@ -654,8 +851,9 @@ def hospitals_page(request):
     from ecom.models import Order
     from django.db.models import Sum, Count, Q
     
-    # Get filter parameter
+    # Get filter and search parameters
     status_filter = request.GET.get('status', 'all')
+    search_query = request.GET.get('q', '').strip()
     
     # Get all hospitals
     hospitals = User.objects.filter(role=User.HOSPITAL).annotate(
@@ -668,6 +866,16 @@ def hospitals_page(request):
         hospitals = hospitals.filter(is_active=True)
     elif status_filter == 'inactive':
         hospitals = hospitals.filter(is_active=False)
+    
+    # Apply search filter
+    if search_query:
+        hospitals = hospitals.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(company_name__icontains=search_query)
+        )
     
     # Calculate statistics
     total_hospitals = User.objects.filter(role=User.HOSPITAL).count()
@@ -688,6 +896,7 @@ def hospitals_page(request):
         'active_hospitals': active_hospitals,
         'total_products_ordered': total_products_ordered,
         'status_filter': status_filter,
+        'search_query': search_query,
     }
     return render(request, 'admin_dashboard/hospitals.html', context)
 
@@ -711,12 +920,13 @@ def export_hospitals_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="hospitals.csv"'
     writer = csv.writer(response)
-    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent'])
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent', 'Unique Code', 'Referral Code', 'Reward Points'])
     for u in qs:
         writer.writerow([
             str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'hospital',
             'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'),
             int(u.total_orders or 0), float(u.total_spent or 0),
+            u.unique_code or '', u.referral_code or '', u.reward_points,
         ])
     return response
 
@@ -727,8 +937,9 @@ def pharmacy_page(request):
     from ecom.models import Order
     from django.db.models import Sum, Count, Q
     
-    # Get filter parameter
+    # Get filter and search parameters
     status_filter = request.GET.get('status', 'all')
+    search_query = request.GET.get('q', '').strip()
     
     # Get all pharmacies
     pharmacies = User.objects.filter(role=User.PHARMACY).annotate(
@@ -741,6 +952,16 @@ def pharmacy_page(request):
         pharmacies = pharmacies.filter(is_active=True)
     elif status_filter == 'inactive':
         pharmacies = pharmacies.filter(is_active=False)
+    
+    # Apply search filter
+    if search_query:
+        pharmacies = pharmacies.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(company_name__icontains=search_query)
+        )
     
     # Calculate statistics
     total_pharmacies = User.objects.filter(role=User.PHARMACY).count()
@@ -761,6 +982,7 @@ def pharmacy_page(request):
         'active_pharmacies': active_pharmacies,
         'total_products_ordered': total_products_ordered,
         'status_filter': status_filter,
+        'search_query': search_query,
     }
     return render(request, 'admin_dashboard/pharmacies.html', context)
 
@@ -784,12 +1006,13 @@ def export_pharmacies_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="pharmacies.csv"'
     writer = csv.writer(response)
-    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent'])
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent', 'Unique Code', 'Referral Code', 'Reward Points'])
     for u in qs:
         writer.writerow([
             str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'pharmacy',
             'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'),
             int(u.total_orders or 0), float(u.total_spent or 0),
+            u.unique_code or '', u.referral_code or '', u.reward_points,
         ])
     return response
 
@@ -801,10 +1024,13 @@ def export_pharmacies_csv(request):
 
 @admin_required
 def products_page(request):
-    from django.db.models import DecimalField, F, IntegerField, Sum, Value
+    from django.db.models import DecimalField, F, IntegerField, Sum, Value, Q
     from django.db.models.functions import Coalesce
     from django.utils import timezone
     from ecom.models import OrderItem
+
+    # Get search query
+    search_query = request.GET.get('q', '').strip()
 
     products = (
         Product.objects
@@ -823,6 +1049,14 @@ def products_page(request):
         )
         .order_by('-created_at')
     )
+    
+    # Apply search filter
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) |
+            Q(sku__icontains=search_query) |
+            Q(category__name__icontains=search_query)
+        )
 
     total_products = products.count()
     in_stock = products.filter(stock__gt=0).count()
@@ -862,6 +1096,7 @@ def products_page(request):
         'total_units_sold': total_units_sold,
         'monthly_revenue': monthly_revenue,
         'monthly_units_sold': monthly_units_sold,
+        'search_query': search_query,
     }
     return render(request, 'admin_dashboard/products.html', context)
 
@@ -1101,8 +1336,22 @@ def delete_product(request, product_id):
 # Category Views
 @admin_required
 def categories_page(request):
+    # Get search query
+    search_query = request.GET.get('q', '').strip()
+    
     categories = Category.objects.all().order_by('-created_at')
-    return render(request, 'admin_dashboard/categories.html', {'categories': categories})
+    
+    # Apply search filter
+    if search_query:
+        categories = categories.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    return render(request, 'admin_dashboard/categories.html', {
+        'categories': categories,
+        'search_query': search_query,
+    })
 
 @admin_required
 def add_category(request):
@@ -1194,40 +1443,86 @@ def delete_blog_category(request, category_id):
 
 @admin_required
 def orders_page(request):
-    """Orders management page"""
+    """Orders management page with pagination"""
     from ecom.models import Order
     from django.db.models import Count, Q
+    from django.core.paginator import Paginator
     
-    # Get filter parameter
+    # Get filter parameters
     status_filter = request.GET.get('status', 'all')
+    search_query = request.GET.get('q', '').strip()
+    page = request.GET.get('page', 1)
     
     # Get all orders
     orders = Order.objects.select_related('user').prefetch_related('items__product').all()
     
     # Apply status filter
     if status_filter == 'processing':
-        orders = orders.filter(Q(status='processing') | Q(status='shipped'))
+        orders = orders.filter(status__in=[
+            'ordered', 'inbound', 'packaged', 'outbound', 'picked',
+            'departed', 'arrived', 'customs_declaration', 'flight_departed',
+            'flight_landed', 'in_clearance', 'clearance_exception',
+            'clearance_completed', 'in_delivery', 'returning',
+        ])
     elif status_filter == 'completed':
         orders = orders.filter(status='delivered')
     elif status_filter == 'cancelled':
         orders = orders.filter(status='cancelled')
     
+    # Apply search filter
+    if search_query:
+        orders = orders.filter(
+            Q(id__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(user__email__icontains=search_query)
+        )
+    
+    # Sort by newest first
+    orders = orders.order_by('-created_at')
+    
     # Calculate statistics
     total_orders = Order.objects.count()
     cancelled_orders = Order.objects.filter(status='cancelled').count()
-    active_orders = Order.objects.filter(Q(status='pending') | Q(status='processing') | Q(status='shipped')).count()
+    active_orders = Order.objects.filter(status__in=[
+        'pending', 'ordered', 'inbound', 'packaged', 'outbound', 'picked',
+        'departed', 'arrived', 'customs_declaration', 'flight_departed',
+        'flight_landed', 'in_clearance', 'clearance_exception',
+        'clearance_completed', 'in_delivery', 'returning',
+    ]).count()
     completed_orders = Order.objects.filter(status='delivered').count()
-    processing_orders = Order.objects.filter(Q(status='processing') | Q(status='shipped')).count()
+    processing_orders = Order.objects.filter(status__in=[
+        'ordered', 'inbound', 'packaged', 'outbound', 'picked',
+        'departed', 'arrived', 'customs_declaration', 'flight_departed',
+        'flight_landed', 'in_clearance', 'clearance_exception',
+        'clearance_completed', 'in_delivery', 'returning',
+    ]).count()
+    
+    # Paginate results (12 per page)
+    paginator = Paginator(orders, 12)
+    page_obj = paginator.get_page(page)
+    
+    # Check if this is an HTMX request for more orders
+    if request.headers.get('HX-Request') == 'true':
+        # Return just the table rows partial
+        return render(request, 'admin_dashboard/partials/orders_table_rows.html', {
+            'orders': page_obj.object_list,
+            'page_obj': page_obj,
+            'status_filter': status_filter,
+            'search_query': search_query,
+        })
     
     context = {
         'page_title': 'Orders',
-        'orders': orders,
+        'orders': page_obj.object_list,
+        'page_obj': page_obj,
         'total_orders': total_orders,
         'cancelled_orders': cancelled_orders,
         'active_orders': active_orders,
         'completed_orders': completed_orders,
         'processing_orders': processing_orders,
         'status_filter': status_filter,
+        'search_query': search_query,
     }
     return render(request, 'admin_dashboard/orders.html', context)
 
@@ -1331,22 +1626,46 @@ def orders_tracking(request, order_id=None):
         orders = orders.filter(id=order_id)
     else:
         if status_param == 'in_progress':
-            orders = orders.filter(status__in=['pending', 'processing', 'shipped'])
+            orders = orders.filter(status__in=[
+                'pending', 'ordered', 'inbound', 'packaged', 'outbound', 'picked',
+                'departed', 'arrived', 'customs_declaration', 'flight_departed',
+                'flight_landed', 'in_clearance', 'clearance_exception',
+                'clearance_completed', 'in_delivery', 'returning',
+            ])
         elif status_param == 'completed':
             orders = orders.filter(status='delivered')
         elif status_param == 'cancelled':
             orders = orders.filter(status='cancelled')
 
     total_orders = orders.count()
-    in_progress_count = orders.filter(status__in=['pending', 'processing', 'shipped']).count()
+    in_progress_count = orders.filter(status__in=[
+        'pending', 'ordered', 'inbound', 'packaged', 'outbound', 'picked',
+        'departed', 'arrived', 'customs_declaration', 'flight_departed',
+        'flight_landed', 'in_clearance', 'clearance_exception',
+        'clearance_completed', 'in_delivery', 'returning',
+    ]).count()
     completed_count = orders.filter(status='delivered').count()
 
     progress_map = {
-        'pending': 1,
-        'processing': 2,
-        'shipped': 3,
-        'delivered': 4,
-        'cancelled': 0,
+        'pending':             1,
+        'ordered':             2,
+        'inbound':             3,
+        'packaged':            3,
+        'outbound':            3,
+        'picked':              4,
+        'departed':            4,
+        'arrived':             5,
+        'customs_declaration': 5,
+        'flight_departed':     5,
+        'flight_landed':       5,
+        'in_clearance':        5,
+        'clearance_exception': 5,
+        'clearance_completed': 6,
+        'in_delivery':         7,
+        'delivered':           8,
+        'returning':           2,
+        'returned':            2,
+        'cancelled':           0,
     }
     orders_data = [
         {
@@ -1405,36 +1724,440 @@ def cancel_order(request, order_id):
 
 @admin_required
 def analytics_page(request):
-    """Analytics dashboard page"""
-    
-    # Get current year
-    current_year = datetime.now().year
-    
-    # Calculate monthly user sign-ups for current year
-    monthly_data = User.objects.filter(
-        date_joined__year=current_year
-    ).annotate(
-        month=TruncMonth('date_joined')
-    ).values('month').annotate(
-        count=Count('id')
-    ).order_by('month')
-    
-    # Create array with 12 months (Jan-Dec), default 0
-    monthly_signups = [0] * 12
-    for data in monthly_data:
-        month_index = data['month'].month - 1  # 0-indexed
-        monthly_signups[month_index] = data['count']
-    
-    # Total users count
+    """Analytics dashboard with real DB data"""
+    from django.db.models.functions import TruncWeek
+    from django.utils import timezone
+    from datetime import timedelta
+
+    now = timezone.now()
+    current_year  = now.year
+    prev_year     = current_year - 1
+    this_month    = now.month
+    prev_month    = this_month - 1 if this_month > 1 else 12
+    prev_month_year = current_year if this_month > 1 else prev_year
+
+    # ── Total Orders ────────────────────────────────────────────────────────
+    total_orders = Order.objects.count()
+    orders_this_month = Order.objects.filter(
+        created_at__year=current_year, created_at__month=this_month
+    ).count()
+    orders_prev_month = Order.objects.filter(
+        created_at__year=prev_month_year, created_at__month=prev_month
+    ).count()
+    orders_mom = round((orders_this_month - orders_prev_month) / orders_prev_month * 100, 1) if orders_prev_month else None
+
+    # ── Total Sales (units sold) ─────────────────────────────────────────────
+    from ecom.models import OrderItem
+    total_sales = OrderItem.objects.aggregate(t=Sum('quantity'))['t'] or 0
+    sales_this_month = OrderItem.objects.filter(
+        order__created_at__year=current_year, order__created_at__month=this_month
+    ).aggregate(t=Sum('quantity'))['t'] or 0
+    sales_prev_month = OrderItem.objects.filter(
+        order__created_at__year=prev_month_year, order__created_at__month=prev_month
+    ).aggregate(t=Sum('quantity'))['t'] or 0
+    sales_mom = round((sales_this_month - sales_prev_month) / sales_prev_month * 100, 1) if sales_prev_month else None
+
+    # ── Annual Revenue ───────────────────────────────────────────────────────
+    annual_revenue = Order.objects.filter(
+        created_at__year=current_year, payment_status='completed'
+    ).aggregate(t=Sum('total_amount'))['t'] or Decimal('0')
+    prev_year_revenue = Order.objects.filter(
+        created_at__year=prev_year, payment_status='completed'
+    ).aggregate(t=Sum('total_amount'))['t'] or Decimal('0')
+    revenue_yoy = round(float((annual_revenue - prev_year_revenue) / prev_year_revenue * 100), 1) if prev_year_revenue else None
+
+    # ── Users ────────────────────────────────────────────────────────────────
     total_users = User.objects.count()
-    
+    users_this_year  = User.objects.filter(date_joined__year=current_year).count()
+    users_prev_year  = User.objects.filter(date_joined__year=prev_year).count()
+    users_yoy = round((users_this_year - users_prev_year) / users_prev_year * 100, 1) if users_prev_year else None
+
+    # ── Monthly Sign-ups ─────────────────────────────────────────────────────
+    monthly_signups = [0] * 12
+    for d in User.objects.filter(date_joined__year=current_year).annotate(
+        month=TruncMonth('date_joined')
+    ).values('month').annotate(count=Count('id')).order_by('month'):
+        monthly_signups[d['month'].month - 1] = d['count']
+
+    # ── Monthly Revenue: current year vs prev year ───────────────────────────
+    monthly_rev_current = [0.0] * 12
+    for d in Order.objects.filter(
+        created_at__year=current_year, payment_status='completed'
+    ).annotate(month=TruncMonth('created_at')).values('month').annotate(
+        t=Sum('total_amount')
+    ).order_by('month'):
+        monthly_rev_current[d['month'].month - 1] = float(d['t'])
+
+    monthly_rev_prev = [0.0] * 12
+    for d in Order.objects.filter(
+        created_at__year=prev_year, payment_status='completed'
+    ).annotate(month=TruncMonth('created_at')).values('month').annotate(
+        t=Sum('total_amount')
+    ).order_by('month'):
+        monthly_rev_prev[d['month'].month - 1] = float(d['t'])
+
+    # ── Last 7 Days ──────────────────────────────────────────────────────────
+    seven_days_ago = now - timedelta(days=7)
+    last7_revenue = Order.objects.filter(
+        created_at__gte=seven_days_ago, payment_status='completed'
+    ).aggregate(t=Sum('total_amount'))['t'] or Decimal('0')
+    last7_items = OrderItem.objects.filter(
+        order__created_at__gte=seven_days_ago, order__payment_status='completed'
+    ).aggregate(t=Sum('quantity'))['t'] or 0
+
+    # ── Today's new products ─────────────────────────────────────────────────
+    from admin_dashboard.models import Product
+    today = now.date()
+    new_products_today = Product.objects.filter(created_at__date=today).count()
+
+    # ── Average Order Value — last 7 weeks ───────────────────────────────────
+    weekly_avg_labels = []
+    weekly_avg_data   = []
+    for i in range(6, -1, -1):
+        week_start = (now - timedelta(weeks=i)).date()
+        week_start = week_start - timedelta(days=week_start.weekday())  # Monday
+        week_end   = week_start + timedelta(days=6)
+        qs = Order.objects.filter(
+            created_at__date__gte=week_start,
+            created_at__date__lte=week_end,
+            payment_status='completed'
+        ).aggregate(t=Sum('total_amount'), c=Count('id'))
+        rev   = float(qs['t'] or 0)
+        cnt   = qs['c'] or 0
+        avg   = round(rev / cnt, 2) if cnt else 0
+        weekly_avg_labels.append(f"Wk {week_start.strftime('%d %b')}")
+        weekly_avg_data.append(avg)
+
+    completed_orders = Order.objects.filter(payment_status='completed').count()
+
+    # ── Website visits (last 14 days) ───────────────────────────────────────
+    today_local = timezone.localdate()
+    visit_days = [today_local - timedelta(days=i) for i in range(13, -1, -1)]
+    visit_stats = DailyWebsiteVisit.objects.filter(
+        date__gte=visit_days[0],
+        date__lte=visit_days[-1],
+    )
+    visit_map = {stat.date: stat for stat in visit_stats}
+    daily_visits = [int(visit_map.get(day).total_visits if visit_map.get(day) else 0) for day in visit_days]
+    daily_unique_visitors = [int(visit_map.get(day).unique_visitors if visit_map.get(day) else 0) for day in visit_days]
+    visit_labels = [day.strftime('%b %d') for day in visit_days]
+
+    today_stat = visit_map.get(today_local)
+    visits_today = int(today_stat.total_visits) if today_stat else 0
+    unique_visitors_today = int(today_stat.unique_visitors) if today_stat else 0
+    avg_daily_visits = round(sum(daily_visits) / len(daily_visits), 1) if daily_visits else 0
+
     context = {
         'page_title': 'Analytics',
-        'monthly_signups': json.dumps(monthly_signups),
-        'current_year': current_year,
-        'total_users': total_users,
+        # Cards
+        'total_sales':    total_sales,
+        'total_orders':   total_orders,
+        'annual_revenue': annual_revenue,
+        'total_users':    total_users,
+        'sales_mom':      sales_mom,
+        'orders_mom':     orders_mom,
+        'revenue_yoy':    revenue_yoy,
+        'users_yoy':      users_yoy,
+        # Charts
+        'monthly_signups':     json.dumps(monthly_signups),
+        'monthly_rev_current': json.dumps(monthly_rev_current),
+        'monthly_rev_prev':    json.dumps(monthly_rev_prev),
+        'weekly_avg_labels':   json.dumps(weekly_avg_labels),
+        'weekly_avg_data':     json.dumps(weekly_avg_data),
+        # Bottom section
+        'last7_revenue':       last7_revenue,
+        'last7_items':         last7_items,
+        'new_products_today':  new_products_today,
+        'visits_today':        visits_today,
+        'unique_visitors_today': unique_visitors_today,
+        'avg_daily_visits':    avg_daily_visits,
+        'daily_visits':        json.dumps(daily_visits),
+        'daily_unique_visitors': json.dumps(daily_unique_visitors),
+        'visit_labels':        json.dumps(visit_labels),
+        'current_year':        current_year,
+        'prev_year':           prev_year,
+        'completed_orders':    completed_orders,
     }
     return render(request, 'admin_dashboard/analytics.html', context)
+
+
+@admin_required
+def website_visits_page(request):
+    """Admin view for historical daily website visits with filtering."""
+    from datetime import timedelta
+    from django.core.paginator import Paginator
+
+    start_date_str = (request.GET.get('start_date') or '').strip()
+    end_date_str = (request.GET.get('end_date') or '').strip()
+
+    qs = DailyWebsiteVisit.objects.all().order_by('-date')
+
+    start_date = None
+    end_date = None
+    try:
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        if end_date_str:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        messages.error(request, 'Invalid date format. Use YYYY-MM-DD.')
+        return redirect('admin_website_visits')
+
+    if start_date:
+        qs = qs.filter(date__gte=start_date)
+    if end_date:
+        qs = qs.filter(date__lte=end_date)
+
+    if start_date and end_date and start_date > end_date:
+        messages.error(request, 'Start date cannot be after end date.')
+        return redirect('admin_website_visits')
+
+    total_visits = qs.aggregate(total=Sum('total_visits'))['total'] or 0
+    total_unique_visitors = qs.aggregate(total=Sum('unique_visitors'))['total'] or 0
+    days_count = qs.count()
+    avg_visits = round(total_visits / days_count, 1) if days_count else 0
+
+    today = timezone.localdate()
+    recent_7_start = today - timedelta(days=6)
+    recent_7_visits = DailyWebsiteVisit.objects.filter(
+        date__gte=recent_7_start,
+        date__lte=today,
+    ).aggregate(total=Sum('total_visits'))['total'] or 0
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(qs, 20)
+    page_obj = paginator.get_page(page)
+
+    context = {
+        'page_title': 'Website Visits',
+        'page_obj': page_obj,
+        'visits': page_obj,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+        'total_visits': total_visits,
+        'total_unique_visitors': total_unique_visitors,
+        'days_count': days_count,
+        'avg_visits': avg_visits,
+        'recent_7_visits': recent_7_visits,
+    }
+    return render(request, 'admin_dashboard/website_visits.html', context)
+
+
+@admin_required
+def export_website_visits_csv(request):
+    """Export website visits with optional date filters."""
+    import csv
+
+    start_date_str = (request.GET.get('start_date') or '').strip()
+    end_date_str = (request.GET.get('end_date') or '').strip()
+
+    qs = DailyWebsiteVisit.objects.all().order_by('-date')
+
+    start_date = None
+    end_date = None
+    try:
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        if end_date_str:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        messages.error(request, 'Invalid date format. Use YYYY-MM-DD.')
+        return redirect('admin_website_visits')
+
+    if start_date:
+        qs = qs.filter(date__gte=start_date)
+    if end_date:
+        qs = qs.filter(date__lte=end_date)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="website_visits.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Date', 'Total Visits', 'Unique Visitors'])
+
+    for row in qs:
+        writer.writerow([
+            row.date.isoformat(),
+            int(row.total_visits or 0),
+            int(row.unique_visitors or 0),
+        ])
+
+    return response
+
+
+@admin_required
+def reward_withdrawals_page(request):
+    """Admin view for wallet withdrawal monitoring and operations."""
+    from django.core.paginator import Paginator
+
+    status_filter = (request.GET.get('status') or 'all').strip().lower()
+    search_query = (request.GET.get('q') or '').strip()
+    start_date_str = (request.GET.get('start_date') or '').strip()
+    end_date_str = (request.GET.get('end_date') or '').strip()
+
+    qs = WalletWithdrawalRequest.objects.select_related('user', 'bank_account').order_by('-created_at')
+
+    if status_filter in {
+        WalletWithdrawalRequest.PENDING,
+        WalletWithdrawalRequest.PROCESSING,
+        WalletWithdrawalRequest.SUCCESS,
+        WalletWithdrawalRequest.FAILED,
+    }:
+        qs = qs.filter(status=status_filter)
+    else:
+        status_filter = 'all'
+
+    if search_query:
+        qs = qs.filter(
+            Q(reference__icontains=search_query)
+            | Q(monnify_reference__icontains=search_query)
+            | Q(user__email__icontains=search_query)
+            | Q(bank_account__account_number__icontains=search_query)
+            | Q(bank_account__account_name__icontains=search_query)
+        )
+
+    start_date = None
+    end_date = None
+    try:
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        if end_date_str:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        messages.error(request, 'Invalid date format. Use YYYY-MM-DD.')
+        return redirect('admin_reward_withdrawals')
+
+    if start_date and end_date and start_date > end_date:
+        messages.error(request, 'Start date cannot be after end date.')
+        return redirect('admin_reward_withdrawals')
+
+    if start_date:
+        qs = qs.filter(created_at__date__gte=start_date)
+    if end_date:
+        qs = qs.filter(created_at__date__lte=end_date)
+
+    total_count = qs.count()
+    total_amount = qs.aggregate(total=Sum('amount'))['total'] or Decimal('0')
+    pending_count = qs.filter(status=WalletWithdrawalRequest.PENDING).count()
+    processing_count = qs.filter(status=WalletWithdrawalRequest.PROCESSING).count()
+    success_count = qs.filter(status=WalletWithdrawalRequest.SUCCESS).count()
+    failed_count = qs.filter(status=WalletWithdrawalRequest.FAILED).count()
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(qs, 20)
+    page_obj = paginator.get_page(page)
+
+    context = {
+        'page_title': 'Reward Withdrawals',
+        'withdrawals': page_obj,
+        'page_obj': page_obj,
+        'status_filter': status_filter,
+        'search_query': search_query,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+        'total_count': total_count,
+        'total_amount': total_amount,
+        'pending_count': pending_count,
+        'processing_count': processing_count,
+        'success_count': success_count,
+        'failed_count': failed_count,
+    }
+    return render(request, 'admin_dashboard/reward_withdrawals.html', context)
+
+
+@admin_required
+def export_reward_withdrawals_csv(request):
+    """Export wallet withdrawal rows with current filters."""
+    import csv
+
+    status_filter = (request.GET.get('status') or 'all').strip().lower()
+    search_query = (request.GET.get('q') or '').strip()
+    start_date_str = (request.GET.get('start_date') or '').strip()
+    end_date_str = (request.GET.get('end_date') or '').strip()
+
+    qs = WalletWithdrawalRequest.objects.select_related('user', 'bank_account').order_by('-created_at')
+
+    if status_filter in {
+        WalletWithdrawalRequest.PENDING,
+        WalletWithdrawalRequest.PROCESSING,
+        WalletWithdrawalRequest.SUCCESS,
+        WalletWithdrawalRequest.FAILED,
+    }:
+        qs = qs.filter(status=status_filter)
+
+    if search_query:
+        qs = qs.filter(
+            Q(reference__icontains=search_query)
+            | Q(monnify_reference__icontains=search_query)
+            | Q(user__email__icontains=search_query)
+            | Q(bank_account__account_number__icontains=search_query)
+            | Q(bank_account__account_name__icontains=search_query)
+        )
+
+    try:
+        if start_date_str:
+            qs = qs.filter(created_at__date__gte=datetime.strptime(start_date_str, '%Y-%m-%d').date())
+        if end_date_str:
+            qs = qs.filter(created_at__date__lte=datetime.strptime(end_date_str, '%Y-%m-%d').date())
+    except ValueError:
+        messages.error(request, 'Invalid date format. Use YYYY-MM-DD.')
+        return redirect('admin_reward_withdrawals')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="reward_withdrawals.csv"'
+    writer = csv.writer(response)
+    writer.writerow([
+        'Created At',
+        'User Email',
+        'Amount',
+        'Status',
+        'Reference',
+        'Provider Reference',
+        'Account Name',
+        'Account Number',
+        'Bank Name',
+        'Failure Reason',
+    ])
+
+    for row in qs:
+        writer.writerow([
+            timezone.localtime(row.created_at).strftime('%Y-%m-%d %H:%M:%S'),
+            row.user.email,
+            f"{row.amount:.2f}",
+            row.status,
+            row.reference,
+            row.monnify_reference or '',
+            row.bank_account.account_name,
+            row.bank_account.account_number,
+            row.bank_account.bank_name or row.bank_account.bank_code,
+            row.failure_reason or '',
+        ])
+
+    return response
+
+
+@admin_required
+def retry_reward_withdrawal(request, withdrawal_id):
+    """Retry failed wallet withdrawal payout."""
+    if request.method != 'POST':
+        messages.error(request, 'Invalid request method for retry.')
+        return redirect('admin_reward_withdrawals')
+
+    withdrawal = get_object_or_404(WalletWithdrawalRequest, id=withdrawal_id)
+
+    if withdrawal.status != WalletWithdrawalRequest.FAILED:
+        messages.warning(request, 'Only failed withdrawals can be retried.')
+        return redirect('admin_reward_withdrawals')
+
+    try:
+        result = process_withdrawal_request(withdrawal)
+        if result.status == WalletWithdrawalRequest.SUCCESS:
+            messages.success(request, f'Withdrawal {result.reference} retried successfully.')
+        else:
+            messages.info(request, f'Withdrawal {result.reference} retry submitted with status {result.status}.')
+    except WalletOperationError as exc:
+        messages.error(request, f'Retry failed: {exc}')
+
+    return redirect('admin_reward_withdrawals')
 
 @admin_required
 @admin_required
@@ -1442,12 +2165,14 @@ def customers_page(request):
     """Users management page - shows all users with their roles"""
     from django.db.models import Count
     
-    # Get filter parameter
+    # Get filter and search parameters
     role_filter = request.GET.get('role', 'all')
+    search_query = request.GET.get('q', '').strip()
     
     # Get all users
     users = User.objects.all().annotate(
-        total_orders=Count('orders')
+        total_orders=Count('orders'),
+        completed_referral_orders=Count('referred_orders', filter=Q(referred_orders__payment_status='completed')),
     ).order_by('-date_joined')
     
     # Apply role filter
@@ -1459,6 +2184,15 @@ def customers_page(request):
         users = users.filter(role=User.RETAILER)
     elif role_filter == 'end_user':
         users = users.filter(role=User.END_USER)
+    
+    # Apply search filter
+    if search_query:
+        users = users.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone_number__icontains=search_query)
+        )
     
     # Calculate stats
     total_users = User.objects.count()
@@ -1476,6 +2210,7 @@ def customers_page(request):
         'total_retailers': total_retailers,
         'total_customers': total_customers,
         'role_filter': role_filter,
+        'search_query': search_query,
     }
     return render(request, 'admin_dashboard/customers.html', context)
 
@@ -1486,8 +2221,9 @@ def end_users_page(request):
     from django.db.models import Count, Sum
     from ecom.models import Order
 
-    # Get status filter
+    # Get status and search filters
     status_filter = request.GET.get('status', 'all')
+    search_query = request.GET.get('q', '').strip()
 
     # Get all end users
     all_end_users = User.objects.filter(role=User.END_USER).annotate(
@@ -1500,6 +2236,15 @@ def end_users_page(request):
         users = users.filter(is_active=True)
     elif status_filter == 'inactive':
         users = users.filter(is_active=False)
+    
+    # Apply search filter
+    if search_query:
+        users = users.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone_number__icontains=search_query)
+        )
 
     # Calculate stats
     total_end_users = all_end_users.count()
@@ -1520,6 +2265,7 @@ def end_users_page(request):
         'total_orders': total_orders,
         'total_spent': total_spent,
         'status_filter': status_filter,
+        'search_query': search_query,
     }
     return render(request, 'admin_dashboard/end_users.html', context)
 
@@ -1542,13 +2288,41 @@ def export_end_users_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="end_users.csv"'
     writer = csv.writer(response)
-    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders'])
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Unique Code', 'Referral Code', 'Reward Points'])
     for u in qs:
         writer.writerow([
             str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'end_user',
-            'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'), int(u.total_orders or 0)
+            'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'), int(u.total_orders or 0),
+            u.unique_code or '', u.referral_code or '', u.reward_points,
         ])
     return response
+
+
+@admin_required
+def delete_user_admin(request, user_id):
+    """Delete a user via AJAX/API endpoint"""
+    if request.method == 'POST':
+        try:
+            user = get_object_or_404(User, id=user_id)
+            # Prevent deleting the current admin
+            if user.id == request.user.id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'You cannot delete yourself!'
+                }, status=400)
+            
+            user.delete()
+            return JsonResponse({
+                'success': True,
+                'message': 'User deleted successfully'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=400)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
 
 
 @admin_required
@@ -1568,15 +2342,18 @@ def user_detail(request, user_id):
     user = get_object_or_404(User, id=user_id)
     
     # Get orders for this user
-    from ecom.models import Order, OrderItem
+    from ecom.models import Order, OrderItem, RewardPointLedger
     from django.db.models import Sum
     
     orders = Order.objects.filter(user=user).prefetch_related('items__product').order_by('-created_at')
+    point_ledger = RewardPointLedger.objects.filter(user=user).select_related('order')[:20]
     
     # Calculate stats
     total_orders = orders.count()
     total_spent = orders.aggregate(total=Sum('total_amount'))['total'] or 0
     total_items_purchased = OrderItem.objects.filter(order__user=user).aggregate(total=Sum('quantity'))['total'] or 0
+    referral_orders_count = Order.objects.filter(referrer=user, payment_status='completed').count()
+    unique_referred_buyers = Order.objects.filter(referrer=user, payment_status='completed').values('user').distinct().count()
     
     # Get role display name
     role_display = dict(User.ROLE_CHOICES).get(user.role, 'Unknown')
@@ -1587,7 +2364,10 @@ def user_detail(request, user_id):
         'total_orders': total_orders,
         'total_spent': total_spent,
         'total_items_purchased': total_items_purchased,
+        'referral_orders_count': referral_orders_count,
+        'unique_referred_buyers': unique_referred_buyers,
         'role_display': role_display,
+        'point_ledger': point_ledger,
         'page_title': f"{user.first_name} {user.last_name}",
     }
     return render(request, 'admin_dashboard/user_detail.html', context)
@@ -1599,6 +2379,10 @@ def blog_list(request):
     if request.user.role != User.ADMINISTRATOR or not request.user.is_staff:
         messages.error(request, 'Access denied.')
         return redirect('admin_login')
+    
+    # Get search query
+    search_query = request.GET.get('q', '').strip()
+    
     base_posts = BlogPost.objects.select_related('category').order_by('-created_at')
     total = base_posts.count()
     published = base_posts.filter(is_published=True).count()
@@ -1610,6 +2394,15 @@ def blog_list(request):
         posts = base_posts.filter(is_published=True)
     elif status == 'drafts':
         posts = base_posts.filter(is_published=False)
+    
+    # Apply search filter
+    if search_query:
+        posts = posts.filter(
+            Q(title__icontains=search_query) |
+            Q(slug__icontains=search_query) |
+            Q(content__icontains=search_query) |
+            Q(category__name__icontains=search_query)
+        )
 
     categories = BlogCategory.objects.all().order_by('name')
     return render(request, 'admin_dashboard/blog_list.html', {
@@ -1619,6 +2412,7 @@ def blog_list(request):
         'drafts': drafts,
         'categories': categories,
         'active_status': status,
+        'search_query': search_query,
     })
 
 
@@ -2005,3 +2799,114 @@ def delete_notification(request, notification_type, notification_id):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+
+
+@admin_required
+def kyc_submissions(request):
+    """List all KYC submissions for admin review"""
+    status_filter = request.GET.get('status', '')
+    search_query = request.GET.get('search', '')
+    
+    kyc_qs = KYCSubmission.objects.select_related('user', 'verified_by').order_by('-created_at').distinct()
+    
+    # Filter by status
+    if status_filter:
+        kyc_qs = kyc_qs.filter(status=status_filter)
+    
+    # Search by user email or business name
+    if search_query:
+        kyc_qs = kyc_qs.filter(
+            Q(user__email__icontains=search_query) |
+            Q(business_name__icontains=search_query)
+        )
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    per_page = 12
+    start = (int(page) - 1) * per_page
+    end = start + per_page
+    
+    kyc_list = kyc_qs[start:end]
+    total = kyc_qs.count()
+    has_next = end < total
+    
+    context = {
+        'kyc_list': kyc_list,
+        'total': total,
+        'page': page,
+        'has_next': has_next,
+        'status_filter': status_filter,
+        'search_query': search_query,
+        'page_title': 'KYC Submissions',
+        'status_choices': KYCSubmission.STATUS_CHOICES,
+    }
+    return render(request, 'admin_dashboard/kyc_submissions.html', context)
+
+
+@admin_required
+def kyc_detail(request, submission_id):
+    """View and verify KYC submission detail"""
+    kyc_submission = get_object_or_404(KYCSubmission, id=submission_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'approve':
+            kyc_submission.approve(request.user)
+            try:
+                async_result = send_kyc_status_update_email_task.delay(str(kyc_submission.id))
+                kyc_submission.log_event(
+                    event_type=KYCSubmissionAuditLog.EVENT_EMAIL,
+                    actor=request.user,
+                    email_status=KYCSubmissionAuditLog.EMAIL_QUEUED,
+                    message='KYC status email queued.',
+                    metadata={'task_id': async_result.id},
+                )
+            except Exception:
+                # Fallback to synchronous send if broker is unavailable.
+                sent = send_kyc_approved_email(kyc_submission.user)
+                kyc_submission.log_event(
+                    event_type=KYCSubmissionAuditLog.EVENT_EMAIL,
+                    actor=request.user,
+                    email_status=KYCSubmissionAuditLog.EMAIL_SENT if sent else KYCSubmissionAuditLog.EMAIL_FAILED,
+                    message='KYC status email sent synchronously due to queue unavailability.' if sent else 'KYC status email failed during synchronous fallback.',
+                )
+            messages.success(request, f'KYC approved for {kyc_submission.user.email}')
+            return redirect('kyc-submissions')
+        
+        elif action == 'reject':
+            rejection_reason = request.POST.get('rejection_reason', '').strip()
+            if not rejection_reason:
+                messages.error(request, 'Rejection reason is required.')
+            else:
+                kyc_submission.reject(request.user, rejection_reason)
+                try:
+                    async_result = send_kyc_status_update_email_task.delay(str(kyc_submission.id))
+                    kyc_submission.log_event(
+                        event_type=KYCSubmissionAuditLog.EVENT_EMAIL,
+                        actor=request.user,
+                        email_status=KYCSubmissionAuditLog.EMAIL_QUEUED,
+                        message='KYC status email queued.',
+                        metadata={'task_id': async_result.id},
+                    )
+                except Exception:
+                    # Fallback to synchronous send if broker is unavailable.
+                    sent = send_kyc_rejected_email(kyc_submission.user, rejection_reason)
+                    kyc_submission.log_event(
+                        event_type=KYCSubmissionAuditLog.EVENT_EMAIL,
+                        actor=request.user,
+                        email_status=KYCSubmissionAuditLog.EMAIL_SENT if sent else KYCSubmissionAuditLog.EMAIL_FAILED,
+                        message='KYC status email sent synchronously due to queue unavailability.' if sent else 'KYC status email failed during synchronous fallback.',
+                    )
+                messages.success(request, f'KYC rejected for {kyc_submission.user.email}')
+                return redirect('kyc-submissions')
+    
+    audit_logs = kyc_submission.audit_logs.select_related('actor')[:30]
+
+    context = {
+        'kyc_submission': kyc_submission,
+        'user': kyc_submission.user,
+        'audit_logs': audit_logs,
+        'page_title': f'KYC - {kyc_submission.user.email}',
+    }
+    return render(request, 'admin_dashboard/kyc_detail.html', context)

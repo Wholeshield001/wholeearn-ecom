@@ -4,18 +4,10 @@
 {% block title %}My Support Tickets{% endblock %}
 
 {% block content %}
-<section class="py-8 px-4 sm:px-6 lg:px-8">
+<section class="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
   <div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="mb-8">
-      <div class="flex items-center gap-3 mb-4">
-        <a href="{% url 'user-dashboard' %}" class="text-gray-600 hover:text-gray-900">
-          <span class="material-symbols-outlined">arrow_back</span>
-        </a>
-        <h1 class="text-3xl font-bold text-gray-900">My Support Tickets</h1>
-      </div>
-      <p class="text-gray-600">Track and manage your support requests</p>
-    </div>
+    {% include "partials/users/dashboard_header.html" with show_greeting=False page_title='My Tickets' active_tab='tickets' %}
+    <p class="text-gray-600 -mt-4 mb-8">Track and manage your support requests</p>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -137,12 +129,14 @@
     {% endif %}
 
     <!-- Create New Ticket Button -->
+    {% if tickets %}
     <div class="mt-8 text-center">
       <a href="{% url 'create-ticket' %}" class="inline-block px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors">
         <span class="material-symbols-outlined inline mr-2">add</span>
         Create New Ticket
       </a>
     </div>
+    {% endif %}
   </div>
 </section>
 {% endblock %}

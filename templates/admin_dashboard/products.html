@@ -7,10 +7,11 @@
 {% block content %}
 <!-- Filter Bar -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-  <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
-    <button class="px-4 py-2 text-sm font-medium rounded-md bg-teal-50 text-teal-600 transition-colors">
-      All <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-white rounded">{{ products.count }}</span>
-    </button>
+  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-1">
+    <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+      <button class="px-4 py-2 text-sm font-medium rounded-md bg-teal-50 text-teal-600 transition-colors">
+        All <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-white rounded">{{ products.count }}</span>
+      </button>
     <button class="px-4 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 transition-colors">
       In Stock <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 rounded">{{ in_stock }}</span>
     </button>
@@ -20,6 +21,16 @@
     <button class="px-4 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 transition-colors">
       Out of Stock <span class="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 rounded">{{ out_of_stock }}</span>
     </button>
+    </div>
+    
+    <!-- Search Bar -->
+    <form method="GET" class="w-full sm:w-auto flex gap-2">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search products, SKU, category..." 
+        class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+      <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </form>
   </div>
   
   <div class="flex items-center gap-2">
@@ -123,7 +134,7 @@
               {% endif %}
               <div>
                 <p class="font-medium text-gray-900">{{ product.name }}</p>
-                <p class="text-xs text-gray-500">{{ product.description|truncatewords:3 }}</p>
+                <p class="text-xs text-gray-500">{{ product.description|striptags|truncatewords:8 }}</p>
               </div>
             </div>
           </td>

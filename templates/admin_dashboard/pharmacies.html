@@ -7,22 +7,31 @@
 {% block content %}
 <!-- Filter Bar -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-  <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
-    <a href="?status=all" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'all' %}bg-emerald-50 text-emerald-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
-      All <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'all' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_pharmacies }}</span>
-    </a>
-    <a href="?status=inactive" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'inactive' %}bg-emerald-50 text-emerald-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
-      Inactive <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'inactive' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ inactive_pharmacies }}</span>
-    </a>
-    <a href="?status=active" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'active' %}bg-emerald-50 text-emerald-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
-      Active <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'active' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ active_pharmacies }}</span>
-    </a>
-    <button class="px-4 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 transition-colors">
-      A–Z <span class="ml-1.5 material-symbols-outlined text-sm align-middle">sort</span>
-    </button>
+  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-1">
+    <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+      <a href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'all' %}bg-emerald-50 text-emerald-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        All <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'all' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_pharmacies }}</span>
+      </a>
+      <a href="?status=inactive{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'inactive' %}bg-emerald-50 text-emerald-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Inactive <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'inactive' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ inactive_pharmacies }}</span>
+      </a>
+      <a href="?status=active{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if status_filter == 'active' %}bg-emerald-50 text-emerald-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Active <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if status_filter == 'active' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ active_pharmacies }}</span>
+      </a>
+    </div>
+    
+    <!-- Search Bar -->
+    <form method="GET" class="w-full sm:w-auto flex gap-2">
+      <input type="hidden" name="status" value="{{ status_filter }}">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search pharmacies, email, phone..." 
+        class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+      <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </form>
   </div>
   
-  <a href="{% url 'admin_export_pharmacies' %}?status={{ status_filter }}" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2 w-fit">
+  <a href="{% url 'admin_export_pharmacies' %}?status={{ status_filter }}{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2 w-fit">
     <span class="material-symbols-outlined text-base">cloud_download</span>
     Export CSV
   </a>

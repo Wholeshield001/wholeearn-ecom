@@ -6,18 +6,7 @@
 {% block content %}
 <section class="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
   <div class="max-w-4xl mx-auto">
-    <!-- Greeting + Tabs -->
-    <div class="mb-8">
-      <h1 class="text-4xl font-bold text-[#ec3183] mb-4">Hello there, {{ user.first_name|default:"Friend" }}</h1>
-      <div class="flex flex-wrap gap-6 text-sm">
-        <a href="{% url 'user-dashboard' %}" class="text-gray-600 hover:text-[#ec3183] transition-colors">Dashboard</a>
-        <a href="{% url 'order-history' %}" class="text-gray-600 hover:text-[#ec3183] transition-colors">Order History</a>
-        <a href="{% url 'view-tickets' %}" class="text-gray-600 hover:text-[#ec3183] transition-colors">My Tickets</a>
-        <a href="{% url 'profile' %}" class="text-gray-600 hover:text-[#ec3183] transition-colors">Settings</a>
-        <a href="{% url 'create-ticket' %}" class="text-[#ec3183] font-semibold border-b-2 border-[#ec3183]">Create Ticket</a>
-        <a href="{% url 'logout' %}" class="text-gray-600 hover:text-[#ec3183] transition-colors">Log Out</a>
-      </div>
-    </div>
+    {% include "partials/users/dashboard_header.html" with show_greeting=False page_title='Create Ticket' active_tab='create-ticket' %}
 
     {% if messages %}
       {% for message in messages %}

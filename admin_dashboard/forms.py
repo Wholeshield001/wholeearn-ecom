@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import authenticate
 from users.models import User
 from .models import Category, Product, BlogPost, BlogCategory
+from ecom.models import RewardPointConfig, PaymentProviderConfig
 from django.forms.widgets import ClearableFileInput
 from django_ckeditor_5.widgets import CKEditor5Widget
 
@@ -230,7 +231,7 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = [
             'name', 'description', 'category', 'customer_price', 'wholesaler_price', 
-            'retailer_price', 'hospital_price', 'pharmacy_price', 'discount', 'stock',
+            'retailer_price', 'hospital_price', 'pharmacy_price', 'online_vendor_price', 'discount', 'stock', 'weight_kg',
             'is_best_seller', 'is_male', 'is_female', 'is_general', 'additional_info'
         ]
         widgets = {
@@ -242,8 +243,10 @@ class ProductForm(forms.ModelForm):
             'retailer_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Retailer Price (optional)'}),
             'hospital_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Hospital Price (optional)'}),
             'pharmacy_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Pharmacy Price (optional)'}),
+            'online_vendor_price': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','step':'0.01','placeholder':'Online Vendor Price (optional)'}),
             'discount': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0','max':'100'}),
             'stock': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0'}),
+            'weight_kg': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0.01','step':'0.01','placeholder':'1.00'}),
             'is_best_seller': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
             'is_male': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
             'is_female': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
@@ -287,3 +290,45 @@ class BlogPostForm(forms.ModelForm):
         self.fields['parent'].queryset = BlogPost.objects.all().order_by('title')
         self.fields['parent'].required = False
         self.fields['is_published'].required = False
+
+
+class RewardPointConfigForm(forms.ModelForm):
+    class Meta:
+        model = RewardPointConfig
+        fields = [
+            'points_per_purchase',
+            'referral_bonus_points',
+            'points_to_naira_rate',
+            'minimum_withdrawal_amount',
+        ]
+        widgets = {
+            'points_per_purchase': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+            }),
+            'referral_bonus_points': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+            }),
+            'points_to_naira_rate': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+                'step': '0.0001',
+            }),
+            'minimum_withdrawal_amount': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+                'step': '0.01',
+            }),
+        }
+
+
+class PaymentProviderConfigForm(forms.ModelForm):
+    class Meta:
+        model = PaymentProviderConfig
+        fields = ['active_provider']
+        widgets = {
+            'active_provider': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg bg-white',
+            }),
+        }

@@ -94,6 +94,14 @@
                                         <p style="color: #374151; margin: 0; font-family: monospace; font-size: 14px;">{{ order.payment_reference }}</p>
                                     </td>
                                 </tr>
+                                {% if order.tracking_number %}
+                                <tr>
+                                    <td>
+                                        <p style="color: #6b7280; margin: 0 0 5px 0; font-size: 14px;">Tracking Number</p>
+                                        <p style="color: #374151; margin: 0; font-family: monospace; font-size: 14px;">{{ order.tracking_number }}</p>
+                                    </td>
+                                </tr>
+                                {% endif %}
                             </table>
                         </td>
                     </tr>

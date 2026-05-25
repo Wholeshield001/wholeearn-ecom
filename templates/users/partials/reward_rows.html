@@ -1,0 +1,29 @@
+{% for entry in point_ledger %}
+<tr class="border-t border-gray-100 hover:bg-gray-50">
+  <td class="py-3 px-4 text-gray-600">{{ entry.created_at|date:"d M Y" }}</td>
+  <td class="py-3 px-4">
+    {% if entry.reason == 'purchase' %}
+      <span class="px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-medium">Purchase Reward</span>
+    {% else %}
+      <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-700 text-xs font-medium">Referral Bonus</span>
+    {% endif %}
+  </td>
+  <td class="py-3 px-4 text-right font-semibold {% if entry.points > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+    {{ entry.points|stringformat:"+d" }}
+  </td>
+</tr>
+{% endfor %}
+{% if has_more %}
+<tr id="load-more-row">
+  <td colspan="3" class="py-6 px-4 text-center">
+    <button
+      hx-get="{% url 'rewards-load-more' %}?offset={{ next_offset }}"
+      hx-target="#load-more-row"
+      hx-swap="outerHTML"
+      class="px-6 py-2.5 bg-[#ec3183] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition focus:outline-none"
+    >
+      Load more
+    </button>
+  </td>
+</tr>
+{% endif %}

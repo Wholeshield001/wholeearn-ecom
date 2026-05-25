@@ -65,8 +65,8 @@
 
           <!-- Item Total -->
           <div class="flex flex-col items-end justify-between flex-shrink-0">
-            <p class="text-xl font-bold text-[#ec3183]">${{ item.get_total_price }}</p>
-            <p class="text-sm text-[#ec3183] opacity-70">${{ item.price }} each</p>
+            <p class="text-xl font-bold text-[#ec3183]">₦{{ item.get_total_price }}</p>
+            <p class="text-sm text-[#ec3183] opacity-70">₦{{ item.price }} each</p>
           </div>
         </div>
         {% endfor %}
@@ -82,7 +82,7 @@
         <div class="space-y-4 mb-6 pb-6 border-b border-pink-100">
           <div class="flex justify-between text-[#ec3183]">
             <span>Subtotal</span>
-            <span>${{ total_price }}</span>
+            <span>₦{{ total_price }}</span>
           </div>
           <div class="flex justify-between text-[#ec3183]">
             <span>Shipping</span>
@@ -97,7 +97,7 @@
         <!-- Total -->
         <div class="flex justify-between items-center mb-6 pb-6 border-b border-pink-100">
           <span class="text-xl font-bold text-[#ec3183]">Total</span>
-          <span class="text-2xl font-bold text-[#ec3183]">${{ total_price }}</span>
+          <span class="text-2xl font-bold text-[#ec3183]">₦{{ total_price }}</span>
         </div>
 
         <!-- Checkout Button -->

@@ -11,6 +11,11 @@ urlpatterns = [
     path('password-reset-success/', views.password_reset_success, name='password_reset_success'),
     path('admins/', views.admin_admins, name='admin_admins'),
     path('profile/', views.admin_profile, name='admin_profile'),
+    path('reward-settings/', views.reward_settings, name='admin_reward_settings'),
+    path('reward-withdrawals/', views.reward_withdrawals_page, name='admin_reward_withdrawals'),
+    path('reward-withdrawals/export/', views.export_reward_withdrawals_csv, name='admin_export_reward_withdrawals'),
+    path('reward-withdrawals/<uuid:withdrawal_id>/retry/', views.retry_reward_withdrawal, name='admin_retry_reward_withdrawal'),
+    path('payment-settings/', views.payment_settings, name='admin_payment_settings'),
     path('', views.admin_dashboard, name='admin_dashboard'),
 
     # Categories
@@ -56,6 +61,8 @@ urlpatterns = [
 
     # Analytics
     path('analytics/', views.analytics_page, name='admin_analytics'),
+    path('analytics/website-visits/', views.website_visits_page, name='admin_website_visits'),
+    path('analytics/website-visits/export/', views.export_website_visits_csv, name='admin_export_website_visits'),
 
 
     # Orders
@@ -74,6 +81,7 @@ urlpatterns = [
     # Customers
     path('customers/', views.customers_page, name='admin_customers'),
     path('customers/<uuid:user_id>/detail/', views.user_detail, name='user_detail'),
+    path('users/<uuid:user_id>/delete/', views.delete_user_admin, name='admin_delete_user'),
 
     # End Users (regular customers)
     path('end-users/', views.end_users_page, name='admin_end_users'),
@@ -91,4 +99,8 @@ urlpatterns = [
     path('blog/categories/add/', views.add_blog_category, name='add_blog_category'),
     path('blog/categories/<uuid:category_id>/edit/', views.edit_blog_category, name='edit_blog_category'),
     path('blog/categories/<uuid:category_id>/delete/', views.delete_blog_category, name='delete_blog_category'),
+
+    # KYC Submissions
+    path('kyc-submissions/', views.kyc_submissions, name='kyc-submissions'),
+    path('kyc-submissions/<uuid:submission_id>/', views.kyc_detail, name='kyc-detail'),
 ]

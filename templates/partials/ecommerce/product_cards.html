@@ -44,11 +44,11 @@
         {{ product.name }}
       </h3>
       <div class="flex items-center gap-2 mb-3">
-        <span class="text-lg sm:text-xl font-bold text-[#ec3183]">${{ product.price }}</span>
+        <span class="text-lg sm:text-xl font-bold text-[#ec3183]">₦{{ product.price }}</span>
         {% if product.discount > 0 %}
         {% widthratio product.price 100 product.discount as discount_amount %}
         <span class="text-sm text-gray-400 line-through">
-          ${{ product.price|add:discount_amount }}
+          ₦{{ product.price|add:discount_amount }}
         </span>
         {% endif %}
       </div>

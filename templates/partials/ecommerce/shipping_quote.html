@@ -1,0 +1,21 @@
+<div id="shipping-summary">
+  <div class="space-y-3 mb-6 pb-6 border-b border-gray-200">
+    <div class="flex justify-between text-sm">
+      <span class="text-gray-600">Subtotal</span>
+      <span class="text-gray-900">₦{{ total_price|floatformat:2 }}</span>
+    </div>
+    <div class="flex justify-between text-sm">
+      <span class="text-gray-600">Shipping</span>
+      {% if shipping_fee is not None %}
+      <span class="font-semibold text-gray-900">₦{{ shipping_fee|floatformat:2 }}</span>
+      {% else %}
+      <span class="text-red-500 italic">Error calculating shipping</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="flex justify-between items-center mb-6">
+    <span class="text-lg font-bold text-gray-900">Total</span>
+    <span class="text-2xl font-bold text-[#ec3183]">₦{{ grand_total|floatformat:2 }}</span>
+  </div>
+</div>

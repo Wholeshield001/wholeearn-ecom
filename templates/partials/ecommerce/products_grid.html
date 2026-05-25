@@ -27,7 +27,7 @@
         <!-- Best Seller Badge -->
         {% if product.is_best_seller %}
         <div
-          class="absolute top-2 right-2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white px-2 py-1 rounded-full text-xs font-semibold">
+          class="absolute top-2 right-2 bg-[#ec3183] text-white px-2 py-1 rounded-full text-xs font-semibold">
           Best Seller
         </div>
         {% endif %}
@@ -56,11 +56,11 @@
 
         <!-- Price Section -->
         <div class="flex items-center gap-2 mb-3">
-          <span class="text-lg sm:text-xl font-bold text-[#ec3183]">${{ product.price }}</span>
+          <span class="text-lg sm:text-xl font-bold text-[#ec3183]">₦{{ product.price }}</span>
           {% if product.discount > 0 %}
           {% widthratio product.price 100 product.discount as discount_amount %}
           <span class="text-sm text-gray-400 line-through">
-            ${{ product.price|add:discount_amount }}
+            ₦{{ product.price|add:discount_amount }}
           </span>
           {% endif %}
         </div>
@@ -87,7 +87,7 @@
         <input type="hidden" name="quantity" value="{{ min_qty }}">
         {% if product.stock > 0 %}
         <button type="submit" hx-post="{% url 'add-to-cart' product.id %}" hx-include="[name='quantity']" hx-swap="none"
-          class="w-full py-2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow text-sm sm:text-base"
+          class="w-full py-2 bg-[#ec3183] hover:bg-[#d41e6e] text-white font-semibold rounded-lg hover:shadow-lg transition-all text-sm sm:text-base"
           {% if min_qty > 1 %}title="Minimum quantity: {{ min_qty }}"{% endif %}>
           Add to Cart
         </button>
@@ -101,7 +101,7 @@
       {% endwith %}
       {% else %}
       <a href="{% url 'login' %}?next={{ request.path }}"
-        class="block w-full text-center py-2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow text-sm sm:text-base">
+        class="block w-full text-center py-2 bg-[#ec3183] hover:bg-[#d41e6e] text-white font-semibold rounded-lg hover:shadow-lg transition-all text-sm sm:text-base">
         Login to Add to Cart
       </a>
       {% endif %}

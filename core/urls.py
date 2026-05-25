@@ -28,7 +28,8 @@ urlpatterns = [
     path('admin-dashboard/', include('admin_dashboard.urls')),
 ]
 urlpatterns += staticfiles_urlpatterns()
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG and not getattr(settings, 'USE_CLOUDINARY_MEDIA', False):
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # if settings.DEBUG:
     # urlpatterns += [path("__reload__/", include("django_browser_reload.urls"))]

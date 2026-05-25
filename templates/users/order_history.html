@@ -4,46 +4,16 @@
 {% block title %}Order History - WholeShield{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
-  <!-- Tabs Section -->
-  <div class="bg-white border-b">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex space-x-8 overflow-x-auto">
-        <a href="{% url 'user-dashboard' %}"
-          class="py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-[#ec3183] hover:border-[#ec3183] whitespace-nowrap transition">
-          Dashboard
-        </a>
-        <a href="{% url 'order-history' %}"
-          class="py-4 px-1 border-b-2 border-[#ec3183] font-medium text-sm text-[#ec3183] whitespace-nowrap">
-          Order History
-        </a>
-        <a href="{% url 'view-tickets' %}"
-          class="py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-[#ec3183] hover:border-[#ec3183] whitespace-nowrap transition">
-          My Tickets
-        </a>
-        <a href="{% url 'profile' %}"
-          class="py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-[#ec3183] hover:border-[#ec3183] whitespace-nowrap transition">
-          Settings
-        </a>
-        <a href="{% url 'create-ticket' %}"
-          class="py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-[#ec3183] hover:border-[#ec3183] whitespace-nowrap transition">
-          Create Ticket
-        </a>
-        <a href="{% url 'logout' %}"
-          class="py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-[#ec3183] hover:border-[#ec3183] whitespace-nowrap transition">
-          Log Out
-        </a>
-      </div>
-    </div>
-  </div>
+<div class="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    {% include "partials/users/dashboard_header.html" with show_greeting=False page_title='Order' active_tab='order' %}
 
   <!-- Content Section -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white rounded-xl shadow-sm p-6">
       <h2 class="text-2xl font-bold text-[#ec3183] mb-6">Order History</h2>
 
       <!-- Summary Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
           <p class="text-sm text-gray-500">Total Orders</p>
           <p class="text-3xl font-semibold text-[#ec3183] mt-2">{{ total_orders }}</p>
@@ -51,10 +21,6 @@
         <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
           <p class="text-sm text-gray-500">Pending Orders</p>
           <p class="text-3xl font-semibold text-[#ec3183] mt-2">{{ pending_orders }}</p>
-        </div>
-        <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-          <p class="text-sm text-gray-500">Total Users</p>
-          <p class="text-3xl font-semibold text-[#ec3183] mt-2">{{ total_users }}</p>
         </div>
         <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
           <p class="text-sm text-gray-500">Total Revenue</p>
@@ -76,50 +42,7 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              {% for order in orders %}
-                <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="text-sm font-mono text-gray-900">#{{ order.id|slice:":8" }}</span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ order.created_at|date:"M d, Y" }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ order.items.count }} item{{ order.items.count|pluralize }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                    ₦{{ order.total_amount|floatformat:2 }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    {% if order.status == 'pending' %}
-                      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                        Pending
-                      </span>
-                    {% elif order.status == 'processing' %}
-                      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                        Processing
-                      </span>
-                    {% elif order.status == 'shipped' %}
-                      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                        Shipped
-                      </span>
-                    {% elif order.status == 'delivered' %}
-                      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Delivered
-                      </span>
-                    {% else %}
-                      <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                        Cancelled
-                      </span>
-                    {% endif %}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <a href="{% url 'order-detail' order.id %}" class="text-[#ec3183] hover:opacity-80">
-                      View Details
-                    </a>
-                  </td>
-                </tr>
-              {% endfor %}
+              {% include "users/partials/order_rows.html" %}
             </tbody>
           </table>
         </div>

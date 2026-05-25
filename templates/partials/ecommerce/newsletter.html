@@ -1,47 +1,178 @@
 <!-- Unified Newsletter Section -->
-<section
-    style="background-color: white; border-top: 1px solid #f0f0f0; border-bottom: 2px solid #C2185B; padding: 100px 40px; margin-top: 0;"
-    class="reveal">
-    <div
-        style="max-width: 1400px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 40px;">
-
-        <!-- Text Content -->
-        <div>
-            <h2 style="font-size: 48px; font-weight: 700; color: #C2185B; margin: 0; line-height: 1.1;">No half-baked
-                updates</h2>
-            <p style="font-size: 24px; font-weight: 500; color: #C2185B; margin: 8px 0 0 0;">just the whole scoop.</p>
+<section class="reveal ws-newsletter">
+    <div class="ws-newsletter__inner">
+        <div class="ws-newsletter__copy">
+            <h2 class="ws-newsletter__title">No half-baked updates</h2>
+            <p class="ws-newsletter__subtitle">just the whole scoop.</p>
         </div>
 
-        <!-- Subscription Form -->
-        <div style="flex: 1; max-width: 600px; width: 100%;">
-            <form style="display: flex; background-color: #f9f9f9; border-radius: 4px; overflow: hidden;"
-                hx-post="{% url 'home' %}" hx-target="this" hx-swap="outerHTML">
+        <div class="ws-newsletter__form-wrap">
+            <form class="ws-newsletter__form" hx-post="{% url 'home' %}" hx-target="this" hx-swap="outerHTML">
                 {% csrf_token %}
-                <input type="email" name="email" placeholder="Enter your email" required
-                    style="flex: 1; padding: 20px 24px; border: none; background: transparent; color: #C2185B; font-size: 18px; outline: none; font-family: 'Inter', sans-serif;">
-                <button type="submit"
-                    style="padding: 20px 32px; border: none; background: transparent; color: #C2185B; font-weight: 600; font-size: 18px; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.2s;">
-                    Subscribe
-                </button>
+                <input
+                    class="ws-newsletter__input"
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                >
+                <button class="ws-newsletter__button" type="submit">Subscribe</button>
             </form>
         </div>
     </div>
 </section>
 
 <style>
-    @media (max-width: 768px) {
-        div[style*="justify-content: space-between"] {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            text-align: left !important;
+    .ws-newsletter {
+        background-color: #fff;
+        border-top: 1px solid #f0f0f0;
+        border-bottom: 2px solid #C2185B;
+        padding: 80px 20px;
+        margin-top: 0;
+    }
+
+    .ws-newsletter__inner {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 36px;
+    }
+
+    .ws-newsletter__copy {
+        flex: 0 0 auto;
+    }
+
+    .ws-newsletter__title {
+        font-size: 48px;
+        font-weight: 700;
+        color: #C2185B;
+        margin: 0;
+        line-height: 1.1;
+    }
+
+    .ws-newsletter__subtitle {
+        font-size: 24px;
+        font-weight: 500;
+        color: #C2185B;
+        margin: 8px 0 0;
+    }
+
+    .ws-newsletter__form-wrap {
+        flex: 1 1 600px;
+        max-width: 620px;
+        width: 100%;
+    }
+
+    .ws-newsletter__form {
+        display: flex;
+        align-items: stretch;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .ws-newsletter__input {
+        flex: 1;
+        min-width: 0;
+        padding: 20px 24px;
+        border: none;
+        background: transparent;
+        color: #C2185B;
+        font-size: 18px;
+        outline: none;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .ws-newsletter__input::placeholder {
+        color: #d06c9b;
+    }
+
+    .ws-newsletter__button {
+        padding: 20px 30px;
+        border: none;
+        background: transparent;
+        color: #C2185B;
+        font-weight: 600;
+        font-size: 18px;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: opacity 0.2s;
+        white-space: nowrap;
+    }
+
+    .ws-newsletter__button:hover {
+        opacity: 0.8;
+    }
+
+    @media (max-width: 1024px) {
+        .ws-newsletter {
+            padding: 64px 20px;
         }
 
-        h2[style*="font-size: 48px"] {
-            font-size: 36px !important;
+        .ws-newsletter__inner {
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 24px;
         }
 
-        p[style*="font-size: 24px"] {
-            font-size: 18px !important;
+        .ws-newsletter__title {
+            font-size: 38px;
+        }
+
+        .ws-newsletter__subtitle {
+            font-size: 20px;
+        }
+
+        .ws-newsletter__form-wrap {
+            max-width: none;
+            flex: 1 1 100%;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .ws-newsletter {
+            padding: 48px 16px;
+        }
+
+        .ws-newsletter__inner {
+            gap: 18px;
+        }
+
+        .ws-newsletter__title {
+            font-size: 30px;
+        }
+
+        .ws-newsletter__subtitle {
+            font-size: 17px;
+        }
+
+        .ws-newsletter__form {
+            flex-direction: column;
+            background: transparent;
+            border-radius: 0;
+            gap: 10px;
+            overflow: visible;
+        }
+
+        .ws-newsletter__input {
+            width: 100%;
+            background: #f9f9f9;
+            border-radius: 4px;
+            padding: 16px 18px;
+            font-size: 16px;
+        }
+
+        .ws-newsletter__button {
+            width: 100%;
+            background: #f9f9f9;
+            border-radius: 4px;
+            text-align: center;
+            padding: 14px 16px;
+            font-size: 16px;
         }
     }
 </style>

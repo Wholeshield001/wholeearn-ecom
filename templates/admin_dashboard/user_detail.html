@@ -15,16 +15,24 @@
     </a>
     <span class="text-gray-700 font-semibold">User Details</span>
   </div>
-  <form method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="delete">
-    <button type="submit" class="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-      </svg>
-      <span>Delete</span>
-    </button>
-  </form>
+
+  <div class="flex items-center gap-2">
+    <a href="{% url 'admin_reward_settings' %}" class="flex items-center gap-1 px-3 py-2 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition border border-indigo-200">
+      <span class="material-symbols-outlined text-base">workspace_premium</span>
+      Reward Settings
+    </a>
+
+    <form id="deleteUserForm" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="delete">
+      <button type="button" id="openDeleteUserModalBtn" class="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        <span>Delete</span>
+      </button>
+    </form>
+  </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -96,13 +104,23 @@
         <h3 class="text-sm font-semibold text-gray-900 mb-2">Date Joined</h3>
         <p class="text-sm text-gray-700">{{ user.date_joined|date:"d M Y, H:i" }}</p>
       </div>
+
+      <div>
+        <h3 class="text-sm font-semibold text-gray-900 mb-2">Unique Code</h3>
+        <p class="text-sm text-gray-700 font-mono">{{ user.unique_code|default:"-" }}</p>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-semibold text-gray-900 mb-2">Referral Code</h3>
+        <p class="text-sm text-gray-700 font-mono">{{ user.referral_code|default:"-" }}</p>
+      </div>
     </div>
   </div>
 
   <!-- Right Side: Stats and Order History -->
   <div class="lg:col-span-3 space-y-6">
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         <div class="flex items-center gap-2 mb-2">
           <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -135,6 +153,28 @@
         </div>
         <p class="text-2xl font-bold text-gray-900">{{ total_items_purchased }}</p>
         <p class="text-xs text-green-600 mt-1">Total items</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <svg class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3a1 1 0 00.293.707l2 2a1 1 0 001.414-1.414L11 9.586V7z" clip-rule="evenodd"/>
+          </svg>
+          <h3 class="text-sm font-medium text-gray-600">Reward Points</h3>
+        </div>
+        <p class="text-2xl font-bold text-gray-900">{{ user.reward_points|default:0 }}</p>
+        <p class="text-xs text-indigo-600 mt-1">Current balance</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <svg class="w-5 h-5 text-pink-600" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M15 8a3 3 0 11-2.83-4h-.34a3 3 0 00-2.83 4H7a3 3 0 100 6h6a3 3 0 100-6h2z"/>
+          </svg>
+          <h3 class="text-sm font-medium text-gray-600">Referral Buyers</h3>
+        </div>
+        <p class="text-2xl font-bold text-gray-900">{{ unique_referred_buyers }}</p>
+        <p class="text-xs text-pink-600 mt-1">{{ referral_orders_count }} successful referral orders</p>
       </div>
     </div>
 
@@ -174,17 +214,7 @@
                 <td class="py-4 px-4 text-gray-900">#{{ item.price|floatformat:2 }}</td>
                 <td class="py-4 px-4 text-gray-900">{{ item.quantity }}</td>
                 <td class="py-4 px-4">
-                  {% if order.status == 'delivered' %}
-                    <span class="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">Delivered</span>
-                  {% elif order.status == 'shipped' %}
-                    <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">Shipped</span>
-                  {% elif order.status == 'processing' %}
-                    <span class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-medium">Processing</span>
-                  {% elif order.status == 'pending' %}
-                    <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">Pending</span>
-                  {% else %}
-                    <span class="px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs font-medium">{{ order.status|upper }}</span>
-                  {% endif %}
+                  <span class="px-2 py-1 rounded-full text-xs font-medium {{ order.status_badge_class }}">{{ order.get_status_display }}</span>
                 </td>
               </tr>
               {% endfor %}
@@ -197,6 +227,100 @@
         </table>
       </div>
     </div>
+
+    <!-- Points Ledger -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Reward Points History</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 px-4 text-gray-600 font-medium">Date</th>
+              <th class="text-left py-3 px-4 text-gray-600 font-medium">Reason</th>
+              <th class="text-left py-3 px-4 text-gray-600 font-medium">Order</th>
+              <th class="text-left py-3 px-4 text-gray-600 font-medium">Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in point_ledger %}
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+              <td class="py-3 px-4 text-gray-700">{{ entry.created_at|date:"d M Y, H:i" }}</td>
+              <td class="py-3 px-4">
+                {% if entry.reason == 'purchase' %}
+                  <span class="px-2 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium">Purchase Reward</span>
+                {% else %}
+                  <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-800 text-xs font-medium">Referral Bonus</span>
+                {% endif %}
+              </td>
+              <td class="py-3 px-4 text-gray-500 text-xs font-mono">
+                {% if entry.order %}{{ entry.order.id|truncatechars:13 }}{% else %}—{% endif %}
+              </td>
+              <td class="py-3 px-4 font-semibold {% if entry.points > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                {{ entry.points|stringformat:"+d" }}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="py-4 px-4 text-center text-gray-500">No points history yet</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
+
+<div id="deleteUserModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-lg max-w-sm w-full">
+    <div class="flex items-center justify-between border-b border-gray-200 p-6">
+      <h2 class="text-lg font-semibold text-gray-900">Delete User</h2>
+      <button type="button" id="closeDeleteUserModalBtn" class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
+          <span class="material-symbols-outlined text-red-600">warning</span>
+        </div>
+        <div>
+          <h3 class="font-medium text-gray-900">Are you sure?</h3>
+          <p class="text-sm text-gray-600 mt-1">This will permanently delete this user and associated data. This action cannot be undone.</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3 border-t border-gray-200 p-6">
+      <button type="button" id="cancelDeleteUserBtn" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
+      <button type="button" id="confirmDeleteUserBtn" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors">Delete User</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const modal = document.getElementById('deleteUserModal');
+    const openBtn = document.getElementById('openDeleteUserModalBtn');
+    const closeBtn = document.getElementById('closeDeleteUserModalBtn');
+    const cancelBtn = document.getElementById('cancelDeleteUserBtn');
+    const confirmBtn = document.getElementById('confirmDeleteUserBtn');
+    const form = document.getElementById('deleteUserForm');
+
+    if (!modal || !openBtn || !closeBtn || !cancelBtn || !confirmBtn || !form) return;
+
+    const openModal = () => modal.classList.remove('hidden');
+    const closeModal = () => modal.classList.add('hidden');
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    confirmBtn.addEventListener('click', () => form.submit());
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+  })();
+</script>
 {% endblock %}

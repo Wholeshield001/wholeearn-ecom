@@ -77,11 +77,11 @@
         <!-- Price Section -->
         <div class="mb-6">
           <div class="flex items-center gap-3 mb-2">
-            <span class="text-3xl font-bold text-[#ec3183]">${{ product.price }}</span>
+            <span class="text-3xl font-bold text-[#ec3183]">₦{{ product.price }}</span>
             {% if product.discount > 0 %}
             {% widthratio product.price 100 product.discount as discount_amount %}
             <span class="text-lg text-gray-400 line-through">
-              ${{ product.price|add:discount_amount }}
+              ₦{{ product.price|add:discount_amount }}
             </span>
             <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
               Save {{ product.discount }}%
@@ -260,7 +260,7 @@
             <p class="text-xs text-[#ec3183] opacity-70 mb-1 uppercase">{{ rel_product.category.name }}</p>
             {% endif %}
             <h3 class="font-semibold text-[#ec3183] mb-2 line-clamp-2 text-sm">{{ rel_product.name }}</h3>
-            <p class="text-lg font-bold text-[#ec3183]">${{ rel_product.price }}</p>
+            <p class="text-lg font-bold text-[#ec3183]">₦{{ rel_product.price }}</p>
           </div>
         </a>
         {% endfor %}

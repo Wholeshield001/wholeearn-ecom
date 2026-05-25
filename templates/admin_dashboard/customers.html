@@ -7,22 +7,34 @@
 {% block content %}
 <!-- Filter Tabs -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-  <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
-    <a href="?role=all" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'all' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
-      All <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'all' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_users }}</span>
-    </a>
-    <a href="?role=administrator" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'administrator' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
-      Admin <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'administrator' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_administrators }}</span>
-    </a>
-    <a href="?role=wholesaler" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'wholesaler' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
-      Wholesale <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'wholesaler' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_wholesalers }}</span>
-    </a>
-    <a href="?role=retailer" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'retailer' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
-      Retailer <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'retailer' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_retailers }}</span>
-    </a>
-    <a href="?role=end_user" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'end_user' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
-      End User <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'end_user' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_customers }}</span>
-    </a>
+  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-1">
+    <div class="inline-flex items-center bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+      <a href="?role=all{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'all' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        All <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'all' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_users }}</span>
+      </a>
+      <a href="?role=administrator{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'administrator' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Admin <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'administrator' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_administrators }}</span>
+      </a>
+      <a href="?role=wholesaler{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'wholesaler' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Wholesale <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'wholesaler' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_wholesalers }}</span>
+      </a>
+      <a href="?role=retailer{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'retailer' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        Retailer <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'retailer' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_retailers }}</span>
+      </a>
+      <a href="?role=end_user{% if search_query %}&q={{ search_query }}{% endif %}" class="px-4 py-2 text-sm font-medium rounded-md {% if role_filter == 'end_user' %}bg-teal-50 text-teal-600{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+        End User <span class="ml-1.5 px-1.5 py-0.5 text-xs {% if role_filter == 'end_user' %}bg-white{% else %}bg-gray-100{% endif %} rounded">{{ total_customers }}</span>
+      </a>
+    </div>
+    
+    <!-- Search Bar -->
+    <form method="GET" class="w-full sm:w-auto flex gap-2">
+      <input type="hidden" name="role" value="{{ role_filter }}">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search users, email, phone..." 
+        class="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+      <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </form>
   </div>
 
   <button class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
@@ -110,6 +122,9 @@
           <th class="text-left py-3 px-4 text-gray-600 font-medium">User</th>
           <th class="text-left py-3 px-4 text-gray-600 font-medium">Email</th>
           <th class="text-left py-3 px-4 text-gray-600 font-medium">Role</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Unique Code</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Referral Code</th>
+          <th class="text-left py-3 px-4 text-gray-600 font-medium">Points</th>
           <th class="text-left py-3 px-4 text-gray-600 font-medium">Status</th>
           <th class="text-left py-3 px-4 text-gray-600 font-medium">Joined</th>
           <th class="text-left py-3 px-4 text-gray-600 font-medium">Orders</th>
@@ -149,6 +164,9 @@
               <span class="px-2 py-1 rounded-full text-xs bg-gray-50 text-gray-600 font-medium">Unknown</span>
             {% endif %}
           </td>
+          <td class="py-3 px-4 text-gray-700 font-mono text-xs">{{ user.unique_code|default:"-" }}</td>
+          <td class="py-3 px-4 text-gray-700 font-mono text-xs">{{ user.referral_code|default:"-" }}</td>
+          <td class="py-3 px-4 text-gray-700 font-semibold">{{ user.reward_points|default:0 }}</td>
           <td class="py-3 px-4">
             {% if user.is_active %}
               <span class="px-2 py-1 rounded-full text-xs bg-green-50 text-green-600 font-medium">Active</span>
@@ -180,7 +198,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="8" class="py-12 text-center">
+          <td colspan="11" class="py-12 text-center">
             <div class="flex flex-col items-center justify-center text-gray-500">
               <span class="material-symbols-outlined text-6xl mb-4">group</span>
               <p class="text-lg font-medium">No users found</p>

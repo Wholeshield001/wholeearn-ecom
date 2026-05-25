@@ -108,6 +108,34 @@
       End Users
     </a>
 
+     <a href="{% url 'kyc-submissions' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'kyc-submissions' or current == 'kyc-detail' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'kyc-submissions' or current == 'kyc-detail' %}text-teal-600{% else %}text-gray-400{% endif %}">verified_user</span>
+      KYC
+     </a>
+
+    <a href="{% url 'admin_reward_settings' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_reward_settings' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_reward_settings' %}text-teal-600{% else %}text-gray-400{% endif %}">workspace_premium</span>
+      Reward Settings
+    </a>
+
+    <a href="{% url 'admin_reward_withdrawals' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_reward_withdrawals' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_reward_withdrawals' %}text-teal-600{% else %}text-gray-400{% endif %}">account_balance_wallet</span>
+      Reward Withdrawals
+    </a>
+
+    <a href="{% url 'admin_payment_settings' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_payment_settings' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_payment_settings' %}text-teal-600{% else %}text-gray-400{% endif %}">credit_card</span>
+      Payment Settings
+    </a>
+
     <!-- Tickets -->
     <a href="{% url 'admin_tickets' %}"
       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
@@ -145,6 +173,13 @@
         {% if current == 'admin_analytics' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
       <span class="material-symbols-outlined {% if current == 'admin_analytics' %}text-teal-600{% else %}text-gray-400{% endif %}">analytics</span>
       Analytics
+    </a>
+
+    <a href="{% url 'admin_website_visits' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+        {% if current == 'admin_website_visits' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_website_visits' %}text-teal-600{% else %}text-gray-400{% endif %}">monitoring</span>
+      Website Visits
     </a>
 
     <!-- Logout -->

@@ -14,9 +14,9 @@
 
     <!-- Filters and Search Section -->
     <div class="mb-8 pb-8 border-b border-gray-200">
-      <form method="GET" class="flex flex-col sm:flex-row gap-4 items-end" id="filterForm">
+      <form method="GET" class="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:items-end" id="filterForm">
         <!-- Search -->
-        <div class="flex-1">
+        <div class="flex-1 w-full">
           <label for="search" class="block text-sm font-semibold text-[#ec3183] mb-2">Search</label>
           <input type="text" id="search" name="q" value="{{ search_query }}" placeholder="Search products..."
             hx-get="{% url 'products' %}" hx-target="#productsGrid" hx-swap="outerHTML swap:0.5s"
@@ -25,15 +25,14 @@
         </div>
 
         <!-- Category Filter -->
-        <div class="flex-1 sm:flex-none">
+        <div class="w-full sm:w-auto sm:flex-shrink-0">
           <label for="category" class="block text-sm font-semibold text-[#ec3183] mb-2">Category</label>
           <select id="category" name="category" hx-get="{% url 'products' %}" hx-target="#productsGrid"
             hx-swap="outerHTML swap:0.5s" hx-trigger="change" hx-include="[name='q']"
             class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500">
             <option value="">All Categories</option>
             {% for category in categories %}
-            <option value="{{ category.id }}" {% if selected_category and
-              category.id|stringformat:"s"==selected_category %}selected{% endif %}>
+            <option value="{{ category.id }}" {% if selected_category and category.id|stringformat:"s" == selected_category %}selected{% endif %}>
               {{ category.name }}
             </option>
             {% endfor %}
@@ -58,8 +57,7 @@
     <!-- Results Count -->
     <div class="mb-6">
       <p class="text-sm text-[#ec3183] opacity-80">
-        Showing <strong>{{ page_obj.start_index }}-{{ page_obj.end_index }}</strong> of <strong>{{
-          page_obj.paginator.count }}</strong> products
+        Showing <strong>{{ page_obj.start_index }}-{{ page_obj.end_index }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> products
       </p>
     </div>
 

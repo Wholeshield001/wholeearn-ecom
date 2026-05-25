@@ -193,8 +193,8 @@
 </section>
 
 <!-- Brand Ticker Tape -->
-<div class="bg-gradient-to-r from-[#fff5f8] to-[#f0fdfa] border-y border-gray-100 py-12 overflow-hidden"
-  style="margin-top: 0; margin-bottom: 240px;">
+<div class="bg-gradient-to-r from-[#fff5f8] to-[#f0fdfa] border-y border-gray-100 py-12 overflow-hidden mb-4 sm:mb-6"
+  style="margin-top: 0;">
   <div class="animate-marquee">
     <div class="flex items-center">
       <div class="ticker-item"><img src="{% static 'images/Arthroshield.png' %}" alt="Brand 1"></div>
@@ -211,6 +211,71 @@
     </div>
   </div>
 </div>
+
+<!-- Partner Registration Banner -->
+<style>
+  @keyframes partnerFloat {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes partnerPulse {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.6;
+      transform: scale(1.06);
+    }
+  }
+
+  .partner-pill-float {
+    animation: partnerFloat 4s ease-in-out infinite;
+  }
+
+  .partner-orb-pulse {
+    animation: partnerPulse 5.5s ease-in-out infinite;
+  }
+</style>
+<section class="relative mt-0 sm:mt-1 mb-8 sm:mb-12">
+  <div class="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#ec3183] via-[#d31f72] to-[#9f1756] shadow-lg sm:shadow-2xl">
+      <div class="partner-orb-pulse absolute -top-10 -right-8 w-36 h-36 rounded-full bg-white/20"></div>
+      <div class="partner-orb-pulse absolute -bottom-12 -left-8 w-40 h-40 rounded-full bg-yellow-300/20" style="animation-delay: 1.2s;"></div>
+
+      <div class="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 items-center px-4 sm:px-10 py-6 sm:py-9">
+        <div class="lg:col-span-2 text-white">
+          <div class="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-sm px-3 py-1 mb-3 sm:mb-4 text-xs font-semibold tracking-wide uppercase">
+            Partner Program
+          </div>
+          <h2 class="text-xl sm:text-3xl font-extrabold leading-tight mb-2">Join us as a partner and scale faster</h2>
+          <p class="text-pink-100 text-sm sm:text-base leading-relaxed max-w-2xl">Get wholesale pricing, bulk discounts, and priority support designed for growing pharmacies, hospitals, retailers, and online vendors.</p>
+          <div class="mt-4 sm:mt-5 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-white/90">
+            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1">Wholesale rates</span>
+            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="animation-delay: .35s;">Bulk discounts</span>
+            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="animation-delay: .7s;">Priority support</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2.5 sm:gap-3 justify-self-start lg:justify-self-end lg:ml-4 w-full sm:w-auto mt-1 sm:mt-0">
+          <a href="{% url 'partner-signup' %}" class="inline-flex items-center justify-center w-full sm:w-auto bg-white text-[#c81c6c] font-extrabold px-5 sm:px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition">
+            Join as a Partner
+          </a>
+          <a href="{% url 'login' %}" class="inline-flex items-center justify-center w-full sm:w-auto bg-transparent border border-white/35 text-white font-semibold px-5 sm:px-6 py-3 rounded-xl hover:bg-white/10 transition">
+            Partner Login
+          </a>
+        </div>
+      </div>
+  </div>
+</section>
 
 <!-- Shop Bestsellers Section -->
 <section class="pt-4 pb-16 sm:pt-6 sm:pb-20 bg-white reveal">
@@ -289,7 +354,7 @@
             <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
             <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
             <p class="mt-2 text-[#ec3183] font-medium text-base">
-              {% if product.price %}${{ product.price }}{% else %}—{% endif %}
+              {% if product.price %}₦{{ product.price }}{% else %}—{% endif %}
             </p>
           </div>
         </a>
@@ -313,7 +378,7 @@
             <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
             <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
             <p class="mt-2 text-[#ec3183] font-medium text-base">
-              {% if product.price %}${{ product.price }}{% else %}—{% endif %}
+              {% if product.price %}₦{{ product.price }}{% else %}—{% endif %}
             </p>
           </div>
         </a>
@@ -332,7 +397,7 @@
         <div class="mt-3">
           <p class="text-[#ec3183] font-semibold">Arthorshield</p>
           <p class="text-[#ec3183] opacity-80">Joint Health</p>
-          <p class="mt-1 text-[#ec3183] font-medium">$33</p>
+          <p class="mt-1 text-[#ec3183] font-medium">₦33</p>
         </div>
       </div>
       {% endfor %}

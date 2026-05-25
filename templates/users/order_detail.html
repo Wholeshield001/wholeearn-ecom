@@ -6,7 +6,7 @@
 {% block content %}
 <div class="min-h-screen bg-gray-50 py-12 px-4">
   <div class="max-w-5xl mx-auto">
-    <a href="{% url 'user-orders' %}" class="inline-flex items-center text-[#ec3183] hover:opacity-80 mb-6">
+    <a href="{% url 'order-history' %}" class="inline-flex items-center text-[#ec3183] hover:opacity-80 mb-6">
       <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
       </svg>
@@ -20,62 +20,100 @@
           <p class="text-gray-500 mt-1">Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"g:i A" }}</p>
         </div>
         <div>
-          {% if order.status == 'pending' %}
-            <span class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full font-semibold">Pending</span>
-          {% elif order.status == 'processing' %}
-            <span class="px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-semibold">Processing</span>
-          {% elif order.status == 'shipped' %}
-            <span class="px-4 py-2 bg-purple-100 text-purple-700 rounded-full font-semibold">Shipped</span>
-          {% elif order.status == 'delivered' %}
-            <span class="px-4 py-2 bg-green-100 text-green-700 rounded-full font-semibold">Delivered</span>
-          {% else %}
-            <span class="px-4 py-2 bg-red-100 text-red-700 rounded-full font-semibold">Cancelled</span>
-          {% endif %}
+          <span class="px-4 py-2 rounded-full font-semibold {{ order.status_badge_class }}">{{ order.get_status_display }}</span>
         </div>
       </div>
+
+      {% if order.tracking_number %}
+        <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-sm text-blue-700">Tracking Number</p>
+          <p class="text-base font-mono font-semibold text-blue-900">{{ order.tracking_number }}</p>
+        </div>
+      {% endif %}
 
       <!-- Order Timeline -->
       <div class="mb-8">
         <h2 class="text-lg font-bold mb-4">Order Timeline</h2>
+        {% with s=order.status %}
         <div class="space-y-4">
+
+          <!-- Step 1: Order Placed -->
           <div class="flex items-start">
-            <div class="{% if order.status == 'pending' or order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %}bg-green-500{% else %}bg-gray-300{% endif %} w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
+            <div class="bg-green-500 w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
             <div class="flex-1">
               <p class="font-semibold">Order Placed</p>
               <p class="text-sm text-gray-500">{{ order.created_at|date:"M d, Y - g:i A" }}</p>
             </div>
           </div>
 
+          <!-- Step 2: Confirmed & Processing at warehouse -->
           <div class="flex items-start ml-1.5">
-            <div class="{% if order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %}bg-green-500{% else %}bg-gray-300{% endif %} w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
+            <div class="{% if s != 'pending' and s != 'cancelled' %}bg-green-500{% else %}bg-gray-300{% endif %} w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
             <div class="flex-1">
-              <p class="font-semibold">Processing</p>
-              {% if order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %}
-                <p class="text-sm text-gray-500">Your order is being prepared</p>
+              <p class="font-semibold">Order Confirmed</p>
+              {% if s != 'pending' and s != 'cancelled' %}
+                <p class="text-sm text-gray-500">Payment received — order handed to Speedaf</p>
               {% endif %}
             </div>
           </div>
 
+          <!-- Step 3: In Transit -->
           <div class="flex items-start ml-1.5">
-            <div class="{% if order.status == 'shipped' or order.status == 'delivered' %}bg-green-500{% else %}bg-gray-300{% endif %} w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
+            <div class="{% if s in 'inbound packaged outbound picked departed arrived customs_declaration flight_departed flight_landed in_clearance clearance_exception clearance_completed in_delivery returning returned delivered' %}bg-green-500{% else %}bg-gray-300{% endif %} w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
             <div class="flex-1">
-              <p class="font-semibold">Shipped</p>
-              {% if order.tracking_number %}
-                <p class="text-sm text-gray-500">Tracking: <span class="font-mono">{{ order.tracking_number }}</span></p>
+              <p class="font-semibold">In Transit</p>
+              {% if s not in 'pending ordered cancelled' %}
+                <p class="text-sm text-gray-500">Current status: {{ order.get_status_display }}</p>
+                {% if order.tracking_number %}
+                  <p class="text-sm text-gray-500">Tracking: <span class="font-mono">{{ order.tracking_number }}</span></p>
+                {% endif %}
               {% endif %}
             </div>
           </div>
 
+          <!-- Step 4: Out for Delivery -->
           <div class="flex items-start ml-1.5">
-            <div class="{% if order.status == 'delivered' %}bg-green-500{% else %}bg-gray-300{% endif %} w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
+            <div class="{% if s == 'in_delivery' or s == 'delivered' %}bg-green-500{% else %}bg-gray-300{% endif %} w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
+            <div class="flex-1">
+              <p class="font-semibold">Out for Delivery</p>
+              {% if s == 'in_delivery' %}
+                <p class="text-sm text-gray-500">Your order is on its way to you</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Step 5: Delivered -->
+          <div class="flex items-start ml-1.5">
+            <div class="{% if s == 'delivered' %}bg-green-500{% else %}bg-gray-300{% endif %} w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
             <div class="flex-1">
               <p class="font-semibold">Delivered</p>
-              {% if order.status == 'delivered' %}
+              {% if s == 'delivered' %}
                 <p class="text-sm text-gray-500">{{ order.updated_at|date:"M d, Y - g:i A" }}</p>
               {% endif %}
             </div>
           </div>
+
+          {% if s == 'returning' or s == 'returned' %}
+          <div class="flex items-start ml-1.5">
+            <div class="bg-orange-500 w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
+            <div class="flex-1">
+              <p class="font-semibold text-orange-700">{{ order.get_status_display }}</p>
+              <p class="text-sm text-gray-500">This order is being returned to sender</p>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if s == 'cancelled' %}
+          <div class="flex items-start ml-1.5">
+            <div class="bg-red-500 w-3 h-3 rounded-full mt-1.5 mr-4 flex-shrink-0"></div>
+            <div class="flex-1">
+              <p class="font-semibold text-red-700">Cancelled</p>
+            </div>
+          </div>
+          {% endif %}
+
         </div>
+        {% endwith %}
 
         {% if order.tracking_notes %}
           <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -117,10 +155,18 @@
       </div>
 
       <div class="border-t mt-6 pt-6">
-        <div class="flex justify-between text-lg font-bold">
+        <div class="flex justify-between text-lg font-bold mb-4">
           <span>Total</span>
           <span class="text-[#ec3183]">₦{{ order.total_amount|floatformat:2 }}</span>
         </div>
+        {% if order.payment_status == 'pending' %}
+        <form method="POST" action="{% url 'retry-payment' order.id %}">
+          {% csrf_token %}
+          <button type="submit" class="w-full py-3 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow">
+            Pay Now
+          </button>
+        </form>
+        {% endif %}
       </div>
     </div>
 

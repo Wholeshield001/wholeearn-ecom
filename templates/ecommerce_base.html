@@ -6,6 +6,7 @@
   <meta charset="utf-8">
   <title>{% block title %}WholeShield - Shop{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="{% static 'images/Logo.png' %}">
   {% tailwind_css %}
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -63,12 +64,7 @@
       font-family: 'Inter', sans-serif;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
+    h1, h2, h3, h4, h5, h6 {
       font-family: 'Satoshi', sans-serif;
     }
 
@@ -104,8 +100,13 @@
 
   <script>
     function showToast(type, message) {
-      const container = document.getElementById('toastContainer');
-      if (!container) { alert(message); return; }
+      let container = document.getElementById('toastContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full';
+        document.body.appendChild(container);
+      }
       const base = 'toast-enter rounded-lg shadow-lg p-4 flex items-start gap-3';
       const palette = type === 'success' ? 'bg-teal-50 border border-teal-200' : type === 'error' ? 'bg-red-50 border border-red-200' : 'bg-blue-50 border border-blue-200';
       const icon = type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info';
@@ -121,11 +122,25 @@
         `;
       toast.querySelector('button')?.addEventListener('click', () => { toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 250); });
       container.appendChild(toast);
-      setTimeout(() => { toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 250); }, 2500);
+      setTimeout(() => { toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 250); }, 3000);
+    }
+
+    function mapMessageType(tags) {
+      if (!tags) return 'info';
+      if (tags.includes('success')) return 'success';
+      if (tags.includes('error')) return 'error';
+      if (tags.includes('warning')) return 'info';
+      return 'info';
     }
 
     // HTMX + CSRF + Cart badge updater
     document.addEventListener('DOMContentLoaded', function () {
+      {% if messages %}
+        {% for message in messages %}
+          showToast(mapMessageType("{{ message.tags|escapejs }}"), "{{ message|escapejs }}");
+        {% endfor %}
+      {% endif %}
+
       // CSRF setup for HTMX
       function getCookie(name) {
         const value = `; ${document.cookie}`;
@@ -203,6 +218,8 @@
 
   <script src="{% static 'js/alpine.min.js' %}" defer></script>
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  {% include 'partials/shared/password_toggle_script.html' %}
+
   {% block scripts %}{% endblock %}
 </body>
 

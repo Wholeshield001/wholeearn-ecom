@@ -3,12 +3,35 @@ from django.contrib import messages, auth
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.db import IntegrityError
 from django.db.models import Sum
+from django.db.models import Exists, OuterRef
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from ecom.models import Cart, CartItem
+from django.urls import reverse
+from django.utils import timezone
+from ecom.models import (
+    Cart,
+    CartItem,
+    Order,
+    RewardPointConfig,
+    RewardPointLedger,
+    RewardConversion,
+    UserWallet,
+    WalletBankAccount,
+    WalletWithdrawalRequest,
+)
+from ecom.views import reconcile_recent_monnify_orders_for_user
+from ecom.services.wallets import (
+    WalletOperationError,
+    add_or_update_bank_account,
+    convert_points_to_wallet,
+    create_withdrawal_request,
+    process_withdrawal_request,
+)
+from ecom.services.payments import PaymentGatewayError, get_payment_provider
 from .forms import (
     SignUpForm,
     VerifyOTPForm,
@@ -19,39 +42,80 @@ from .forms import (
     PasswordResetVerifyForm,
     PasswordResetSetForm,
     TicketForm,
+    PartnerRegistrationForm,
+    KYCSubmissionForm,
+    RewardConversionForm,
+    WalletBankAccountForm,
+    WalletWithdrawalForm,
 )
-from .emails import send_verification_otp_email, send_welcome_email, send_password_reset_email
+from .models import Ticket, KYCSubmission, KYCSubmissionAuditLog
+from .emails import send_verification_otp_email, send_welcome_email, send_password_reset_email, send_kyc_submitted_email, send_kyc_submitted_admin_email
+from .tasks import send_kyc_submission_email_task
 
 User = get_user_model()
+
+REFERRAL_SESSION_KEY = 'signup_referral_code'
+
+
+def _normalize_referral_code(value):
+    return (value or '').strip().upper()
+
+
+def _get_signup_referral_code(request):
+    referral_code = _normalize_referral_code(
+        request.GET.get('ref')
+        or request.GET.get('referral')
+        or request.GET.get('code')
+    )
+    if referral_code:
+        if User.objects.filter(referral_code=referral_code).exists():
+            request.session[REFERRAL_SESSION_KEY] = referral_code
+        else:
+            request.session.pop(REFERRAL_SESSION_KEY, None)
+            messages.warning(request, 'That referral link is invalid or has expired.')
+            return ''
+    return request.session.get(REFERRAL_SESSION_KEY, '')
 
 
 @require_http_methods(["GET", "POST"])
 def signup(request):
     """Handle user registration"""
+    referral_code = _get_signup_referral_code(request)
+
     if request.method == 'POST':
-        form = SignUpForm(request.POST)
+        post_data = request.POST.copy()
+        if not post_data.get('referral_code_input') and referral_code:
+            post_data['referral_code_input'] = referral_code
+        form = SignUpForm(post_data)
         if form.is_valid():
             try:
                 user = form.save(commit=False)
                 user.save()
+                request.session.pop(REFERRAL_SESSION_KEY, None)
                 
                 # Send verification OTP email
-                send_verification_otp_email(user)
+                email_sent = send_verification_otp_email(user)
                 
                 # Store user email in session for OTP verification
                 request.session['pending_verification_email'] = user.email
                 request.session['verification_attempts'] = 0
-                
-                messages.success(
-                    request,
-                    'Account created! Check your email for the verification code.'
-                )
+
+                if email_sent:
+                    messages.success(
+                        request,
+                        'Account created! Check your email for the verification code.'
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        'Account created, but we could not send the verification email right now. Please use "Resend code" in the next step.'
+                    )
                 return redirect('verify-otp')
             except IntegrityError:
                 messages.error(request, 'An error occurred. Please try again.')
                 form = SignUpForm()
     else:
-        form = SignUpForm()
+        form = SignUpForm(initial={'referral_code_input': referral_code} if referral_code else None)
     
     return render(request, 'users/signup.html', {'form': form})
 
@@ -150,9 +214,12 @@ def resend_otp(request):
     
     try:
         user = User.objects.get(email=email)
-        send_verification_otp_email(user)
-        request.session['verification_attempts'] = 0
-        messages.success(request, 'Verification code sent! Check your email.')
+        email_sent = send_verification_otp_email(user)
+        if email_sent:
+            request.session['verification_attempts'] = 0
+            messages.success(request, 'Verification code sent! Check your email.')
+        else:
+            messages.error(request, 'Could not send verification code right now. Please try again in a moment.')
     except User.DoesNotExist:
         messages.error(request, 'User not found.')
         del request.session['pending_verification_email']
@@ -209,8 +276,9 @@ def logout(request):
 @require_http_methods(["GET"])
 def dashboard(request):
     """User dashboard with order metrics and recent orders."""
-    from ecom.models import Order
-    from django.db.models import Sum, Q
+    from django.db.models import Sum, Q, Exists, OuterRef
+
+    reconcile_recent_monnify_orders_for_user(request, request.user)
     
     total_users = User.objects.count()
     
@@ -244,7 +312,199 @@ def dashboard(request):
         'total_revenue': total_revenue,
         'items': items,
     }
+
+    referred_users = request.user.referred_users.annotate(
+        has_purchased=Exists(
+            Order.objects.filter(user=OuterRef('pk'), payment_status='completed')
+        )
+    ).order_by('-date_joined')
+    context['referred_users'] = referred_users
+    context['referral_code'] = request.user.referral_code
+    context['referral_link'] = request.build_absolute_uri(
+        f"{reverse('signup')}?ref={request.user.referral_code}"
+    )
+
     return render(request, 'users/dashboard.html', context)
+
+
+@login_required(login_url='login')
+@require_http_methods(["GET"])
+def reward_dashboard(request):
+    """Dedicated rewards dashboard with referral and points activity."""
+    referral_link = request.build_absolute_uri(
+        f"{reverse('signup')}?ref={request.user.referral_code}"
+    )
+    referred_users = request.user.referred_users.annotate(
+        has_purchased=Exists(
+            Order.objects.filter(user=OuterRef('pk'), payment_status='completed')
+        )
+    ).order_by('-date_joined')
+
+    completed_referrals = referred_users.filter(has_purchased=True).count()
+
+    page_size = 8
+    ledger_qs = RewardPointLedger.objects.filter(user=request.user).select_related('order').order_by('-created_at')
+    point_ledger = ledger_qs[:page_size]
+    has_more = ledger_qs.count() > page_size
+
+    config = RewardPointConfig.get_solo()
+    wallet = UserWallet.get_for_user(request.user)
+    bank_accounts = WalletBankAccount.objects.filter(user=request.user, is_active=True).order_by('-is_default', '-updated_at')
+    recent_conversions = RewardConversion.objects.filter(user=request.user).order_by('-created_at')[:5]
+    recent_withdrawals = WalletWithdrawalRequest.objects.filter(user=request.user).select_related('bank_account').order_by('-created_at')[:5]
+
+    context = {
+        'referral_code': request.user.referral_code,
+        'referral_link': referral_link,
+        'referred_users': referred_users,
+        'total_referrals': referred_users.count(),
+        'completed_referrals': completed_referrals,
+        'point_ledger': point_ledger,
+        'has_more': has_more,
+        'next_offset': page_size,
+        'wallet': wallet,
+        'reward_config': config,
+        'bank_accounts': bank_accounts,
+        'recent_conversions': recent_conversions,
+        'recent_withdrawals': recent_withdrawals,
+        'conversion_form': RewardConversionForm(request.user),
+        'bank_account_form': WalletBankAccountForm(),
+        'withdrawal_form': WalletWithdrawalForm(request.user),
+    }
+    return render(request, 'users/reward.html', context)
+
+
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def convert_rewards_to_wallet(request):
+    """Convert reward points to wallet balance."""
+    form = RewardConversionForm(request.user, request.POST)
+    if not form.is_valid():
+        messages.error(request, '; '.join(form.errors.get('points', ['Invalid conversion request.'])))
+        return redirect('reward-dashboard')
+
+    try:
+        conversion = convert_points_to_wallet(user=request.user, points=form.cleaned_data['points'])
+        messages.success(
+            request,
+            f"Conversion successful: {conversion.points} points converted to N{conversion.naira_amount}."
+        )
+    except WalletOperationError as exc:
+        messages.error(request, str(exc))
+    return redirect('reward-dashboard')
+
+
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def add_wallet_bank_account(request):
+    """Add and verify payout bank account through Monnify."""
+    form = WalletBankAccountForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, 'Please provide valid bank account details.')
+        return redirect('reward-dashboard')
+
+    try:
+        account = add_or_update_bank_account(
+            user=request.user,
+            account_number=form.cleaned_data['account_number'],
+            bank_code=form.cleaned_data['bank_code'],
+            bank_name=form.cleaned_data.get('bank_name'),
+            set_default=bool(form.cleaned_data.get('set_default')),
+        )
+        messages.success(request, f"Bank account verified for {account.account_name}.")
+    except WalletOperationError as exc:
+        messages.error(request, str(exc))
+    return redirect('reward-dashboard')
+
+
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def request_wallet_withdrawal(request):
+    """Create and process wallet withdrawal using Monnify transfer."""
+    form = WalletWithdrawalForm(request.user, request.POST)
+    if not form.is_valid():
+        messages.error(request, 'Please provide a valid withdrawal amount and account.')
+        return redirect('reward-dashboard')
+
+    bank_account = get_object_or_404(
+        WalletBankAccount,
+        id=form.cleaned_data['bank_account_id'],
+        user=request.user,
+        is_verified=True,
+        is_active=True,
+    )
+
+    try:
+        withdrawal = create_withdrawal_request(
+            user=request.user,
+            amount=form.cleaned_data['amount'],
+            bank_account=bank_account,
+        )
+        withdrawal = process_withdrawal_request(withdrawal)
+        if withdrawal.status == WalletWithdrawalRequest.SUCCESS:
+            messages.success(request, f"Withdrawal successful: N{withdrawal.amount} sent to your bank account.")
+        else:
+            messages.warning(request, 'Withdrawal request submitted and is being processed.')
+    except WalletOperationError as exc:
+        messages.error(request, str(exc))
+
+    return redirect('reward-dashboard')
+
+
+@login_required(login_url='login')
+@require_http_methods(["GET"])
+def wallet_bank_list(request):
+    """Return Monnify-supported bank list for bank-account dropdowns."""
+    try:
+        provider = get_payment_provider('monnify')
+        if not hasattr(provider, 'list_banks'):
+            return JsonResponse({'ok': False, 'error': 'Bank list unavailable.'}, status=400)
+
+        banks = provider.list_banks()
+        banks = sorted(banks, key=lambda row: row.get('name', '').lower())
+        return JsonResponse({'ok': True, 'banks': banks})
+    except PaymentGatewayError as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=502)
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Unable to load bank list right now.'}, status=500)
+
+
+@login_required(login_url='login')
+@require_http_methods(["GET"])
+def wallet_account_lookup(request):
+    """Resolve account name from bank code and account number using Monnify."""
+    account_number = (request.GET.get('account_number') or '').strip()
+    bank_code = (request.GET.get('bank_code') or '').strip()
+
+    if not account_number or not bank_code:
+        return JsonResponse({'ok': False, 'error': 'Account number and bank code are required.'}, status=400)
+
+    if not account_number.isdigit() or len(account_number) != 10:
+        return JsonResponse({'ok': False, 'error': 'Enter a valid 10-digit account number.'}, status=400)
+
+    import re
+    if not re.fullmatch(r'[\w\-]{1,20}', bank_code):
+        return JsonResponse({'ok': False, 'error': 'Invalid bank code.'}, status=400)
+
+    try:
+        provider = get_payment_provider('monnify')
+        if not hasattr(provider, 'verify_bank_account'):
+            return JsonResponse({'ok': False, 'error': 'Account lookup unavailable.'}, status=400)
+
+        result = provider.verify_bank_account(account_number=account_number, bank_code=bank_code)
+        account_name = (result.get('account_name') or '').strip()
+        if not account_name:
+            return JsonResponse({'ok': False, 'error': 'Unable to resolve account name.'}, status=502)
+
+        return JsonResponse({
+            'ok': True,
+            'account_name': account_name,
+            'bank_name': (result.get('bank_name') or '').strip(),
+        })
+    except PaymentGatewayError as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=502)
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Unable to verify account right now.'}, status=500)
 
 
 @login_required(login_url='login')
@@ -287,7 +547,35 @@ def profile(request):
                 except ValidationError as e:
                     messages.error(request, ' '.join(e.messages))
 
-    return render(request, 'users/profile.html')
+    PAGE_SIZE = 5
+    qs = RewardPointLedger.objects.filter(user=request.user).select_related('order').order_by('-created_at')
+    point_ledger = qs[:PAGE_SIZE]
+    has_more = qs.count() > PAGE_SIZE
+    return render(request, 'users/profile.html', {
+        'point_ledger': point_ledger,
+        'has_more': has_more,
+        'next_offset': PAGE_SIZE,
+    })
+
+
+@login_required(login_url='login')
+@require_http_methods(["GET"])
+def rewards_load_more(request):
+    PAGE_SIZE = 5
+    try:
+        offset = int(request.GET.get('offset', 0))
+    except (ValueError, TypeError):
+        offset = 0
+    qs = RewardPointLedger.objects.filter(user=request.user).select_related('order').order_by('-created_at')
+    total = qs.count()
+    point_ledger = qs[offset:offset + PAGE_SIZE]
+    next_offset = offset + PAGE_SIZE
+    has_more = next_offset < total
+    return render(request, 'users/partials/reward_rows.html', {
+        'point_ledger': point_ledger,
+        'has_more': has_more,
+        'next_offset': next_offset,
+    })
 
 
 @login_required(login_url='login')
@@ -318,10 +606,13 @@ def password_reset_request(request):
             email = form.cleaned_data['email']
             try:
                 user = User.objects.get(email=email)
-                send_password_reset_email(user)
-                request.session['reset_email'] = email
-                messages.success(request, 'We sent a verification code to your email.')
-                return redirect('password-reset-verify')
+                email_sent = send_password_reset_email(user)
+                if email_sent:
+                    request.session['reset_email'] = email
+                    messages.success(request, 'We sent a verification code to your email.')
+                    return redirect('password-reset-verify')
+                messages.error(request, 'We could not send a reset code right now. Please try again shortly.')
+                return redirect('password-reset-request')
             except User.DoesNotExist:
                 messages.error(request, 'If that email exists, we have sent a reset code.')
                 return redirect('password-reset-request')
@@ -446,11 +737,15 @@ def order_history(request):
     """Show user's order history with summary metrics"""
     from ecom.models import Order
 
-    orders = Order.objects.filter(user=request.user).prefetch_related('items').order_by('-created_at')
-    total_orders = orders.count()
-    pending_orders = orders.filter(status='pending').count()
-    total_revenue = orders.filter(payment_status='completed').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    PAGE_SIZE = 10
+    qs = Order.objects.filter(user=request.user).prefetch_related('items').order_by('-created_at')
+    total_orders = qs.count()
+    pending_orders = qs.filter(status='pending').count()
+    total_revenue = qs.filter(payment_status='completed').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     total_users = User.objects.count()
+
+    orders = qs[:PAGE_SIZE]
+    has_more = total_orders > PAGE_SIZE
 
     context = {
         'orders': orders,
@@ -458,8 +753,35 @@ def order_history(request):
         'pending_orders': pending_orders,
         'total_revenue': total_revenue,
         'total_users': total_users,
+        'has_more': has_more,
+        'next_offset': PAGE_SIZE,
     }
     return render(request, 'users/order_history.html', context)
+
+
+@login_required(login_url='login')
+@require_http_methods(["GET"])
+def order_history_more(request):
+    """HTMX endpoint: load next page of orders"""
+    from ecom.models import Order
+
+    PAGE_SIZE = 10
+    try:
+        offset = int(request.GET.get('offset', 0))
+    except (ValueError, TypeError):
+        offset = 0
+
+    qs = Order.objects.filter(user=request.user).prefetch_related('items').order_by('-created_at')
+    total = qs.count()
+    orders = qs[offset:offset + PAGE_SIZE]
+    next_offset = offset + PAGE_SIZE
+    has_more = next_offset < total
+
+    return render(request, 'users/partials/order_rows.html', {
+        'orders': orders,
+        'has_more': has_more,
+        'next_offset': next_offset,
+    })
 
 
 @login_required(login_url='login')
@@ -507,4 +829,135 @@ def ticket_detail(request, ticket_id):
     }
     return render(request, 'users/ticket_detail.html', context)
 
+
+@require_http_methods(["GET", "POST"])
+def partner_signup(request):
+    """Handle business partner registration"""
+    referral_code = _get_signup_referral_code(request)
+
+    if request.method == 'POST':
+        post_data = request.POST.copy()
+        if not post_data.get('referral_code_input') and referral_code:
+            post_data['referral_code_input'] = referral_code
+        form = PartnerRegistrationForm(post_data)
+        if form.is_valid():
+            try:
+                user = form.save(commit=False)
+                user.save()
+                request.session.pop(REFERRAL_SESSION_KEY, None)
+                
+                # Send verification OTP email
+                email_sent = send_verification_otp_email(user)
+                
+                # Store user email in session for OTP verification
+                request.session['pending_verification_email'] = user.email
+                request.session['verification_attempts'] = 0
+                request.session['partner_type'] = form.cleaned_data.get('partner_type')
+
+                if email_sent:
+                    messages.success(
+                        request,
+                        'Account created! Check your email for the verification code.'
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        'Account created, but we could not send the verification email. Please use "Resend code" in the next step.'
+                    )
+                return redirect('verify-otp')
+            except IntegrityError:
+                messages.error(request, 'An account with this email already exists.')
+                form = PartnerRegistrationForm()
+    else:
+        form = PartnerRegistrationForm(initial={'referral_code_input': referral_code} if referral_code else None)
+    
+    return render(request, 'users/partner_signup.html', {'form': form})
+
+
+@login_required(login_url='login')
+@require_http_methods(["GET", "POST"])
+def submit_kyc(request):
+    """Allow users to submit KYC documents"""
+    # Only partner roles (non END_USER) need KYC
+    if request.user.role == User.END_USER:
+        messages.info(request, 'KYC is not required for end-users.')
+        return redirect('dashboard')
+    
+    # Check if user already has KYC submission
+    existing_kyc = KYCSubmission.objects.filter(user=request.user).first()
+    
+    if request.method == 'POST':
+        form = KYCSubmissionForm(request.POST, request.FILES, instance=existing_kyc)
+        if form.is_valid():
+            kyc = form.save(commit=False)
+            kyc.user = request.user
+            kyc.user_type = request.user.role
+            kyc.save()
+            
+            # Update user KYC submitted timestamp
+            request.user.kyc_submitted_at = timezone.now()
+            request.user.kyc_status = User.KYC_PENDING
+            request.user.save()
+            
+            # Queue notification emails (user + admins) through Celery.
+            try:
+                async_result = send_kyc_submission_email_task.delay(str(kyc.id))
+                kyc.log_event(
+                    event_type=KYCSubmissionAuditLog.EVENT_EMAIL,
+                    actor=request.user,
+                    email_status=KYCSubmissionAuditLog.EMAIL_QUEUED,
+                    message='KYC submission emails queued.',
+                    metadata={'task_id': async_result.id},
+                )
+            except Exception:
+                # Fallback to synchronous send if queue is unavailable.
+                user_sent = send_kyc_submitted_email(request.user, kyc)
+                admin_sent = send_kyc_submitted_admin_email(request.user, kyc)
+                all_sent = user_sent and admin_sent
+                kyc.log_event(
+                    event_type=KYCSubmissionAuditLog.EVENT_EMAIL,
+                    actor=request.user,
+                    email_status=KYCSubmissionAuditLog.EMAIL_SENT if all_sent else KYCSubmissionAuditLog.EMAIL_FAILED,
+                    message='KYC submission emails sent synchronously due to queue unavailability.' if all_sent else 'KYC submission email failed during synchronous fallback.',
+                    metadata={'user_email_sent': bool(user_sent), 'admin_email_sent': bool(admin_sent)},
+                )
+            
+            messages.success(
+                request,
+                'KYC documents submitted successfully! Our team will review and get back to you shortly.'
+            )
+            return redirect('kyc-status')
+    else:
+        initial_data = {
+            'user_type': request.user.role,
+        } if not existing_kyc else None
+        form = KYCSubmissionForm(instance=existing_kyc, initial=initial_data)
+    
+    context = {
+        'form': form,
+        'existing_kyc': existing_kyc,
+    }
+    return render(request, 'users/submit_kyc.html', context)
+
+
+@login_required(login_url='login')
+@require_http_methods(["GET", "POST"])
+def kyc_status(request):
+    """Display user's KYC verification status"""
+    kyc_submission = KYCSubmission.objects.filter(user=request.user).first()
+
+    # Handle skip logic
+    can_skip = request.session.pop('kyc_skip_allowed', False)
+    if request.method == 'POST' and can_skip:
+        # User chose to skip KYC for now
+        messages.info(request, 'You skipped KYC. You must complete it before you can buy products.')
+        return redirect('dashboard')
+
+    context = {
+        'kyc_submission': kyc_submission,
+        'kyc_status': request.user.kyc_status,
+        'kyc_rejection_reason': request.user.kyc_rejection_reason,
+        'can_skip': can_skip,
+    }
+    return render(request, 'users/kyc_status.html', context)
 

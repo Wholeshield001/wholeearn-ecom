@@ -97,16 +97,11 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <form method="post" class="flex items-center gap-2">
-          {% csrf_token %}
-          <input type="hidden" name="order_id" value="{{ order.id }}" />
-          <select name="status" class="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            {% for status in status_choices %}
-              <option value="{{ status }}" {% if status == order.status %}selected{% endif %}>{{ status|title }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit" class="px-3 py-2 border border-teal-500 text-teal-700 rounded-lg text-sm font-semibold hover:bg-teal-50">Update Status</button>
-        </form>
+        {# Manual tracking status updates are intentionally disabled.
+           Order status is synced from Speedaf events. #}
+        <span class="px-3 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold bg-gray-50">
+          {{ order.status|title }}
+        </span>
         {% if order.status != 'delivered' and order.status != 'cancelled' %}
         <button type="button" onclick="openCancelOrderModal({ url: '/admin-dashboard/orders/{{ order.id }}/cancel/', orderId: '{{ order.id }}' })" class="px-3 py-2 border border-red-200 text-red-700 bg-red-50 rounded-lg text-sm font-semibold hover:bg-red-100">Cancel</button>
         {% endif %}

@@ -12,6 +12,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
+import secrets
 from ecom.models import (
     Cart,
     CartItem,
@@ -29,7 +30,6 @@ from ecom.services.wallets import (
     add_or_update_bank_account,
     convert_points_to_wallet,
     create_withdrawal_request,
-    process_withdrawal_request,
 )
 from ecom.services.payments import PaymentGatewayError, get_payment_provider
 from .forms import (
@@ -51,6 +51,7 @@ from .forms import (
 from .models import Ticket, KYCSubmission, KYCSubmissionAuditLog
 from .emails import send_verification_otp_email, send_welcome_email, send_password_reset_email, send_kyc_submitted_email, send_kyc_submitted_admin_email
 from .tasks import send_kyc_submission_email_task
+from ecom.tasks import process_withdrawal_request_task
 
 User = get_user_model()
 
@@ -331,6 +332,9 @@ def dashboard(request):
 @require_http_methods(["GET"])
 def reward_dashboard(request):
     """Dedicated rewards dashboard with referral and points activity."""
+    withdrawal_notice = request.session.pop('withdrawal_notice', None)
+    withdrawal_idempotency_key = secrets.token_urlsafe(24)
+    request.session['withdrawal_idempotency_key'] = withdrawal_idempotency_key
     referral_link = request.build_absolute_uri(
         f"{reverse('signup')}?ref={request.user.referral_code}"
     )
@@ -367,6 +371,8 @@ def reward_dashboard(request):
         'bank_accounts': bank_accounts,
         'recent_conversions': recent_conversions,
         'recent_withdrawals': recent_withdrawals,
+        'withdrawal_notice': withdrawal_notice,
+        'withdrawal_idempotency_key': withdrawal_idempotency_key,
         'conversion_form': RewardConversionForm(request.user),
         'bank_account_form': WalletBankAccountForm(),
         'withdrawal_form': WalletWithdrawalForm(request.user),
@@ -426,6 +432,12 @@ def request_wallet_withdrawal(request):
         messages.error(request, 'Please provide a valid withdrawal amount and account.')
         return redirect('reward-dashboard')
 
+    withdrawal_idempotency_key = (request.POST.get('withdrawal_idempotency_key') or '').strip()
+    session_withdrawal_key = request.session.get('withdrawal_idempotency_key', '')
+    if not withdrawal_idempotency_key or withdrawal_idempotency_key != session_withdrawal_key:
+        messages.error(request, 'Your withdrawal form expired. Please reopen the withdrawal form and try again.')
+        return redirect('reward-dashboard')
+
     bank_account = get_object_or_404(
         WalletBankAccount,
         id=form.cleaned_data['bank_account_id'],
@@ -439,9 +451,35 @@ def request_wallet_withdrawal(request):
             user=request.user,
             amount=form.cleaned_data['amount'],
             bank_account=bank_account,
+            idempotency_key=withdrawal_idempotency_key,
         )
-        withdrawal = process_withdrawal_request(withdrawal)
-        if withdrawal.status == WalletWithdrawalRequest.SUCCESS:
+        if withdrawal.status in {WalletWithdrawalRequest.PENDING, WalletWithdrawalRequest.FAILED}:
+            process_withdrawal_request_task.delay(str(withdrawal.pk))
+            request.session['withdrawal_notice'] = {
+                'kind': 'queued',
+                'title': 'Withdrawal queued',
+                'message': 'Your withdrawal request has been received and is waiting in the processing queue.',
+                'reference': withdrawal.reference,
+                'amount': f"N{withdrawal.amount:.2f}",
+            }
+            messages.success(request, f"Withdrawal request received and queued for processing. Reference: {withdrawal.reference}")
+        elif withdrawal.status == WalletWithdrawalRequest.PROCESSING:
+            request.session['withdrawal_notice'] = {
+                'kind': 'processing',
+                'title': 'Withdrawal already processing',
+                'message': 'This withdrawal is already being processed. You do not need to submit it again.',
+                'reference': withdrawal.reference,
+                'amount': f"N{withdrawal.amount:.2f}",
+            }
+            messages.info(request, f"Withdrawal is already being processed. Reference: {withdrawal.reference}")
+        elif withdrawal.status == WalletWithdrawalRequest.SUCCESS:
+            request.session['withdrawal_notice'] = {
+                'kind': 'success',
+                'title': 'Withdrawal completed',
+                'message': f'Withdrawal successful: N{withdrawal.amount:.2f} sent to your bank account.',
+                'reference': withdrawal.reference,
+                'amount': f"N{withdrawal.amount:.2f}",
+            }
             messages.success(request, f"Withdrawal successful: N{withdrawal.amount} sent to your bank account.")
         else:
             messages.warning(request, 'Withdrawal request submitted and is being processed.')

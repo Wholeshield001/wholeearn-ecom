@@ -8,6 +8,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
@@ -22,6 +23,75 @@ from .services.payments import PaymentGatewayError, get_active_payment_provider,
 from .services.wallets import apply_withdrawal_status_update
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
+
+
+def _normalize_checkout_code(value):
+    return (value or '').strip().upper()
+
+
+def _calculate_checkout_discount_amount(subtotal, discount_percent):
+    subtotal = Decimal(str(subtotal or 0))
+    discount_percent = Decimal(str(discount_percent or 0))
+    if subtotal <= 0 or discount_percent <= 0:
+        return Decimal('0.00')
+    return (subtotal * discount_percent / Decimal('100')).quantize(Decimal('0.01'))
+
+
+def _get_checkout_code_points_total(cart):
+    return sum(
+        (getattr(item.product, 'checkout_code_points', 0) or 0) * item.quantity
+        for item in cart.items.select_related('product')
+    )
+
+
+def _resolve_checkout_code_for_user(code, user):
+    normalized_code = _normalize_checkout_code(code)
+    if not normalized_code:
+        return normalized_code, None, ''
+
+    owner = User.objects.filter(unique_code=normalized_code).first()
+    if not owner:
+        return normalized_code, None, 'That unique code is invalid.'
+
+    if owner.pk == user.pk:
+        return normalized_code, None, 'You cannot use your own unique code.'
+
+    return normalized_code, owner, ''
+
+
+def _build_checkout_pricing(cart, user, shipping_fee=None, checkout_code=''):
+    subtotal = cart.get_total_price()
+    normalized_code, checkout_code_owner, checkout_code_error = _resolve_checkout_code_for_user(checkout_code, user)
+    discount_percent = Decimal('0.00')
+    discount_amount = Decimal('0.00')
+    checkout_code_points_total = 0
+
+    if checkout_code_owner:
+        for item in cart.items.select_related('product'):
+            line_total = Decimal(str(item.get_total_price() or 0))
+            product_discount_percent = Decimal(str(getattr(item.product, 'checkout_code_discount_percent', 0) or 0))
+            if line_total > 0 and product_discount_percent > 0:
+                discount_amount += _calculate_checkout_discount_amount(line_total, product_discount_percent)
+            checkout_code_points_total += (getattr(item.product, 'checkout_code_points', 0) or 0) * item.quantity
+
+        discount_amount = discount_amount.quantize(Decimal('0.01'))
+        if subtotal > 0:
+            discount_percent = ((discount_amount / subtotal) * Decimal('100')).quantize(Decimal('0.01'))
+
+    shipping_amount = Decimal(str(shipping_fee or 0)) if shipping_fee is not None else Decimal('0.00')
+    grand_total = subtotal - discount_amount + shipping_amount
+
+    return {
+        'checkout_code': normalized_code,
+        'checkout_code_owner': checkout_code_owner,
+        'checkout_code_error': checkout_code_error,
+        'checkout_discount_percent': discount_percent,
+        'checkout_discount_amount': discount_amount,
+        'checkout_code_points_total': checkout_code_points_total,
+        'subtotal': subtotal,
+        'grand_total': grand_total,
+    }
 
 
 def _verify_monnify_webhook_signature(request):
@@ -483,6 +553,8 @@ def htmx_speedaf_cities(request):
 def checkout(request):
     """Display checkout page."""
     reconcile_recent_monnify_orders_for_user(request, request.user)
+    checkout_idempotency_key = secrets.token_urlsafe(24)
+    request.session['checkout_idempotency_key'] = checkout_idempotency_key
 
     # Enforce KYC for partners
     partner_roles = {
@@ -517,6 +589,7 @@ def checkout(request):
         'payment_provider_key': payment_provider.key,
         'monnify_api_key': settings.MONNIFY_API_KEY,
         'monnify_contract_code': settings.MONNIFY_CONTRACT_CODE,
+        'checkout_idempotency_key': checkout_idempotency_key,
     }
     return render(request, 'ecommerce/checkout.html', context)
 
@@ -543,36 +616,39 @@ def get_shipping_quote(request):
     """HTMX view to calculate shipping rate dynamically"""
     city = request.POST.get('shipping_city', '').strip()
     state = request.POST.get('shipping_state', '').strip()
+    checkout_code = request.POST.get('checkout_code', '').strip()
+    cart = get_or_create_cart(request)
+    pricing = _build_checkout_pricing(cart, request.user, checkout_code=checkout_code)
     
     if not (city and state):
-        cart = get_or_create_cart(request)
-        cart_total = cart.get_total_price()
         return render(request, 'partials/ecommerce/shipping_quote.html', {
             'shipping_fee': None,
-            'grand_total': cart_total,
-            'total_price': cart_total,
+            'shipping_pending': True,
+            'grand_total': pricing['grand_total'],
+            'total_price': pricing['subtotal'],
+            **pricing,
         })
     
     client = SpeedAFClient()
-    cart = get_or_create_cart(request)
     total_weight = _get_cart_total_weight(cart)
     shipping_fee = client.calculate_shipping_rate(city, state, weight=float(total_weight))
 
     if shipping_fee is None:
-        cart_total = cart.get_total_price()
         return render(request, 'partials/ecommerce/shipping_quote.html', {
             'shipping_fee': None,
-            'grand_total': cart_total,
-            'total_price': cart_total,
+            'shipping_pending': False,
+            'grand_total': pricing['grand_total'],
+            'total_price': pricing['subtotal'],
+            **pricing,
         })
-    
-    cart_total = cart.get_total_price()
-    grand_total = cart_total + Decimal(str(shipping_fee))
+    pricing = _build_checkout_pricing(cart, request.user, shipping_fee=shipping_fee, checkout_code=checkout_code)
     
     return render(request, 'partials/ecommerce/shipping_quote.html', {
         'shipping_fee': shipping_fee,
-        'grand_total': grand_total,
-        'total_price': cart_total,
+        'shipping_pending': False,
+        'grand_total': pricing['grand_total'],
+        'total_price': pricing['subtotal'],
+        **pricing,
     })
 
 
@@ -628,8 +704,23 @@ def process_checkout(request):
         messages.error(request, "Enter a valid phone number.")
         return redirect('checkout')
 
+    checkout_idempotency_key = (request.POST.get('checkout_idempotency_key') or '').strip()
+    session_checkout_key = request.session.get('checkout_idempotency_key', '')
+    if not checkout_idempotency_key or checkout_idempotency_key != session_checkout_key:
+        if is_ajax:
+            return JsonResponse({'ok': False, 'error': 'Your checkout session expired. Please refresh the page and try again.'}, status=400)
+        messages.error(request, 'Your checkout session expired. Please refresh the page and try again.')
+        return redirect('checkout')
+
     referrer = request.user.referred_by
     referral_code = referrer.referral_code if referrer else None
+    checkout_code = request.POST.get('checkout_code', '').strip()
+    pricing = _build_checkout_pricing(cart, request.user, checkout_code=checkout_code)
+    if pricing['checkout_code_error']:
+        if is_ajax:
+            return JsonResponse({'ok': False, 'error': pricing['checkout_code_error']}, status=400)
+        messages.error(request, pricing['checkout_code_error'])
+        return redirect('checkout')
     
     # Calculate shipping fee
     client = SpeedAFClient()
@@ -643,9 +734,9 @@ def process_checkout(request):
         return redirect('checkout')
     
     # Create order with pending status
-    cart_total = cart.get_total_price()
-    total_amount = cart_total + Decimal(str(shipping_fee))
-    payment_ref = f"WS-{secrets.token_urlsafe(16)}"
+    cart_total = pricing['subtotal']
+    total_amount = cart_total - pricing['checkout_discount_amount'] + Decimal(str(shipping_fee))
+    payment_ref = f"WS-{checkout_idempotency_key}"
     
     try:
         payment_provider = get_active_payment_provider()
@@ -657,30 +748,39 @@ def process_checkout(request):
 
     from django.db import transaction as db_transaction
     with db_transaction.atomic():
-        order = Order.objects.create(
-            user=request.user,
-            payment_provider=payment_provider.key,
-            shipping_fee=shipping_fee,
-            total_amount=total_amount,
-            payment_reference=payment_ref,
-            referral_code_used=referral_code or None,
-            referrer=referrer,
-            shipping_address=shipping_address,
-            shipping_city=shipping_city,
-            shipping_state=shipping_state,
-            shipping_phone=shipping_phone,
+        order, created = Order.objects.get_or_create(
+            checkout_idempotency_key=checkout_idempotency_key,
+            defaults={
+                'user': request.user,
+                'payment_provider': payment_provider.key,
+                'shipping_fee': shipping_fee,
+                'total_amount': total_amount,
+                'payment_reference': payment_ref,
+                'referral_code_used': referral_code or None,
+                'referrer': referrer,
+                'checkout_code': pricing['checkout_code'] or None,
+                'checkout_code_owner': pricing['checkout_code_owner'],
+                'checkout_discount_percent': pricing['checkout_discount_percent'],
+                'checkout_discount_amount': pricing['checkout_discount_amount'],
+                'shipping_address': shipping_address,
+                'shipping_city': shipping_city,
+                'shipping_state': shipping_state,
+                'shipping_phone': shipping_phone,
+            },
         )
 
-        # Create order items from cart
-        for cart_item in cart.items.all():
-            OrderItem.objects.create(
-                order=order,
-                product=cart_item.product,
-                product_name=cart_item.product.name,
-                product_sku=cart_item.product.sku,
-                quantity=cart_item.quantity,
-                price=cart_item.price,
-            )
+        if created:
+            # Create order items from cart only once for this idempotency token.
+            for cart_item in cart.items.all():
+                OrderItem.objects.create(
+                    order=order,
+                    product=cart_item.product,
+                    product_name=cart_item.product.name,
+                    product_sku=cart_item.product.sku,
+                    checkout_code_points=cart_item.product.checkout_code_points or 0,
+                    quantity=cart_item.quantity,
+                    price=cart_item.price,
+                )
 
     # Monnify Web SDK performs its own transaction initialization in the browser.
     # Do not pre-initialize via API here for AJAX flow, otherwise the same reference
@@ -729,7 +829,8 @@ def process_checkout(request):
         if is_ajax:
             return JsonResponse({'ok': False, 'error': f'Payment initialization failed: {str(e)}'}, status=400)
         messages.error(request, f"Payment initialization failed: {str(e)}")
-        order.delete()
+        if created:
+            order.delete()
         return redirect('checkout')
 
 

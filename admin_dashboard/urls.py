@@ -38,6 +38,7 @@ urlpatterns = [
     path('products/<uuid:product_id>/images/set-thumbnail/<uuid:image_id>/', views.set_product_thumbnail, name='set_product_thumbnail'),
     path('products/<uuid:product_id>/images/delete/<uuid:image_id>/', views.delete_product_image, name='delete_product_image'),
     path('products/<uuid:product_id>/images/add/', views.add_product_images, name='add_product_images'),
+    path('products/<uuid:product_id>/images/cleanup-duplicates/', views.cleanup_duplicate_product_images, name='cleanup_duplicate_product_images'),
 
 
     # Notifications

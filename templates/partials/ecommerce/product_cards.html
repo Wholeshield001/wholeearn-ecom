@@ -1,4 +1,5 @@
 {% load static %}
+{% load ecom_tags %}
 
 {% for product in products %}
 <div
@@ -8,10 +9,12 @@
     <!-- Product Image -->
     <div class="relative w-full aspect-square bg-gray-100 overflow-hidden">
       {% if product.thumbnail and product.thumbnail.image %}
-      <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
+      <img src="{{ product.thumbnail.image.url|cloudinary_optimize:'f_auto,q_auto,w_450,c_fill' }}" alt="{{ product.name }}"
+        loading="lazy" decoding="async"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
       {% elif product.images.first %}
-      <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
+      <img src="{{ product.images.first.image.url|cloudinary_optimize:'f_auto,q_auto,w_450,c_fill' }}" alt="{{ product.name }}"
+        loading="lazy" decoding="async"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
       {% else %}
       <div
@@ -86,7 +89,7 @@
     {% endwith %}
     {% else %}
     <a href="{% url 'login' %}?next={{ request.path }}"
-      class="block w-full text-center py-2 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow text-sm sm:text-base">
+      class="flex items-center justify-center text-center w-full min-h-[44px] py-2 px-3 bg-gradient-to-r from-[#ec3183] to-[#31dec4] text-white font-semibold rounded-lg hover:shadow-lg transition-shadow text-xs sm:text-sm md:text-base">
       Login to Add to Cart
     </a>
     {% endif %}

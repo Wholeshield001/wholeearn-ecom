@@ -1,5 +1,6 @@
 {% extends "ecommerce_base.html" %}
 {% load static %}
+{% load ecom_tags %}
 
 {% block title %}{{ product.name }} - WholeShield{% endblock %}
 
@@ -20,11 +21,11 @@
         <!-- Main Image -->
         <div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
           {% if product.thumbnail and product.thumbnail.image %}
-          <img id="mainImage" src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
-            class="w-full h-full object-cover">
+          <img id="mainImage" src="{{ product.thumbnail.image.url|cloudinary_optimize:'f_auto,q_auto,w_800' }}" alt="{{ product.name }}"
+            decoding="async" class="w-full h-full object-cover">
           {% elif product.images.first %}
-          <img id="mainImage" src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
-            class="w-full h-full object-cover">
+          <img id="mainImage" src="{{ product.images.first.image.url|cloudinary_optimize:'f_auto,q_auto,w_800' }}" alt="{{ product.name }}"
+            decoding="async" class="w-full h-full object-cover">
           {% else %}
           <div
             class="w-full h-full bg-gradient-to-br from-[#31dec4] to-[#ec3183] opacity-20 flex items-center justify-center">
@@ -37,9 +38,10 @@
         {% if product.images.all|length > 1 %}
         <div class="grid grid-cols-4 gap-2">
           {% for image in product.images.all %}
-          <button type="button" onclick="document.getElementById('mainImage').src='{{ image.image.url }}'"
+          <button type="button" onclick="document.getElementById('mainImage').src='{{ image.image.url|cloudinary_optimize:"f_auto,q_auto,w_800" }}'"
             class="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#ec3183] transition-colors">
-            <img src="{{ image.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+            <img src="{{ image.image.url|cloudinary_optimize:'f_auto,q_auto,w_150,c_fill' }}" alt="{{ product.name }}"
+              loading="lazy" decoding="async" class="w-full h-full object-cover">
           </button>
           {% endfor %}
         </div>
@@ -145,7 +147,7 @@
           {% else %}
           <div class="flex flex-col gap-2 w-full">
             <a href="{% url 'login' %}?next={{ request.path }}"
-              class="flex-1 px-6 py-3 text-white text-center font-semibold rounded-lg hover:shadow-lg transition-shadow block w-full h-[44px] flex items-center justify-center"
+              class="flex-1 px-4 py-2 text-white text-center font-semibold rounded-lg hover:shadow-lg transition-shadow w-full min-h-[44px] flex items-center justify-center text-sm sm:text-base"
               style="background-color: #C2185B !important;">
               Login to Add to Cart
             </a>
@@ -238,10 +240,12 @@
           <!-- Product Image -->
           <div class="relative w-full aspect-square bg-gray-100 overflow-hidden">
             {% if rel_product.thumbnail and rel_product.thumbnail.image %}
-            <img src="{{ rel_product.thumbnail.image.url }}" alt="{{ rel_product.name }}"
+            <img src="{{ rel_product.thumbnail.image.url|cloudinary_optimize:'f_auto,q_auto,w_450,c_fill' }}" alt="{{ rel_product.name }}"
+              loading="lazy" decoding="async"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
             {% elif rel_product.images.first %}
-            <img src="{{ rel_product.images.first.image.url }}" alt="{{ rel_product.name }}"
+            <img src="{{ rel_product.images.first.image.url|cloudinary_optimize:'f_auto,q_auto,w_450,c_fill' }}" alt="{{ rel_product.name }}"
+              loading="lazy" decoding="async"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
             {% else %}
             <div class="w-full h-full bg-gradient-to-br from-[#31dec4] to-[#ec3183] opacity-20"></div>

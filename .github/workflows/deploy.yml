@@ -1,0 +1,122 @@
+name: CI/CD Pipeline Deployment to Hostinger VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies (local)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Setup Node.js (for Tailwind)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Tailwind CSS
+        run: |
+          python manage.py tailwind build
+
+      - name: Dynamic Placeholder Substitution
+        run: |
+          # Replace placeholder username in systemd and nginx files dynamically
+          sed -i "s/your_vps_username/${{ secrets.HOSTINGER_VPS_USER }}/g" deployment/gunicorn.service
+          sed -i "s/your_vps_username/${{ secrets.HOSTINGER_VPS_USER }}/g" deployment/nginx.conf
+
+      - name: Create deployment package
+        run: |
+          tar -czf deploy.tar.gz \
+            --exclude='env' \
+            --exclude='*.pyc' \
+            --exclude='__pycache__' \
+            --exclude='.git' \
+            --exclude='*.sqlite3' \
+            --exclude='deploy.tar.gz' \
+            --exclude='.env' \
+            --exclude='node_modules' \
+            --exclude='theme/static_src/node_modules' \
+            .
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
+
+      - name: Add SSH host keys
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.HOSTINGER_VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload and Deploy to VPS
+        env:
+          VPS_USER: ${{ secrets.HOSTINGER_VPS_USER }}
+          VPS_HOST: ${{ secrets.HOSTINGER_VPS_HOST }}
+          VPS_PATH: /home/${{ secrets.HOSTINGER_VPS_USER }}/shop_app
+        run: |
+          # Create new release directory on VPS
+          RELEASE_DATE=$(date +%Y%m%d_%H%M%S)
+          ssh $VPS_USER@$VPS_HOST "mkdir -p $VPS_PATH/releases/$RELEASE_DATE"
+          
+          # Upload tarball and systemd/nginx configs
+          scp deploy.tar.gz $VPS_USER@$VPS_HOST:$VPS_PATH/releases/$RELEASE_DATE/
+          scp deployment/gunicorn.service $VPS_USER@$VPS_HOST:/tmp/
+          scp deployment/nginx.conf $VPS_USER@$VPS_HOST:/tmp/
+          
+          # Run the extraction and configuration script on remote VPS
+          ssh $VPS_USER@$VPS_HOST "
+            set -e
+            RELEASE_PATH=\"$VPS_PATH/releases/$RELEASE_DATE\"
+            
+            cd \$RELEASE_PATH
+            tar -xzf deploy.tar.gz
+            rm deploy.tar.gz
+            
+            # Virtual environment setup if needed
+            if [ ! -d \"$VPS_PATH/venv\" ]; then
+              python3 -m venv $VPS_PATH/venv
+            fi
+            
+            source $VPS_PATH/venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            
+            # Reuse the existing .env file
+            ln -sf $VPS_PATH/.env \$RELEASE_PATH/.env
+            
+            # Django commands
+            python manage.py migrate --noinput
+            python manage.py collectstatic --noinput
+            
+            # Update active release symlink
+            ln -sfn \$RELEASE_PATH $VPS_PATH/current
+            
+            # Gunicorn service configuration
+            sudo cp /tmp/gunicorn.service /etc/systemd/system/wholeearn-shop.service
+            sudo systemctl daemon-reload
+            sudo systemctl enable wholeearn-shop
+            sudo systemctl restart wholeearn-shop
+            
+            # Nginx configuration
+            sudo cp /tmp/nginx.conf /etc/nginx/sites-available/shop.wholeshieldwellness.com
+            sudo ln -sf /etc/nginx/sites-available/shop.wholeshieldwellness.com /etc/nginx/sites-enabled/
+            sudo nginx -t && sudo systemctl reload nginx
+            
+            # Keep only the last 5 releases to preserve disk space
+            cd $VPS_PATH/releases
+            ls -t | tail -n +6 | xargs -r rm -rf
+          "

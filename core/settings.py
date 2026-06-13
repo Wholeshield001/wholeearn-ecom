@@ -309,9 +309,9 @@ EMAIL_HOST = config('EMAIL_HOST', default='smtp.zoho.com')
 EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
 EMAIL_USE_SSL = config('EMAIL_USE_SSL', cast=bool, default=False)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')  # your full Zoho address
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # app-specific password
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')  # your full Zoho address
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  # app-specific password
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Give slow/mobile networks more time before treating the SMTP connection as dead.
 EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', cast=int, default=60)

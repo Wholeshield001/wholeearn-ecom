@@ -65,6 +65,8 @@ jobs:
           echo "Host *" > ~/.ssh/config
           echo "    StrictHostKeyChecking no" >> ~/.ssh/config
           echo "    UserKnownHostsFile /dev/null" >> ~/.ssh/config
+          echo "    ConnectTimeout 10" >> ~/.ssh/config
+          echo "    ConnectionAttempts 5" >> ~/.ssh/config
 
       - name: Upload and Deploy to VPS
         env:

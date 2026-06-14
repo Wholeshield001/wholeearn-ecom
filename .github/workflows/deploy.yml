@@ -119,12 +119,24 @@ jobs:
             sudo cp /tmp/gunicorn.service /etc/systemd/system/wholeearn-shop.service
             sudo systemctl daemon-reload
             sudo systemctl enable wholeearn-shop
-            sudo systemctl restart wholeearn-shop
+            sudo systemctl restart wholeearn-shop || {
+              echo "=== GUNICORN STATUS ==="
+              sudo systemctl status wholeearn-shop --no-pager || true
+              echo "=== GUNICORN LOGS ==="
+              sudo journalctl -xeu wholeearn-shop --no-pager -n 100 || true
+              exit 1
+            }
             
             # Nginx configuration
             sudo cp /tmp/nginx.conf /etc/nginx/sites-available/shop.wholeshieldwellness.com
             sudo ln -sf /etc/nginx/sites-available/shop.wholeshieldwellness.com /etc/nginx/sites-enabled/
-            sudo nginx -t && sudo systemctl reload nginx
+            sudo nginx -t && sudo systemctl reload nginx || {
+              echo "=== NGINX STATUS ==="
+              sudo systemctl status nginx --no-pager || true
+              echo "=== NGINX LOGS ==="
+              sudo journalctl -xeu nginx --no-pager -n 100 || true
+              exit 1
+            }
             
             # Keep only the last 5 releases to preserve disk space
             cd $VPS_PATH/releases

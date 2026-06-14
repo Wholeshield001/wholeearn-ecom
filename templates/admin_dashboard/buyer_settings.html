@@ -1,0 +1,82 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Buyer Settings{% endblock %}
+{% block page_title %}Buyer Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+  <h2 class="text-xl font-semibold text-gray-900 mb-2">Buyer Quantity Limits Configuration</h2>
+  <p class="text-sm text-gray-600 mb-6">
+    Configure the minimum quantity of products required in the cart for each buyer role before checkout is permitted.
+  </p>
+
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Wholesaler Limit -->
+      <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100 hover:border-teal-200 transition-colors">
+        <label class="block text-sm font-semibold text-gray-800 mb-1">Wholesaler Limit</label>
+        {{ form.wholesaler_limit }}
+        <p class="text-xs text-gray-500 mt-1.5">Minimum product quantity required for wholesaler accounts.</p>
+      </div>
+
+      <!-- Retailer Limit -->
+      <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100 hover:border-teal-200 transition-colors">
+        <label class="block text-sm font-semibold text-gray-800 mb-1">Retailer Limit</label>
+        {{ form.retailer_limit }}
+        <p class="text-xs text-gray-500 mt-1.5">Minimum product quantity required for retailer accounts.</p>
+      </div>
+
+      <!-- Hospital Limit -->
+      <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100 hover:border-teal-200 transition-colors">
+        <label class="block text-sm font-semibold text-gray-800 mb-1">Hospital Limit</label>
+        {{ form.hospital_limit }}
+        <p class="text-xs text-gray-500 mt-1.5">Minimum product quantity required for hospital B2B accounts.</p>
+      </div>
+
+      <!-- Pharmacy Limit -->
+      <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100 hover:border-teal-200 transition-colors">
+        <label class="block text-sm font-semibold text-gray-800 mb-1">Pharmacy Limit</label>
+        {{ form.pharmacy_limit }}
+        <p class="text-xs text-gray-500 mt-1.5">Minimum product quantity required for pharmacy B2B accounts.</p>
+      </div>
+
+      <!-- Online Vendor Limit -->
+      <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100 hover:border-teal-200 transition-colors">
+        <label class="block text-sm font-semibold text-gray-800 mb-1">Online Vendor Limit</label>
+        {{ form.online_vendor_limit }}
+        <p class="text-xs text-gray-500 mt-1.5">Minimum product quantity required for online vendor partners.</p>
+      </div>
+
+      <!-- End User Limit -->
+      <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100 hover:border-teal-200 transition-colors">
+        <label class="block text-sm font-semibold text-gray-800 mb-1">End User Limit</label>
+        {{ form.end_user_limit }}
+        <p class="text-xs text-gray-500 mt-1.5">Minimum product quantity required for regular retail customers.</p>
+      </div>
+    </div>
+
+    <div class="pt-4 flex justify-end">
+      <button
+        type="submit"
+        class="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow transition-all"
+      >
+        Save Buyer Settings
+      </button>
+    </div>
+  </form>
+
+  <div class="mt-8 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+    <div>
+      Last updated: {{ config.updated_at|date:"d M Y, H:i" }}
+    </div>
+    {% if config.updated_by %}
+    <div>
+      Updated by: <span class="font-medium text-gray-700">{{ config.updated_by.email }}</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

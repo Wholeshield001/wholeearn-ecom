@@ -85,16 +85,19 @@ class Product(models.Model):
     def get_min_quantity_for_role(self, role):
         """Get minimum quantity that can be added to cart based on user role"""
         from users.models import User
+        from ecom.models import BuyerLimitConfig
         
+        config = BuyerLimitConfig.get_solo()
         min_quantity_map = {
-            User.END_USER: 1,
-            User.WHOLESALER: 10,
-            User.RETAILER: 5,
-            User.HOSPITAL: 5,
-            User.PHARMACY: 5,
-            User.ONLINE_VENDOR: 10,
+            User.END_USER: config.end_user_limit,
+            User.WHOLESALER: config.wholesaler_limit,
+            User.RETAILER: config.retailer_limit,
+            User.HOSPITAL: config.hospital_limit,
+            User.PHARMACY: config.pharmacy_limit,
+            User.ONLINE_VENDOR: config.online_vendor_limit,
         }
-        return min_quantity_map.get(role, 1)
+        return min_quantity_map.get(role, config.end_user_limit)
+
 
 
 class ProductImage(models.Model):

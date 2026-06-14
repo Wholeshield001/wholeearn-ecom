@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import authenticate
 from users.models import User
 from .models import Category, Product, BlogPost, BlogCategory
-from ecom.models import RewardPointConfig, PaymentProviderConfig
+from ecom.models import RewardPointConfig, PaymentProviderConfig, BuyerLimitConfig
 from django.forms.widgets import ClearableFileInput
 from django_ckeditor_5.widgets import CKEditor5Widget
 
@@ -332,5 +332,44 @@ class PaymentProviderConfigForm(forms.ModelForm):
         widgets = {
             'active_provider': forms.Select(attrs={
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg bg-white',
+            }),
+        }
+
+
+class BuyerLimitConfigForm(forms.ModelForm):
+    class Meta:
+        model = BuyerLimitConfig
+        fields = [
+            'end_user_limit',
+            'wholesaler_limit',
+            'retailer_limit',
+            'hospital_limit',
+            'pharmacy_limit',
+            'online_vendor_limit',
+        ]
+        widgets = {
+            'end_user_limit': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '1',
+            }),
+            'wholesaler_limit': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '1',
+            }),
+            'retailer_limit': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '1',
+            }),
+            'hospital_limit': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '1',
+            }),
+            'pharmacy_limit': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '1',
+            }),
+            'online_vendor_limit': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '1',
             }),
         }

@@ -40,7 +40,7 @@ jobs:
 
       - name: Create deployment package
         run: |
-          tar -czf deploy.tar.gz \
+          tar -czf ../deploy.tar.gz \
             --exclude='env' \
             --exclude='*.pyc' \
             --exclude='__pycache__' \
@@ -51,6 +51,8 @@ jobs:
             --exclude='node_modules' \
             --exclude='theme/static_src/node_modules' \
             .
+          mv ../deploy.tar.gz .
+
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0

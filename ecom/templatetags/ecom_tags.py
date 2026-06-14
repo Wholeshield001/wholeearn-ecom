@@ -18,3 +18,11 @@ def cloudinary_optimize(url, transformations="f_auto,q_auto"):
             return url_str
         return url_str.replace("/upload/", f"/upload/{transformations}/", 1)
     return url_str
+
+
+@register.filter(name='min_quantity_for_role')
+def min_quantity_for_role(product, role):
+    if not role:
+        return 1
+    return product.get_min_quantity_for_role(role)
+

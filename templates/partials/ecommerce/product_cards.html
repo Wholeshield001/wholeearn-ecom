@@ -69,7 +69,7 @@
 
   <div class="p-4 pt-0">
     {% if request.user.is_authenticated %}
-    {% with min_qty=product.get_min_quantity_for_role|add:request.user.role %}
+    {% with min_qty=product|min_quantity_for_role:request.user.role %}
     <form method="post" action="{% url 'add-to-cart' product.id %}" class="cart-form">
       {% csrf_token %}
       <input type="hidden" name="quantity" value="{{ min_qty }}">

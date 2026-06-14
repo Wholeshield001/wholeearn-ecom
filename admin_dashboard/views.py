@@ -19,7 +19,8 @@ from .forms import (AdminLoginForm,
                     AdminProfileForm,
                     AdminPasswordChangeForm,
                     RewardPointConfigForm,
-                    PaymentProviderConfigForm)
+                    PaymentProviderConfigForm,
+                    BuyerLimitConfigForm)
 from users.models import User, KYCSubmission, KYCSubmissionAuditLog
 from django.core.mail import send_mail
 from django.conf import settings
@@ -33,7 +34,7 @@ import hashlib
 import json
 import secrets
 from django.utils import timezone
-from ecom.models import RewardPointConfig, PaymentProviderConfig, Order, WalletWithdrawalRequest
+from ecom.models import RewardPointConfig, PaymentProviderConfig, BuyerLimitConfig, Order, WalletWithdrawalRequest
 from ecom.services.wallets import WalletOperationError
 from ecom.tasks import process_withdrawal_request_task
 from users.emails import send_kyc_approved_email, send_kyc_rejected_email
@@ -476,6 +477,31 @@ def payment_settings(request):
         'config': config,
     }
     return render(request, 'admin_dashboard/payment_settings.html', context)
+
+
+@admin_required
+def buyer_settings(request):
+    """Admin page to configure minimum cart limits for different user roles."""
+    config = BuyerLimitConfig.get_solo()
+
+    if request.method == 'POST':
+        form = BuyerLimitConfigForm(request.POST, instance=config)
+        if form.is_valid():
+            limit_config = form.save(commit=False)
+            limit_config.updated_by = request.user
+            limit_config.save()
+            messages.success(request, 'Buyer quantity limits updated successfully.')
+            return redirect('admin_buyer_settings')
+    else:
+        form = BuyerLimitConfigForm(instance=config)
+
+    context = {
+        'page_title': 'Buyer Limit Settings',
+        'form': form,
+        'config': config,
+    }
+    return render(request, 'admin_dashboard/buyer_settings.html', context)
+
 
 
 def forgot_password(request):

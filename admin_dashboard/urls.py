@@ -16,6 +16,7 @@ urlpatterns = [
     path('reward-withdrawals/export/', views.export_reward_withdrawals_csv, name='admin_export_reward_withdrawals'),
     path('reward-withdrawals/<uuid:withdrawal_id>/retry/', views.retry_reward_withdrawal, name='admin_retry_reward_withdrawal'),
     path('payment-settings/', views.payment_settings, name='admin_payment_settings'),
+    path('buyer-settings/', views.buyer_settings, name='admin_buyer_settings'),
     path('', views.admin_dashboard, name='admin_dashboard'),
 
     # Categories

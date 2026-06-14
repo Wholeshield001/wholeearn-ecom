@@ -7,6 +7,7 @@ from .models import (
     RewardPointConfig,
     RewardPointLedger,
     PaymentProviderConfig,
+    BuyerLimitConfig,
     UserWallet,
     RewardConversion,
     WalletBankAccount,
@@ -129,6 +130,21 @@ class RewardPointLedgerAdmin(ModelAdmin):
 @admin.register(PaymentProviderConfig)
 class PaymentProviderConfigAdmin(ModelAdmin):
     list_display = ('active_provider', 'updated_by', 'updated_at')
+    readonly_fields = ('updated_at',)
+
+
+@admin.register(BuyerLimitConfig)
+class BuyerLimitConfigAdmin(ModelAdmin):
+    list_display = (
+        'end_user_limit',
+        'wholesaler_limit',
+        'retailer_limit',
+        'hospital_limit',
+        'pharmacy_limit',
+        'online_vendor_limit',
+        'updated_by',
+        'updated_at',
+    )
     readonly_fields = ('updated_at',)
 
 

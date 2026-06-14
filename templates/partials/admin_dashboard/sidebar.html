@@ -136,6 +136,13 @@
       Payment Settings
     </a>
 
+    <a href="{% url 'admin_buyer_settings' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_buyer_settings' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_buyer_settings' %}text-teal-600{% else %}text-gray-400{% endif %}">manage_accounts</span>
+      Buyer Settings
+    </a>
+
     <!-- Tickets -->
     <a href="{% url 'admin_tickets' %}"
       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg

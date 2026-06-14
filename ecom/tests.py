@@ -48,3 +48,37 @@ class ReferralRewardTests(TestCase):
 			RewardPointLedger.objects.filter(user=referrer, reason=RewardPointLedger.REFERRAL).count(),
 			1,
 		)
+
+
+class BuyerLimitConfigTests(TestCase):
+	def test_get_min_quantity_for_role_uses_db_config(self):
+		from ecom.models import BuyerLimitConfig
+		from admin_dashboard.models import Product
+
+		# Initially, should use default limits from solo instance
+		config = BuyerLimitConfig.get_solo()
+		self.assertEqual(config.wholesaler_limit, 10)
+		self.assertEqual(config.retailer_limit, 5)
+		self.assertEqual(config.end_user_limit, 1)
+
+		product = Product.objects.create(
+			name="Test Product",
+			customer_price=Decimal("100.00"),
+			stock=100
+		)
+
+		self.assertEqual(product.get_min_quantity_for_role(User.WHOLESALER), 10)
+		self.assertEqual(product.get_min_quantity_for_role(User.RETAILER), 5)
+		self.assertEqual(product.get_min_quantity_for_role(User.END_USER), 1)
+
+		# Change config values
+		config.wholesaler_limit = 25
+		config.retailer_limit = 15
+		config.end_user_limit = 3
+		config.save()
+
+		# Verify it updates dynamically
+		self.assertEqual(product.get_min_quantity_for_role(User.WHOLESALER), 25)
+		self.assertEqual(product.get_min_quantity_for_role(User.RETAILER), 15)
+		self.assertEqual(product.get_min_quantity_for_role(User.END_USER), 3)
+

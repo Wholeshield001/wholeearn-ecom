@@ -373,6 +373,37 @@ class PaymentProviderConfig(models.Model):
         return obj
 
 
+class BuyerLimitConfig(models.Model):
+    """Admin-configurable minimum cart quantities for different buyer roles."""
+    end_user_limit = models.PositiveIntegerField(default=1, help_text="Minimum cart quantity for End Users.")
+    wholesaler_limit = models.PositiveIntegerField(default=10, help_text="Minimum cart quantity for Wholesalers.")
+    retailer_limit = models.PositiveIntegerField(default=5, help_text="Minimum cart quantity for Retailers.")
+    hospital_limit = models.PositiveIntegerField(default=5, help_text="Minimum cart quantity for Hospitals.")
+    pharmacy_limit = models.PositiveIntegerField(default=5, help_text="Minimum cart quantity for Pharmacies.")
+    online_vendor_limit = models.PositiveIntegerField(default=10, help_text="Minimum cart quantity for Online Vendors.")
+    
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='buyer_limits_updated'
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Buyer Limit Configuration'
+        verbose_name_plural = 'Buyer Limit Configurations'
+
+    def __str__(self):
+        return f"Buyer limits - Wholesaler: {self.wholesaler_limit}, Retailer: {self.retailer_limit}, End User: {self.end_user_limit}"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 class RewardPointLedger(models.Model):
     """Records every point credit or debit for a user."""
     PURCHASE = 'purchase'

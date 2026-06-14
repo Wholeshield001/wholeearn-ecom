@@ -105,14 +105,14 @@ jobs:
             pip install -r requirements.txt
             
             # Create default .env file if it does not exist
-            if [ ! -f "$VPS_PATH/.env" ]; then
-              echo "Creating default .env file at $VPS_PATH/.env"
-              mkdir -p "$VPS_PATH"
-              echo "SECRET_KEY=\$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')" > $VPS_PATH/.env
-              echo "DEBUG=False" >> $VPS_PATH/.env
-              echo "DB_ENGINE=sqlite" >> $VPS_PATH/.env
-              echo "ALLOWED_HOSTS=shop.wholeshieldwellness.com" >> $VPS_PATH/.env
-              echo "CSRF_TRUSTED_ORIGINS=https://shop.wholeshieldwellness.com" >> $VPS_PATH/.env
+            if [ ! -f \"$VPS_PATH/.env\" ]; then
+              echo Creating default .env file...
+              mkdir -p \"$VPS_PATH\"
+              echo SECRET_KEY=django-insecure-vps-default-key-change-me > $VPS_PATH/.env
+              echo DEBUG=False >> $VPS_PATH/.env
+              echo DB_ENGINE=sqlite >> $VPS_PATH/.env
+              echo ALLOWED_HOSTS=shop.wholeshieldwellness.com >> $VPS_PATH/.env
+              echo CSRF_TRUSTED_ORIGINS=https://shop.wholeshieldwellness.com >> $VPS_PATH/.env
             fi
 
             # Reuse the existing .env file

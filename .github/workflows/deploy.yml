@@ -72,7 +72,7 @@ jobs:
         env:
           VPS_USER: ${{ secrets.HOSTINGER_VPS_USER }}
           VPS_HOST: ${{ secrets.HOSTINGER_VPS_HOST }}
-          VPS_PATH: /home/${{ secrets.HOSTINGER_VPS_USER }}/shop_app
+          VPS_PATH: /srv/shop_app
         run: |
           # Create new release directory on VPS
           RELEASE_DATE=$(date +%Y%m%d_%H%M%S)
@@ -104,6 +104,17 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
             
+            # Create default .env file if it does not exist
+            if [ ! -f "$VPS_PATH/.env" ]; then
+              echo "Creating default .env file at $VPS_PATH/.env"
+              mkdir -p "$VPS_PATH"
+              echo "SECRET_KEY=\$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')" > $VPS_PATH/.env
+              echo "DEBUG=False" >> $VPS_PATH/.env
+              echo "DB_ENGINE=sqlite" >> $VPS_PATH/.env
+              echo "ALLOWED_HOSTS=shop.wholeshieldwellness.com" >> $VPS_PATH/.env
+              echo "CSRF_TRUSTED_ORIGINS=https://shop.wholeshieldwellness.com" >> $VPS_PATH/.env
+            fi
+
             # Reuse the existing .env file
             ln -sf $VPS_PATH/.env \$RELEASE_PATH/.env
             

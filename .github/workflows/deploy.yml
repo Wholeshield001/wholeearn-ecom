@@ -143,10 +143,15 @@ jobs:
             # Nginx configuration
             sudo cp /tmp/nginx.conf /etc/nginx/sites-available/shop.wholeshieldwellness.com
             sudo ln -sf /etc/nginx/sites-available/shop.wholeshieldwellness.com /etc/nginx/sites-enabled/
-            sudo nginx -t && sudo systemctl reload nginx || {
-              echo "=== NGINX STATUS ==="
+            echo "=== TESTING NGINX CONFIGURATION ==="
+            sudo nginx -t || {
+              echo "=== NGINX CONFIG TEST FAILED ==="
+              exit 1
+            }
+            echo "=== RELOADING NGINX ==="
+            sudo systemctl reload nginx || {
+              echo "=== NGINX RELOAD FAILED ==="
               sudo systemctl status nginx --no-pager || true
-              echo "=== NGINX LOGS ==="
               sudo journalctl -xeu nginx --no-pager -n 100 || true
               exit 1
             }

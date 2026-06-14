@@ -110,6 +110,9 @@ jobs:
             # Update active release symlink
             ln -sfn \$RELEASE_PATH $VPS_PATH/current
             
+            # Create logs directory if not exists
+            mkdir -p $VPS_PATH/logs
+            
             # Gunicorn service configuration
             sudo cp /tmp/gunicorn.service /etc/systemd/system/wholeearn-shop.service
             sudo systemctl daemon-reload

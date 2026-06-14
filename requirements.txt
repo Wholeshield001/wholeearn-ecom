@@ -41,3 +41,5 @@ cron-descriptor>=1.2.24
 cloudinary==1.44.1
 django-cloudinary-storage==0.3.0
 django-celery-beat==2.9.0
+gunicorn
+

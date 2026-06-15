@@ -121,6 +121,7 @@ jobs:
             # Create logs directory if not exists
             mkdir -p "$VPS_PATH/logs"
 
+
             # Gunicorn service configuration
             sudo cp "$RELEASE_PATH/deployment/gunicorn.service" /etc/systemd/system/wholeearn-shop.service
             sudo systemctl daemon-reload

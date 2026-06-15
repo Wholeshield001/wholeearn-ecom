@@ -254,7 +254,7 @@ def login(request):
                     
                     # Redirect to dashboard or home based on user role
                     if user.role == 'administrator':
-                        return redirect('admin-dashboard')
+                        return redirect('admin_dashboard')
                     else:
                         return redirect('home')
             except User.DoesNotExist:

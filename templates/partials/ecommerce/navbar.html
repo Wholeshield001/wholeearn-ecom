@@ -10,7 +10,7 @@
     <div class="flex items-center gap-4">
       {% if user.is_authenticated %}
       <a href="{% url 'user-dashboard' %}" class="inline-flex" aria-label="My Dashboard">
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#31dec4] ring-2 ring-[#31dec4]/30 hover:ring-[#31dec4]/60 transition-all">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#31dec4] ring-2 ring-[#31dec4]/30 hover:ring-[#31dec4]/60 transition-all" style="background-color: #31dec4; flex-shrink: 0;">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-white" aria-hidden="true">
             <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.76-3.58-5-8-5Z" />
           </svg>
@@ -18,7 +18,7 @@
       </a>
       {% else %}
       <a href="{% url 'login' %}" class="inline-flex" aria-label="Login">
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#31dec4] ring-2 ring-[#31dec4]/30 hover:ring-[#31dec4]/60 transition-all">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#31dec4] ring-2 ring-[#31dec4]/30 hover:ring-[#31dec4]/60 transition-all" style="background-color: #31dec4; flex-shrink: 0;">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-white" aria-hidden="true">
             <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.76-3.58-5-8-5Z" />
           </svg>

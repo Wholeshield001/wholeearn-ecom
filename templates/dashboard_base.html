@@ -168,7 +168,7 @@
               <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
             <a href="{% url 'admin_profile' %}" class="flex items-center gap-2 lg:gap-3 hover:opacity-80 transition-opacity">
-              <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold text-sm lg:text-base">
+              <div class="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold text-sm lg:text-base" style="background: linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%); flex-shrink: 0;">
                 {{ request.user.first_name.0|default:'A' }}{{ request.user.last_name.0|default:'' }}
               </div>
               <div class="hidden md:block">

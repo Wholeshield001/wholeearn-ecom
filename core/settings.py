@@ -70,8 +70,8 @@ UNFOLD = {
 
 
     "SITE_LOGO": {
-        "light": lambda request: static("images/wholeShield.png"),  # light mode
-        "dark": lambda request: static("images/wholeShield.png"),  # dark mode
+        "light": lambda request: static("images/WholeShield.png"),  # light mode
+        "dark": lambda request: static("images/WholeShield.png"),  # dark mode
     },
 
     "COLORS": {

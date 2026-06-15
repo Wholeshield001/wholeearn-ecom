@@ -1,0 +1,2900 @@
+[
+{
+  "model": "sessions.session",
+  "pk": "0c6f6yuvtsrw8xdlebtr4ata1ls04y1y",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1vTK8V:vWPBOxQWlUVa4DpsmeIrUTLVzUX0QRR7EnUhpThN9JE",
+    "expire_date": "2025-12-24T13:21:43.366Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "0jgh4pd56pfik6w114mdrgqrzw8r9f6w",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1wErXr:p5XcqHtlhwc_dVQ56hfwKOKKNIrVL-V-Y8oEA99rL38",
+    "expire_date": "2026-05-04T16:32:23.487Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "10lqwsql1c8d0h6cdxilsu5lhd37x6c2",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1vP1hF:XSKzI825ezr9ogO0JONQakebcJ9baaCmQVk4yLcemZ8",
+    "expire_date": "2025-12-12T16:51:49.154Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "3xnhtdv4cnu7ggl1sofl0ncljmnaf0jq",
+  "fields": {
+    "session_data": ".eJxVjEsOwjAMBe-SNYmSOm4oS_acobJjhxZQK_WzQtydVuoCdk-amfc2La1L166zTm0v5mIIAAlUbIRUbBSuLBdPFhE0hhgzoTen34wpP3XYW3nQcB9dHodl6tntijvo7G6j6Ot6uH8HHc3dVqMmropwkloxN5CqzLzvM9RnHxPkUgB9A94rIm9UQ6MlYIDNVTCfLxpbQTM:1wI710:Un1BUDX2TfL8QKoUaFS4UCGoCVTSoPU0BqAr3xV8Abk",
+    "expire_date": "2026-05-13T15:39:54.395Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "4o22siapy68yqnn9rwqvhb0qwb0fc78c",
+  "fields": {
+    "session_data": ".eJyNj7FuxCAQRP-F-owwZsG4TJ9vQOyyxCQORMYn5RTl33OWrki6tDPzRjNfIsTrsYZr5z2UJBaRc7YAKQ8TOxxMwnmYKdnBKjKsWdOoJnH5jWGkN64nm15jfWmSWj32gvKMyIfb5XNLvD09sn8K1tjXk_bIM2gwxkXwCTQTudnMxlvMTMkoq-x41wAJQCdCBpiMUh7BA-FZ2rn30mrgz4-y38SiLuK91VryLex830Vl47DFfoSjh39dXUbnnDKgvZfaOwfm-wcLU2H5:1wGIf1:NXd-oOfWjLrsHPk38IQcoHllmOLmUH0dA80p6F-Jqu0",
+    "expire_date": "2026-05-08T15:41:43.970Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "7jksqrav4j6vzl4am0rpkz5eirhbhzrq",
+  "fields": {
+    "session_data": ".eJxVjMsOgjAUBf-layGl9JaWpXu_gfQ-KqgBQyHRGP9dSVjo9pyZeakurkvfrVnmbmDVqpSSA-BU1NJgYRl94Yld4TRZMWKo0rU6_GoY6Srj5vIljueppGlc5gHLDSn3N5enieV23Nm_QB9zv9kBxYMBa5sIgcEIUeOtt8FhEmKrnXbVdwMkAMOEAlBbrQNCAMItmiXnYRo7edyH-ala_f4AzUpI9w:1vXizP:0mJuw4tbho9RfgHXHpqMSvF4Wdu5Bg3zh6j2CODLork",
+    "expire_date": "2026-01-05T16:42:31.200Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "89jpoaa7b8olh55ci44r5d9d6ifpi4yx",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1wHIX4:QhVJu8zwK1nkZHdm1YtFWj4bPo19gykjjxHmtH1pGPo",
+    "expire_date": "2026-05-11T09:45:38.351Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "dh40b9dawfdb47hiw39er4ai5pkhp7g4",
+  "fields": {
+    "session_data": ".eJxVjMsOgjAUBf-layGl9JaWpXu_gfQ-KqgBQyHRGP9dSVjo9pyZeakurkvfrVnmbmDVqpSSA-BU1NJgYRl94Yld4TRZMWKo0rU6_GoY6Srj5vIljueppGlc5gHLDSn3N5enieV23Nm_QB9zv9kBxYMBa5sIgcEIUeOtt8FhEmKrnXbVdwMkAMOEAlBbrQNCAMItmiXnYRo7edyH-ala_f4AzUpI9w:1vyDYa:P4fVUbq9-1NQ-ZVU3yLuprpbU9tTCBhZTUQo610LIn8",
+    "expire_date": "2026-03-19T18:36:20.770Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "g7o4s1e5igm2ll5pripbd2fee255bu8l",
+  "fields": {
+    "session_data": "e30:1vc6AL:uAWwFDjYCsCsvFoAsnpgfZ6eXhXGP44JapCoT2b62EY",
+    "expire_date": "2026-01-17T18:15:53.060Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "gm5exh8q5ylewa2rxvovgcpf4gr20qrz",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1wEuXk:N9cBmtPk7wrQo_ZLAvvVA_REHH04Zlxroznl8XMomQ8",
+    "expire_date": "2026-05-04T19:44:28.390Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "jmild32qfo566f3jwtvpwikhv7fommmh",
+  "fields": {
+    "session_data": ".eJxVjEsOwjAMBe-SNYmSOm4oS_acobJjhxZQK_WzQtydVuoCdk-amfc2La1L166zTm0v5mIIAAlUbIRUbBSuLBdPFhE0hhgzoTen34wpP3XYW3nQcB9dHodl6tntijvo7G6j6Ot6uH8HHc3dVqMmropwkloxN5CqzLzvM9RnHxPkUgB9A94rIm9UQ6MlYIDNVTCfLxpbQTM:1vP2LU:27RjX89EWqT1oas_C47g_vKhXuWhzbJbYo9freIpTYE",
+    "expire_date": "2025-12-12T17:33:24.510Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "l5o4ckk117ayhy7afoat839cuzbqm56k",
+  "fields": {
+    "session_data": "e30:1vWdUR:qn_yd6nPHsA32Ybs_vELcgAnYF0U58Jt_4ZL68gopE8",
+    "expire_date": "2026-01-02T16:38:03.291Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "lwrgjgtbu7dbf3mussf86jt3wf7zt8hm",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1wI27O:78QUo4tY6Mj0R4x2Sl2Bv-tLcwU8OHaF_YlHaq8kuOU",
+    "expire_date": "2026-05-13T10:26:10.013Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "mup0a7e1i55pfg4quri1sn3w01i5wvbg",
+  "fields": {
+    "session_data": "e30:1vWdQe:1Qa7-NsiXlfwsJY2WWF8iVrtOwgMyKAZKd7tMdOXdio",
+    "expire_date": "2026-01-02T16:34:08.195Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "nsxas331q9y0pa68opagl7qvicqthn8r",
+  "fields": {
+    "session_data": "e30:1vs6dU:plWdV7beqTM5FWO2byAUxfYeEyfBAIzUGR2pcuZEzuM",
+    "expire_date": "2026-03-02T22:00:08.871Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "pbwo1mssjobprq2pzo6jfjchxbc28114",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1vTcjH:nVbMtiuGPE8FcU0NqYFc_28gswLLHTwWqGfskk9hJ6U",
+    "expire_date": "2025-12-25T09:12:55.203Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "pf8pfvmj1scdmhse907vdmnhb3cse5vs",
+  "fields": {
+    "session_data": ".eJyNj71uxCAQhN-F-owAs_y4TJ9nQLAsMYkDkfFJOUV595ylK5Iu7cx8o5kvFuL1WMN10B5qZgsrpRiAXKaZbJp0Tm5ymM1kBGpSpFCKmV1-YyniG7WTza-xvXSOvR17TfyM8Ic7-HPPtD09sn8K1jjWk_aJHCjQ2kbwGRQhWqed9iYVwqyFEUbeNUgIoDImApi1ED6BB0xn6aAxam-BPj_qfmOLuLD33lott7DTfRfWjcIWxxGOEf51dZHWWu21U55bI-X8_QOp12HA:1wIBbR:6sJtT8Z3353kSENSX7IQJXD7jo6F7I8Vw5FLpFEW-DA",
+    "expire_date": "2026-05-13T20:33:49.777Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "qw0rfbezes1zn3eom95mynsgatyrtirt",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1vR4Ei:SYZPjdjttKYbtFyrNNPL98YZeGg0iXqpyvri7xsYanM",
+    "expire_date": "2025-12-18T07:58:48.582Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "roudkukdcqh7xhvzjox9236xffhm8762",
+  "fields": {
+    "session_data": ".eJxVjEsOgjAQQO_StZBS6I-le89AZqZTQQ01FBKN8e6CYaHr93mJDpa575bMUzcE0QogR1wFU1QOZNEYsgVorApTU60oetJsxeE3Q6Arj1sbLjCeU0lpnKcBy00pd5rLUwp8O-7u36CH3K91pbz1pmkAfC2jheAYsFERJUQZvAQ0TkfNZEB7SZ4cqmgkqtVCsN9p5pyHNHb8uA_TU7Ty_QG3fUmU:1vY1jA:pDZT5MkgfzgySuWGGR8FOe1CvXm43C68n9sMYW-Xg28",
+    "expire_date": "2026-01-06T12:43:00.617Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "srcvsmuw0wqhsq6tdwygdsilctgbh1uk",
+  "fields": {
+    "session_data": ".eJxVjEsOwjAMBe-SNYmSOm4oS_acobJjhxZQK_WzQtydVuoCdk-amfc2La1L166zTm0v5mIIAAlUbIRUbBSuLBdPFhE0hhgzoTen34wpP3XYW3nQcB9dHodl6tntijvo7G6j6Ot6uH8HHc3dVqMmropwkloxN5CqzLzvM9RnHxPkUgB9A94rIm9UQ6MlYIDNVTCfLxpbQTM:1vyDXM:AkzhAu0__WL_z2xVurhPuqXGTqOiNRaRDrdH8nattEk",
+    "expire_date": "2026-03-19T18:35:04.326Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "t8g1wnjnych8bkfpr7s8twsigjydi0j3",
+  "fields": {
+    "session_data": ".eJxVjMsOgjAUBf-layGl9JaWpXu_gfQ-KqgBQyHRGP9dSVjo9pyZeakurkvfrVnmbmDVqpSSA-BU1NJgYRl94Yld4TRZMWKo0rU6_GoY6Srj5vIljueppGlc5gHLDSn3N5enieV23Nm_QB9zv9kBxYMBa5sIgcEIUeOtt8FhEmKrnXbVdwMkAMOEAlBbrQNCAMItmiXnYRo7edyH-ala_f4AzUpI9w:1vY3DT:zUIC5X07WTaCq8DNz5gpnVFWTC7ycN-g40VnfDCdVEQ",
+    "expire_date": "2026-01-06T14:18:23.454Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "tfrf90j5dxxhpl05ea35mdci2jvm79r9",
+  "fields": {
+    "session_data": ".eJxVjMsOgjAUBf-layGl9JaWpXu_gfQ-KqgBQyHRGP9dSVjo9pyZeakurkvfrVnmbmDVqpSSA-BU1NJgYRl94Yld4TRZMWKo0rU6_GoY6Srj5vIljueppGlc5gHLDSn3N5enieV23Nm_QB9zv9kBxYMBa5sIgcEIUeOtt8FhEmKrnXbVdwMkAMOEAlBbrQNCAMItmiXnYRo7edyH-ala_f4AzUpI9w:1w9m3W:wpJphe14g3UtSpJx5YsMRCPofcuCBStxcw1lQeuJo0w",
+    "expire_date": "2026-04-20T15:40:02.772Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "tudkyc31hytv47hhsyb2lcphmn73a49t",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1wBIel:LWxBoc20VINQBpfmU_YbBJk6T8TjXVNZ_vHwE0d-yLs",
+    "expire_date": "2026-04-24T20:40:47.598Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "wgvappebh5isyygzpl12le97prlo7bvo",
+  "fields": {
+    "session_data": ".eJxVjMsOgjAUBf-layGl9JaWpXu_gfQ-KqgBQyHRGP9dSVjo9pyZeakurkvfrVnmbmDVqpSSA-BU1NJgYRl94Yld4TRZMWKo0rU6_GoY6Srj5vIljueppGlc5gHLDSn3N5enieV23Nm_QB9zv9kBxYMBa5sIgcEIUeOtt8FhEmKrnXbVdwMkAMOEAlBbrQNCAMItmiXnYRo7edyH-ala_f4AzUpI9w:1vWiAP:B-0XrS2O0i5DJKvMWjK3QGjpx5AephAu_Vfgtjx0J6M",
+    "expire_date": "2026-01-02T21:37:41.825Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "wilf88ccme4rbvcl3htxxtqbiiq7apno",
+  "fields": {
+    "session_data": "e30:1vWdQO:cwXbT-eY9fwXa7LkMe60P1FyQHb07ioyYWM54FZRDiA",
+    "expire_date": "2026-01-02T16:33:52.569Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "xedb4ulhfd44r4xy7u7thyd9sij2gv48",
+  "fields": {
+    "session_data": ".eJxVjEsOwjAMBe-SNYmSOm4oS_acobJjhxZQK_WzQtydVuoCdk-amfc2La1L166zTm0v5mIIAAlUbIRUbBSuLBdPFhE0hhgzoTen34wpP3XYW3nQcB9dHodl6tntijvo7G6j6Ot6uH8HHc3dVqMmropwkloxN5CqzLzvM9RnHxPkUgB9A94rIm9UQ6MlYIDNVTCfLxpbQTM:1vTKAC:K2W-dWlafzRxKxaR9os9olXlj9xOgPcQaJJq6bDt9RQ",
+    "expire_date": "2025-12-24T13:23:28.855Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "z96yk4gb0qpb1t8vpt7rqg6d5srl6xhp",
+  "fields": {
+    "session_data": ".eJxVjbFuxCAQRP-FOljAsgZfmT5fEEUWyy4xycWWDq6K8u_B0hVJN9K8N_Ot1nTv23pvclsrq4tKAJhAWHsIRXsmp6mYpBFBvPU-JzTq6a9GKX_Kfrr8kfb3Y8rH3m-VphOZHm2bXg6W6_OD_TewpbYNGyWQK0yBZ8G8QHCZ6MwR5mh8gFwKoFnAGEGk0YpdpFi0MFiBMcq1fdXWhNf96LXUnHo99qYur6rX8dx1DnEmy1Fb5xfti_OaQkQtjkuyBBaJ1dvPL55mWJ0:1vXjdC:4hy_v2pkXhYUduFaCQD-u8o_kE4RTMlBJqfpsQjn7UM",
+    "expire_date": "2026-01-05T17:23:38.820Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "zyquv6ww10lu2aq5q46pcedo4cxp0ukw",
+  "fields": {
+    "session_data": ".eJxVjEEOgjAQRe_StTQt06Hg0r1nIJ12KlUDhkKiMd5dmrDQ3U_ee_8tercuQ79mnvsUxFE4AHTAoTJgY2UC1RVF5SpEYKON8Q6VOPxm5PyNx9KGqxsvk_TTuMyJZFHkTrM8T4Hvp939OxhcHrYa2VIdA9nQMPoObO2Jym6haZWx4GMEVB0oxYi0UdYdR40aNpehnGbOOU1jz89Hml_iqD5ffK1IcA:1wAPBE:JBWdO_C5hvqb1OvtB3ueRqBHT-H7kyUXC-35t4r_T1c",
+    "expire_date": "2026-04-22T09:26:36.576Z"
+  }
+},
+{
+  "model": "users.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$TydDBuvMB4UCgg0x4aetBo$oaSUWZj6Ii+VkBN6ksO9yh8fWiy3BfoAo/gcOAHKv98=",
+    "last_login": null,
+    "is_superuser": false,
+    "email": "chisom@wholeshieldwellness.com",
+    "unique_code": "USRZYPIS8P6",
+    "referral_code": "REFRW42AZIX",
+    "referred_by": null,
+    "reward_points": 0,
+    "first_name": "CHisom",
+    "last_name": "Wholeshield",
+    "phone": "747474747474",
+    "role": "administrator",
+    "is_verified_kyc": false,
+    "is_active": true,
+    "is_staff": true,
+    "date_joined": "2025-12-23T13:03:35.899Z",
+    "email_verified": true,
+    "verification_otp": null,
+    "verification_otp_created_at": null,
+    "reset_otp": null,
+    "reset_otp_created_at": null,
+    "reset_token": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$1oA8p99qg0MpjlS9tsIexf$Vz/VcfmvKuBK/xqTgNDWe7qDZ1sDvPsBQdJl/mOLgrI=",
+    "last_login": "2026-04-29T15:39:54.394Z",
+    "is_superuser": true,
+    "email": "admin@gmail.com",
+    "unique_code": "USRAAB06Y3X",
+    "referral_code": "REF4MQY2168",
+    "referred_by": null,
+    "reward_points": 0,
+    "first_name": null,
+    "last_name": null,
+    "phone": null,
+    "role": "administrator",
+    "is_verified_kyc": false,
+    "is_active": true,
+    "is_staff": true,
+    "date_joined": "2025-11-28T14:15:21Z",
+    "email_verified": false,
+    "verification_otp": null,
+    "verification_otp_created_at": null,
+    "reset_otp": null,
+    "reset_otp_created_at": null,
+    "reset_token": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$7Fyze0lEP3khm76xFlyqg8$S1ujP/CGDbMjHywt1RT9nIw5duJphtKXDNlIGatNqOk=",
+    "last_login": "2025-12-23T12:43:00.615Z",
+    "is_superuser": false,
+    "email": "vextech16@gmail.com",
+    "unique_code": "USR851YNJ96",
+    "referral_code": "REF5FNFCHD9",
+    "referred_by": null,
+    "reward_points": 0,
+    "first_name": "Albert",
+    "last_name": "John",
+    "phone": "0908877635",
+    "role": "wholesaler",
+    "is_verified_kyc": false,
+    "is_active": true,
+    "is_staff": false,
+    "date_joined": "2025-12-23T12:42:04.004Z",
+    "email_verified": true,
+    "verification_otp": null,
+    "verification_otp_created_at": null,
+    "reset_otp": null,
+    "reset_otp_created_at": null,
+    "reset_token": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$jBfbs27TGqfG6i2MyG7vaT$MpHCyrFrhkaBXcOBPH0utO0U02FU17jJfEjO2T+lCeA=",
+    "last_login": null,
+    "is_superuser": false,
+    "email": "bobmarvbobmarv@gmail.com",
+    "unique_code": "USR02LSP3C2",
+    "referral_code": "REFNVUO3ACO",
+    "referred_by": null,
+    "reward_points": 0,
+    "first_name": "Bob",
+    "last_name": "Caly",
+    "phone": "1234567",
+    "role": "administrator",
+    "is_verified_kyc": false,
+    "is_active": true,
+    "is_staff": true,
+    "date_joined": "2025-12-23T12:00:50.385Z",
+    "email_verified": true,
+    "verification_otp": null,
+    "verification_otp_created_at": null,
+    "reset_otp": null,
+    "reset_otp_created_at": null,
+    "reset_token": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$51tpPa0hoRyJBM0UpziUCY$LEGLmab2TZhO/KnwMDsvC6/hcPe5MGfRIGCUqjlG1IQ=",
+    "last_login": "2026-04-27T10:10:12.822Z",
+    "is_superuser": false,
+    "email": "marvellousidemudia@gmail.com",
+    "unique_code": "USRWWSP42GZ",
+    "referral_code": "REFY3WCEKCD",
+    "referred_by": null,
+    "reward_points": 15,
+    "first_name": "Eseosa",
+    "last_name": "Idemudia",
+    "phone": "09034455667",
+    "role": "wholesaler",
+    "is_verified_kyc": false,
+    "is_active": true,
+    "is_staff": false,
+    "date_joined": "2025-12-19T18:08:14Z",
+    "email_verified": true,
+    "verification_otp": null,
+    "verification_otp_created_at": null,
+    "reset_otp": null,
+    "reset_otp_created_at": null,
+    "reset_token": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.ticket",
+  "pk": "5929617e-7ed6-4656-94cb-b2648df81da1",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "title": "Test",
+    "description": "great",
+    "status": "open",
+    "priority": "medium",
+    "admin_response": null,
+    "assigned_to": null,
+    "contact_email": "marvellousidemudia@gmail.com",
+    "contact_name": "Eseosa Idemudia",
+    "created_at": "2025-12-22T16:23:12.679Z",
+    "updated_at": "2025-12-22T16:23:12.679Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "users.ticket",
+  "pk": "87770913-bd4d-40ff-b317-11fcf7aa833b",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "title": "Test",
+    "description": "great",
+    "status": "open",
+    "priority": "medium",
+    "admin_response": null,
+    "assigned_to": null,
+    "contact_email": "marvellousidemudia@gmail.com",
+    "contact_name": "Eseosa Idemudia",
+    "created_at": "2025-12-22T16:23:11.590Z",
+    "updated_at": "2025-12-22T16:23:11.590Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "users.ticket",
+  "pk": "c786b1d8-1249-4f24-b785-e2dfa1b315bd",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "title": "Test",
+    "description": "great",
+    "status": "resolved",
+    "priority": "medium",
+    "admin_response": null,
+    "assigned_to": null,
+    "contact_email": "marvellousidemudia@gmail.com",
+    "contact_name": "Eseosa Idemudia",
+    "created_at": "2025-12-22T16:23:13.434Z",
+    "updated_at": "2025-12-23T09:10:57.751Z",
+    "resolved_at": "2025-12-23T09:10:57.751Z"
+  }
+},
+{
+  "model": "users.ticket",
+  "pk": "cd059ac4-f1c5-47d9-aaae-ec4f81ef9f7e",
+  "fields": {
+    "user": [
+      "vextech16@gmail.com"
+    ],
+    "title": "Wrong Product",
+    "description": "i do not want this",
+    "status": "resolved",
+    "priority": "medium",
+    "admin_response": "Oh your product will be rectified",
+    "assigned_to": [
+      "admin@gmail.com"
+    ],
+    "contact_email": "vextech16@gmail.com",
+    "contact_name": "Albert John",
+    "created_at": "2025-12-23T12:48:57.266Z",
+    "updated_at": "2025-12-23T13:13:19.499Z",
+    "resolved_at": "2025-12-23T13:12:46.804Z"
+  }
+},
+{
+  "model": "ecom.cart",
+  "pk": "3edd4736-de03-4052-a11c-9b78da0d535a",
+  "fields": {
+    "user": [
+      "admin@gmail.com"
+    ],
+    "session_id": null,
+    "created_at": "2025-12-22T14:57:10.341Z",
+    "updated_at": "2025-12-22T14:57:10.341Z"
+  }
+},
+{
+  "model": "ecom.cart",
+  "pk": "46fd2152-a896-4122-938a-bfee447e42f1",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "session_id": null,
+    "created_at": "2025-12-19T18:18:02.225Z",
+    "updated_at": "2025-12-19T18:18:02.225Z"
+  }
+},
+{
+  "model": "ecom.cart",
+  "pk": "604ae6a5-7d66-4cc4-99c4-97749312ce8b",
+  "fields": {
+    "user": null,
+    "session_id": "ttgb00bkr4xg5xuf7i442rg19jd8oguu",
+    "created_at": "2025-12-19T16:40:25.830Z",
+    "updated_at": "2025-12-19T16:40:25.830Z"
+  }
+},
+{
+  "model": "ecom.cart",
+  "pk": "b46b70a9-45d2-4914-9caf-837cee808b50",
+  "fields": {
+    "user": null,
+    "session_id": "l5o4ckk117ayhy7afoat839cuzbqm56k",
+    "created_at": "2025-12-19T16:38:03.294Z",
+    "updated_at": "2025-12-19T16:38:03.294Z"
+  }
+},
+{
+  "model": "ecom.cart",
+  "pk": "bd1490ee-7ff7-4278-a66f-9406488dcd67",
+  "fields": {
+    "user": [
+      "vextech16@gmail.com"
+    ],
+    "session_id": null,
+    "created_at": "2025-12-23T12:44:31.291Z",
+    "updated_at": "2025-12-23T12:44:31.291Z"
+  }
+},
+{
+  "model": "ecom.cart",
+  "pk": "c182551b-4f1b-4b63-a465-ff8e2693e5b3",
+  "fields": {
+    "user": null,
+    "session_id": "hmaj2k2t3lciiihggn1pxz1dg49qmq1h",
+    "created_at": "2026-03-05T15:47:58.399Z",
+    "updated_at": "2026-03-05T15:47:58.399Z"
+  }
+},
+{
+  "model": "ecom.cart",
+  "pk": "d5890641-5227-470c-bb64-a7229ac3e832",
+  "fields": {
+    "user": null,
+    "session_id": "nsxas331q9y0pa68opagl7qvicqthn8r",
+    "created_at": "2026-02-16T22:00:08.864Z",
+    "updated_at": "2026-02-16T22:00:08.864Z"
+  }
+},
+{
+  "model": "ecom.cart",
+  "pk": "dc6a5bdd-0e34-4b04-8243-02ba8363276c",
+  "fields": {
+    "user": null,
+    "session_id": "0s1up7mwawdi46ungt1kxdvc7re4gkrs",
+    "created_at": "2025-12-22T15:49:24.224Z",
+    "updated_at": "2025-12-22T15:49:24.224Z"
+  }
+},
+{
+  "model": "ecom.cart",
+  "pk": "def465e8-b833-4c97-b154-2481deaa7ba5",
+  "fields": {
+    "user": null,
+    "session_id": "g7o4s1e5igm2ll5pripbd2fee255bu8l",
+    "created_at": "2026-01-03T18:15:53.054Z",
+    "updated_at": "2026-01-03T18:15:53.055Z"
+  }
+},
+{
+  "model": "ecom.cartitem",
+  "pk": "3cb716e0-ddd7-4e14-bfae-e170303c409f",
+  "fields": {
+    "cart": "604ae6a5-7d66-4cc4-99c4-97749312ce8b",
+    "product": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+    "quantity": 3,
+    "price": "15000.00",
+    "created_at": "2025-12-19T16:40:27.863Z",
+    "updated_at": "2025-12-19T17:36:34.320Z"
+  }
+},
+{
+  "model": "ecom.cartitem",
+  "pk": "475c00bb-a493-42ce-91f3-ef00eba6e35d",
+  "fields": {
+    "cart": "b46b70a9-45d2-4914-9caf-837cee808b50",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "quantity": 3,
+    "price": "2300.00",
+    "created_at": "2025-12-19T16:38:03.296Z",
+    "updated_at": "2025-12-19T16:38:03.296Z"
+  }
+},
+{
+  "model": "ecom.cartitem",
+  "pk": "4976cf36-6e87-4db0-9bcd-0cadf4d74ae9",
+  "fields": {
+    "cart": "d5890641-5227-470c-bb64-a7229ac3e832",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "quantity": 21,
+    "price": "2300.00",
+    "created_at": "2026-02-17T03:29:43.178Z",
+    "updated_at": "2026-02-17T03:29:49.698Z"
+  }
+},
+{
+  "model": "ecom.cartitem",
+  "pk": "ac5a2fac-dcab-4151-b7c8-4489710f7a9a",
+  "fields": {
+    "cart": "604ae6a5-7d66-4cc4-99c4-97749312ce8b",
+    "product": "1a7a1ddc-36d4-4bea-aaf3-6b87cd8b7210",
+    "quantity": 2,
+    "price": "2000.00",
+    "created_at": "2025-12-19T16:42:25.526Z",
+    "updated_at": "2025-12-19T16:43:12.867Z"
+  }
+},
+{
+  "model": "ecom.cartitem",
+  "pk": "f55ae179-c55a-4787-bb43-0f359ba7f605",
+  "fields": {
+    "cart": "604ae6a5-7d66-4cc4-99c4-97749312ce8b",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "quantity": 2,
+    "price": "2300.00",
+    "created_at": "2025-12-19T16:40:25.835Z",
+    "updated_at": "2025-12-19T16:42:19.922Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "0119d6b6-f417-4974-94ad-da9c48e31046",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "2295.00",
+    "total_amount": "72295.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-AntTmdxbdvWjzPFr015dxw",
+    "gateway_reference": "MNFY|29|20260429185025|000135",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": "0119d6b6-f417-4974-94ad-da9c48e31046",
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": "NG020000096820",
+    "tracking_notes": null,
+    "created_at": "2026-04-29T17:50:22.990Z",
+    "updated_at": "2026-04-29T17:51:58.337Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "0c3a1fe3-f703-47bb-9e68-e0e602acdcb3",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "4455.00",
+    "total_amount": "214455.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-BwpGTHh9ALtEsuSjwvNzwg",
+    "gateway_reference": "MNFY|03|20260429162755|000105",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": "0c3a1fe3-f703-47bb-9e68-e0e602acdcb3",
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": "NG020000096127",
+    "tracking_notes": null,
+    "created_at": "2026-04-29T15:27:52.742Z",
+    "updated_at": "2026-04-29T15:28:14.911Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "205e676f-1e34-46e8-adba-b0c935ddb095",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "46026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS--ipcgj7rshAUkFWa6iTjbw",
+    "gateway_reference": "MNFY|17|20260424121034|000130",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "32 Ikeja",
+    "shipping_city": "NGC00353",
+    "shipping_state": "NGR00023",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T11:10:32.232Z",
+    "updated_at": "2026-04-24T14:35:16.813Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "25f8b055-0d68-41fd-a51d-d4514f8f5dc9",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "1500.00",
+    "total_amount": "94500.00",
+    "status": "pending",
+    "payment_status": "pending",
+    "inventory_deducted": false,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-2Dt0A2sKbX4v0-3F8yaf1A",
+    "gateway_reference": "WS-2Dt0A2sKbX4v0-3F8yaf1A",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "13 Oviasogie street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-20T19:47:26.186Z",
+    "updated_at": "2026-04-20T19:47:26.186Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "33b0e596-b7ae-4c1c-9dea-967db10d91fc",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "0.00",
+    "total_amount": "25300.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-oimtiRx30RcXtzLgFO9QzA",
+    "gateway_reference": null,
+    "paystack_reference": "WS-oimtiRx30RcXtzLgFO9QzA",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "Benin City",
+    "shipping_state": "Edo",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-03-06T00:40:40.242Z",
+    "updated_at": "2026-03-06T00:40:54.580Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "40cb16cb-9522-45c2-a297-2cfee4ba2c50",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "70026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-mLW0CZBs7a6-Dev05del-A",
+    "gateway_reference": "MNFY|31|20260429103702|000031",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": "40cb16cb-9522-45c2-a297-2cfee4ba2c50",
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": "NG020000095209",
+    "tracking_notes": null,
+    "created_at": "2026-04-29T09:37:01.491Z",
+    "updated_at": "2026-04-29T09:37:28.413Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "4c003aa1-52e3-4dfe-9c9d-1c44d006b4f4",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "140026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-lHIX2jKxcpqZTyyeGxt-SQ",
+    "gateway_reference": "MNFY|03|20260429112717|000036",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": "4c003aa1-52e3-4dfe-9c9d-1c44d006b4f4",
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": "NG020000095751",
+    "tracking_notes": null,
+    "created_at": "2026-04-29T10:27:14.852Z",
+    "updated_at": "2026-04-29T10:27:39.208Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "4f6a3801-a291-4718-8f0c-440b898ce606",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "150026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-U7uR7vHFmSyQIsWJmkw_zw",
+    "gateway_reference": null,
+    "paystack_reference": "WS-U7uR7vHFmSyQIsWJmkw_zw",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "ggfjsjss",
+    "shipping_city": "NGC00631",
+    "shipping_state": "NGR00029",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-06T17:41:28.779Z",
+    "updated_at": "2026-04-06T17:41:43.602Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "52da2f40-3a95-4608-8152-e900aadcd249",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "1500.00",
+    "total_amount": "94500.00",
+    "status": "pending",
+    "payment_status": "pending",
+    "inventory_deducted": false,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-_avfh_iNQzUlVJJkJhqOLw",
+    "gateway_reference": "WS-_avfh_iNQzUlVJJkJhqOLw",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "13 Oviasogie street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-20T19:47:31.294Z",
+    "updated_at": "2026-04-20T19:47:31.294Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "5709e54d-8568-41a5-b872-31d9c1138163",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "1500.00",
+    "total_amount": "174500.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-_PJMgPOwEjHUGQ_EiSarXw",
+    "gateway_reference": null,
+    "paystack_reference": "WS-_PJMgPOwEjHUGQ_EiSarXw",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "Benin City",
+    "shipping_state": "Edo",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-06T17:03:54.439Z",
+    "updated_at": "2026-04-06T17:06:01.894Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "607c1c83-7b2a-4969-a4b0-894defa02c13",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "46026.00",
+    "status": "pending",
+    "payment_status": "pending",
+    "inventory_deducted": false,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-YD7COor-7smwpTnBGJI8LA",
+    "gateway_reference": "MNFY|17|20260424121034|000131",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "32 Ikeja",
+    "shipping_city": "NGC00353",
+    "shipping_state": "NGR00023",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T11:10:31.690Z",
+    "updated_at": "2026-04-24T11:10:31.690Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "7a6e9a03-5122-4c85-a3c0-9dde6afb879d",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "46026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-Rk1AuJciMBDSPQrmxwJ3Tw",
+    "gateway_reference": "MNFY|73|20260424105019|000104",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "17 Ikeja",
+    "shipping_city": "NGC00353",
+    "shipping_state": "NGR00023",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T09:50:16.565Z",
+    "updated_at": "2026-04-24T14:35:33.694Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "7aa1c7b5-f0a8-4558-9abe-80917be1dff8",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "235026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-_YVe5vZZQfzZov0OezD7aA",
+    "gateway_reference": null,
+    "paystack_reference": "WS-_YVe5vZZQfzZov0OezD7aA",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-20T14:17:58.761Z",
+    "updated_at": "2026-04-20T14:18:17.162Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "7e85d311-047b-4e3f-be91-b648e3dc053d",
+  "fields": {
+    "user": [
+      "admin@gmail.com"
+    ],
+    "shipping_fee": "0.00",
+    "total_amount": "77300.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-YyLS5aAOrKJClcTP2skjIg",
+    "gateway_reference": null,
+    "paystack_reference": "WS-YyLS5aAOrKJClcTP2skjIg",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "Benin City",
+    "shipping_state": "Edo",
+    "shipping_phone": "07033975325",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2025-12-22T14:57:42.053Z",
+    "updated_at": "2025-12-22T14:57:52.990Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "895964f0-5b46-4d08-8e55-120735781c22",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "46026.00",
+    "status": "pending",
+    "payment_status": "pending",
+    "inventory_deducted": false,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-DPQ3ibxckxZ5DgrOQ0C6bA",
+    "gateway_reference": "MNFY|92|20260421105635|000440",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-21T09:56:30.367Z",
+    "updated_at": "2026-04-21T09:56:30.367Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "8d816786-80a1-4e46-952d-a22f5c65da92",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "23026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-wZufe8lDWo1UX-D7H_Uhtw",
+    "gateway_reference": "MNFY|73|20260424163947|000186",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00597",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T15:39:45.318Z",
+    "updated_at": "2026-04-24T15:40:03.645Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "9a9bb457-7dc6-463f-b2a1-375982b608a2",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "1500.00",
+    "total_amount": "94500.00",
+    "status": "pending",
+    "payment_status": "pending",
+    "inventory_deducted": false,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-6GOoo_TjkexZOIK0hkKq4A",
+    "gateway_reference": "WS-6GOoo_TjkexZOIK0hkKq4A",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "13 Oviasogie street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-20T19:47:32.086Z",
+    "updated_at": "2026-04-20T19:47:32.086Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "bab84779-4138-4ce8-9992-109cd85d639a",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "46026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-mrJtOd7xNDBs3AqNSBtOxA",
+    "gateway_reference": "WS-mrJtOd7xNDBs3AqNSBtOxA",
+    "paystack_reference": "WS-mrJtOd7xNDBs3AqNSBtOxA",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "42 Ikeja",
+    "shipping_city": "NGC00353",
+    "shipping_state": "NGR00023",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T14:09:50.641Z",
+    "updated_at": "2026-04-24T14:10:17.080Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "bdc6dfa2-7c07-4937-acde-14c420896c46",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "0.00",
+    "total_amount": "154600.00",
+    "status": "shipped",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-_5_txBsS8ZTifBFftniw8w",
+    "gateway_reference": null,
+    "paystack_reference": "WS-_5_txBsS8ZTifBFftniw8w",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "Benin City",
+    "shipping_state": "Edo",
+    "shipping_phone": "07033975325",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2025-12-19T21:16:51.662Z",
+    "updated_at": "2025-12-22T06:17:27.781Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "c6b33819-35a6-44e2-88b7-136a86faea4b",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "1500.00",
+    "total_amount": "78500.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-mdql1xG2vXbI1ISI56dCNw",
+    "gateway_reference": null,
+    "paystack_reference": "WS-mdql1xG2vXbI1ISI56dCNw",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "Benin City",
+    "shipping_state": "Edo",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-06T15:43:58.112Z",
+    "updated_at": "2026-04-06T16:00:42.670Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "c78e7a34-b35d-468d-b736-9464c325f2f6",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "46026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-50OCPyvQk3CyJb4OfuFDVw",
+    "gateway_reference": "MNFY|73|20260424111628|000111",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00604",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T10:16:24.967Z",
+    "updated_at": "2026-04-24T14:35:22.788Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "ca30465e-c2d0-41ca-999b-123cc44d5c8e",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "46026.00",
+    "status": "pending",
+    "payment_status": "pending",
+    "inventory_deducted": false,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-fr3VA0arQkkGyL2m-0s_dQ",
+    "gateway_reference": "MNFY|14|20260421105632|000386",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-21T09:56:27.499Z",
+    "updated_at": "2026-04-21T09:56:27.499Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "cad7b792-2e21-4663-b812-892d5ddb8dc2",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "2295.00",
+    "total_amount": "72295.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-qz0yd55_zZigHj9hPwBwPQ",
+    "gateway_reference": "MNFY|31|20260429182506|000126",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": "cad7b792-2e21-4663-b812-892d5ddb8dc2",
+    "shipping_address": "32 Ikeja",
+    "shipping_city": "NGC00353",
+    "shipping_state": "NGR00023",
+    "shipping_phone": "09034455667",
+    "tracking_number": "NG020000096716",
+    "tracking_notes": null,
+    "created_at": "2026-04-29T17:25:03.862Z",
+    "updated_at": "2026-04-29T17:25:24.278Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "d141adf2-6670-4560-8caf-a905039f7425",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "0.00",
+    "total_amount": "154000.00",
+    "status": "delivered",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-PaZo6uZ85L8He3S86tKJ6w",
+    "gateway_reference": null,
+    "paystack_reference": "WS-PaZo6uZ85L8He3S86tKJ6w",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "Benin City",
+    "shipping_state": "Edo",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2025-12-23T08:59:04.666Z",
+    "updated_at": "2025-12-23T09:46:32.025Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "d167c0d8-62fe-40ba-907a-7412271f3600",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "70026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-U8ssRIyZyTmI8z2Vuo-Lvw",
+    "gateway_reference": null,
+    "paystack_reference": "WS-U8ssRIyZyTmI8z2Vuo-Lvw",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00614",
+    "shipping_state": "NGR00005",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-06T18:04:04.503Z",
+    "updated_at": "2026-04-08T15:15:50.607Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "d2aa1b5d-c303-417d-b8e1-6ad40386e617",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "2700.00",
+    "total_amount": "107700.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-cm6iVz9tsN3MOdZbyOpFfg",
+    "gateway_reference": "MNFY|46|20260429210230|000005",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": "d2aa1b5d-c303-417d-b8e1-6ad40386e617",
+    "shipping_address": "13 Oviasogie street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": "NG020000096938",
+    "tracking_notes": null,
+    "created_at": "2026-04-29T20:02:27.214Z",
+    "updated_at": "2026-04-29T20:03:07.672Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "ddf4bc58-a574-46d6-84b3-bc12adcdf97a",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "23026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-0rF7rThZUBAsBIUqLUXbRQ",
+    "gateway_reference": "MNFY|73|20260424152109|000166",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T14:21:07.284Z",
+    "updated_at": "2026-04-24T14:35:07.497Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "e790529e-4f5e-4706-8a13-5bfc43e95583",
+  "fields": {
+    "user": [
+      "vextech16@gmail.com"
+    ],
+    "shipping_fee": "0.00",
+    "total_amount": "48300.00",
+    "status": "shipped",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "paystack",
+    "payment_reference": "WS-MzxWjoHqC2a1AEEOzNWCSw",
+    "gateway_reference": null,
+    "paystack_reference": "WS-MzxWjoHqC2a1AEEOzNWCSw",
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "Benin City",
+    "shipping_state": "Edo",
+    "shipping_phone": "07033975325",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2025-12-23T12:45:24.879Z",
+    "updated_at": "2025-12-23T13:10:34.706Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "f56fa42e-18a5-468d-809e-d9a5259c9e1e",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "23026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-u9WHBju9qVK0qwRylaBIBQ",
+    "gateway_reference": "MNFY|52|20260424162541|000166",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T15:25:38.983Z",
+    "updated_at": "2026-04-24T15:26:04.397Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "f88d924d-4cc7-4633-b1b8-f809bfb43620",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "23026.00",
+    "status": "pending",
+    "payment_status": "pending",
+    "inventory_deducted": false,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-Z5oMd6My77V7lUB9S3prjQ",
+    "gateway_reference": "MNFY|73|20260424161846|000175",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": false,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T15:18:42.488Z",
+    "updated_at": "2026-04-24T15:18:42.488Z"
+  }
+},
+{
+  "model": "ecom.order",
+  "pk": "fafc9d73-b704-4a6f-ba66-e12d3c14ec4b",
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "shipping_fee": "26.00",
+    "total_amount": "46026.00",
+    "status": "processing",
+    "payment_status": "completed",
+    "inventory_deducted": true,
+    "payment_provider": "monnify",
+    "payment_reference": "WS-AT6DR2XVe6gv7BEMXPTQJw",
+    "gateway_reference": "MNFY|17|20260424153654|000169",
+    "paystack_reference": null,
+    "referral_code_used": null,
+    "referrer": null,
+    "purchase_points_awarded": true,
+    "referral_points_awarded": false,
+    "speedaf_order_id": null,
+    "shipping_address": "Idumwonyi Street",
+    "shipping_city": "NGC00594",
+    "shipping_state": "NGR00001",
+    "shipping_phone": "09034455667",
+    "tracking_number": null,
+    "tracking_notes": null,
+    "created_at": "2026-04-24T14:36:52.117Z",
+    "updated_at": "2026-04-24T14:37:43.460Z"
+  }
+},
+{
+  "model": "ecom.rewardpointconfig",
+  "pk": 1,
+  "fields": {
+    "points_per_purchase": 1,
+    "referral_bonus_points": 1,
+    "updated_by": [
+      "admin@gmail.com"
+    ],
+    "updated_at": "2026-04-10T22:44:53.188Z"
+  }
+},
+{
+  "model": "ecom.paymentproviderconfig",
+  "pk": 1,
+  "fields": {
+    "active_provider": "monnify",
+    "updated_by": [
+      "admin@gmail.com"
+    ],
+    "updated_at": "2026-04-29T19:07:11.316Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "7aa1c7b5-f0a8-4558-9abe-80917be1dff8",
+    "created_at": "2026-04-20T14:18:17.162Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "bab84779-4138-4ce8-9992-109cd85d639a",
+    "created_at": "2026-04-24T14:10:17.080Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "ddf4bc58-a574-46d6-84b3-bc12adcdf97a",
+    "created_at": "2026-04-24T14:35:07.496Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "205e676f-1e34-46e8-adba-b0c935ddb095",
+    "created_at": "2026-04-24T14:35:16.813Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "c78e7a34-b35d-468d-b736-9464c325f2f6",
+    "created_at": "2026-04-24T14:35:22.787Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "7a6e9a03-5122-4c85-a3c0-9dde6afb879d",
+    "created_at": "2026-04-24T14:35:33.693Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "fafc9d73-b704-4a6f-ba66-e12d3c14ec4b",
+    "created_at": "2026-04-24T14:37:43.459Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "f56fa42e-18a5-468d-809e-d9a5259c9e1e",
+    "created_at": "2026-04-24T15:26:04.397Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "8d816786-80a1-4e46-952d-a22f5c65da92",
+    "created_at": "2026-04-24T15:40:03.645Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "40cb16cb-9522-45c2-a297-2cfee4ba2c50",
+    "created_at": "2026-04-29T09:37:28.412Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 11,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "4c003aa1-52e3-4dfe-9c9d-1c44d006b4f4",
+    "created_at": "2026-04-29T10:27:39.208Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 12,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "0c3a1fe3-f703-47bb-9e68-e0e602acdcb3",
+    "created_at": "2026-04-29T15:28:14.910Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 13,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "cad7b792-2e21-4663-b812-892d5ddb8dc2",
+    "created_at": "2026-04-29T17:25:24.277Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 14,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "0119d6b6-f417-4974-94ad-da9c48e31046",
+    "created_at": "2026-04-29T17:51:58.336Z"
+  }
+},
+{
+  "model": "ecom.rewardpointledger",
+  "pk": 15,
+  "fields": {
+    "user": [
+      "marvellousidemudia@gmail.com"
+    ],
+    "points": 1,
+    "reason": "purchase",
+    "order": "d2aa1b5d-c303-417d-b8e1-6ad40386e617",
+    "created_at": "2026-04-29T20:03:07.672Z"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "0643595e-b346-41dc-8bcb-57c15e5647e3",
+  "fields": {
+    "order": "7aa1c7b5-f0a8-4558-9abe-80917be1dff8",
+    "product": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+    "product_name": "Eseosa Idemudia2",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "23500.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "0aa6e623-e62f-439b-b65b-b07ddf83a04f",
+  "fields": {
+    "order": "7a6e9a03-5122-4c85-a3c0-9dde6afb879d",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 20,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "0e1b29e3-4628-48d2-8614-d7f57e8a8ced",
+  "fields": {
+    "order": "8d816786-80a1-4e46-952d-a22f5c65da92",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "0f2e254d-7da3-4de5-a284-2eb74943181e",
+  "fields": {
+    "order": "9a9bb457-7dc6-463f-b2a1-375982b608a2",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "18ecb993-0404-4793-8a0a-6a5d43d4ef69",
+  "fields": {
+    "order": "5709e54d-8568-41a5-b872-31d9c1138163",
+    "product": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+    "product_name": "Product 1",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "15000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "2268c27f-dd67-4985-86be-28f47e9ecdb7",
+  "fields": {
+    "order": "cad7b792-2e21-4663-b812-892d5ddb8dc2",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "26ce0e58-3f64-46bd-99e8-b57393566530",
+  "fields": {
+    "order": "bab84779-4138-4ce8-9992-109cd85d639a",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 20,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "32e4a175-2a20-4872-bc04-ee59359df419",
+  "fields": {
+    "order": "bdc6dfa2-7c07-4937-acde-14c420896c46",
+    "product": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+    "product_name": "Product 1",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "15000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "35f33acb-7f4d-4536-a431-2a8c9dd0ab0d",
+  "fields": {
+    "order": "0119d6b6-f417-4974-94ad-da9c48e31046",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "3cfb3b19-1cca-4534-82dd-f09d4c91cdf5",
+  "fields": {
+    "order": "33b0e596-b7ae-4c1c-9dea-967db10d91fc",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 11,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "4dfdb008-9d81-4f8c-8985-94db144f8c7d",
+  "fields": {
+    "order": "895964f0-5b46-4d08-8e55-120735781c22",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 20,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "5509aba1-e024-4648-b02a-4c2dc946d2e9",
+  "fields": {
+    "order": "bdc6dfa2-7c07-4937-acde-14c420896c46",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 2,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "5b937283-f164-42b2-a4a3-2ad2a5012274",
+  "fields": {
+    "order": "9a9bb457-7dc6-463f-b2a1-375982b608a2",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "5cc03a67-2755-4483-9547-706499df0290",
+  "fields": {
+    "order": "0c3a1fe3-f703-47bb-9e68-e0e602acdcb3",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 30,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "5db55606-3bb5-49dc-a8d9-3d1f5885a80b",
+  "fields": {
+    "order": "52da2f40-3a95-4608-8152-e900aadcd249",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "60283566-b69d-40b4-9d91-876b112246d4",
+  "fields": {
+    "order": "d141adf2-6670-4560-8caf-a905039f7425",
+    "product": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+    "product_name": "Product 1",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "15000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "776984a8-b0cb-429c-9574-7c2f5d7b915b",
+  "fields": {
+    "order": "25f8b055-0d68-41fd-a51d-d4514f8f5dc9",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "79be21c7-b21d-4ef4-bba3-5f06dc705d56",
+  "fields": {
+    "order": "ddf4bc58-a574-46d6-84b3-bc12adcdf97a",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "79eafa97-270a-4722-a3c1-de3eacaa49d4",
+  "fields": {
+    "order": "607c1c83-7b2a-4969-a4b0-894defa02c13",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 20,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "8bcd9219-dac2-4d08-9538-8b78b11ecd17",
+  "fields": {
+    "order": "7e85d311-047b-4e3f-be91-b648e3dc053d",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 1,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "8fce680e-5a93-4a5b-8df3-77f3f2b9bd66",
+  "fields": {
+    "order": "c6b33819-35a6-44e2-88b7-136a86faea4b",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 11,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "9d8125dd-a325-4374-bb70-6275492586e3",
+  "fields": {
+    "order": "ca30465e-c2d0-41ca-999b-123cc44d5c8e",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 20,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "a05ed809-39dd-44ec-94ee-01ed0d1b62dd",
+  "fields": {
+    "order": "25f8b055-0d68-41fd-a51d-d4514f8f5dc9",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "aadcee95-fcc5-4ce0-a5e4-7133d129106d",
+  "fields": {
+    "order": "e790529e-4f5e-4706-8a13-5bfc43e95583",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 21,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "ac207f98-7025-417a-a165-9a71b51ce8cf",
+  "fields": {
+    "order": "f88d924d-4cc7-4633-b1b8-f809bfb43620",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "b5cb4e49-1909-4689-8521-f88ae5d3734a",
+  "fields": {
+    "order": "d167c0d8-62fe-40ba-907a-7412271f3600",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "b798ad32-a1d9-48be-b27e-3a896b5b42cb",
+  "fields": {
+    "order": "5709e54d-8568-41a5-b872-31d9c1138163",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "bc013122-8170-451e-91be-e5cb4b897d89",
+  "fields": {
+    "order": "7e85d311-047b-4e3f-be91-b648e3dc053d",
+    "product": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+    "product_name": "Product 1",
+    "product_sku": null,
+    "quantity": 5,
+    "price": "15000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "beb11fab-04ee-43d3-bcf6-f54ff6cd3f25",
+  "fields": {
+    "order": "40cb16cb-9522-45c2-a297-2cfee4ba2c50",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "d0cad30c-21e3-4029-b86a-3e555cffa083",
+  "fields": {
+    "order": "f56fa42e-18a5-468d-809e-d9a5259c9e1e",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "d42243d3-2392-4cfb-9c23-82b3cb00718b",
+  "fields": {
+    "order": "4f6a3801-a291-4718-8f0c-440b898ce606",
+    "product": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+    "product_name": "Product 1",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "15000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "d68303d3-6a17-42a9-8beb-0fcc85fea7d4",
+  "fields": {
+    "order": "52da2f40-3a95-4608-8152-e900aadcd249",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 10,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "d6d6224f-4dc7-4747-9c34-61440979f4de",
+  "fields": {
+    "order": "c78e7a34-b35d-468d-b736-9464c325f2f6",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 20,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "dd1cc697-ace4-4f8e-9001-53e6852d6ac4",
+  "fields": {
+    "order": "205e676f-1e34-46e8-adba-b0c935ddb095",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 20,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "dd4d8164-cb1c-43cd-8b94-c8be91d685e9",
+  "fields": {
+    "order": "fafc9d73-b704-4a6f-ba66-e12d3c14ec4b",
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "product_name": "Homepage",
+    "product_sku": null,
+    "quantity": 20,
+    "price": "2300.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "e3299aa5-2928-44a3-9779-5ab66d710902",
+  "fields": {
+    "order": "d2aa1b5d-c303-417d-b8e1-6ad40386e617",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 15,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "e511b9f2-b870-49ba-94f9-a6c390f1364f",
+  "fields": {
+    "order": "d141adf2-6670-4560-8caf-a905039f7425",
+    "product": "1a7a1ddc-36d4-4bea-aaf3-6b87cd8b7210",
+    "product_name": "Product 11",
+    "product_sku": null,
+    "quantity": 2,
+    "price": "2000.00"
+  }
+},
+{
+  "model": "ecom.orderitem",
+  "pk": "eb73de28-58d6-496a-a2c6-f1d95ff91e6b",
+  "fields": {
+    "order": "4c003aa1-52e3-4dfe-9c9d-1c44d006b4f4",
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "product_name": "Refire",
+    "product_sku": null,
+    "quantity": 20,
+    "price": "7000.00"
+  }
+},
+{
+  "model": "admin_dashboard.category",
+  "pk": "46b04d83-0115-45d7-9677-c330f57817de",
+  "fields": {
+    "name": "Tablets",
+    "description": "drnk",
+    "created_at": "2025-12-01T23:47:48.361Z",
+    "updated_at": "2025-12-01T23:47:48.361Z"
+  }
+},
+{
+  "model": "admin_dashboard.category",
+  "pk": "58810424-aea9-4213-833a-9a866bfcd342",
+  "fields": {
+    "name": "Shoes",
+    "description": "Nice",
+    "created_at": "2025-12-04T20:38:43.088Z",
+    "updated_at": "2025-12-04T20:38:43.088Z"
+  }
+},
+{
+  "model": "admin_dashboard.category",
+  "pk": "5ac55c5b-650f-4ecd-b605-e3dca7791205",
+  "fields": {
+    "name": "Sexual Health",
+    "description": "rhabjtabakl",
+    "created_at": "2025-12-11T09:13:13.588Z",
+    "updated_at": "2025-12-11T09:13:13.588Z"
+  }
+},
+{
+  "model": "admin_dashboard.category",
+  "pk": "618dd26a-f1e8-4798-ae1e-69001934261a",
+  "fields": {
+    "name": "Albert",
+    "description": "frhaehjrbjkjbaerbkj",
+    "created_at": "2025-12-04T07:59:10.056Z",
+    "updated_at": "2025-12-04T07:59:10.056Z"
+  }
+},
+{
+  "model": "admin_dashboard.category",
+  "pk": "68edc49e-99b0-4461-8961-e2fd6c5975af",
+  "fields": {
+    "name": "Soft drink",
+    "description": "whole shield drinks",
+    "created_at": "2025-12-23T13:04:48.935Z",
+    "updated_at": "2025-12-23T13:04:48.935Z"
+  }
+},
+{
+  "model": "admin_dashboard.category",
+  "pk": "fc3a9453-18a8-4c0c-81a7-2afe226ef204",
+  "fields": {
+    "name": "Drinks",
+    "description": "Nice drnk",
+    "created_at": "2025-12-01T23:43:24.267Z",
+    "updated_at": "2025-12-01T23:43:24.267Z"
+  }
+},
+{
+  "model": "admin_dashboard.product",
+  "pk": "1a7a1ddc-36d4-4bea-aaf3-6b87cd8b7210",
+  "fields": {
+    "name": "Product 11",
+    "description": "frhdjjfvjnvfnvfnjfdjndf",
+    "category": "5ac55c5b-650f-4ecd-b605-e3dca7791205",
+    "customer_price": "0.00",
+    "wholesaler_price": "0.00",
+    "retailer_price": "0.00",
+    "hospital_price": "0.00",
+    "pharmacy_price": "0.00",
+    "price": "2000.00",
+    "discount": 10,
+    "stock": 118,
+    "weight_kg": "1.00",
+    "sku": null,
+    "is_best_seller": true,
+    "is_male": false,
+    "is_female": false,
+    "is_general": true,
+    "additional_info": "Great product",
+    "created_at": "2025-12-12T23:52:06.995Z",
+    "updated_at": "2025-12-18T11:51:59.182Z",
+    "thumbnail": "e99eb00e-fa04-494e-9d43-724b68812d04"
+  }
+},
+{
+  "model": "admin_dashboard.product",
+  "pk": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+  "fields": {
+    "name": "Refire",
+    "description": "<p>hdhhdjskskskslslkds</p>",
+    "category": "68edc49e-99b0-4461-8961-e2fd6c5975af",
+    "customer_price": "0.00",
+    "wholesaler_price": null,
+    "retailer_price": null,
+    "hospital_price": null,
+    "pharmacy_price": null,
+    "price": "7000.00",
+    "discount": 0,
+    "stock": 104,
+    "weight_kg": "0.30",
+    "sku": null,
+    "is_best_seller": true,
+    "is_male": true,
+    "is_female": false,
+    "is_general": false,
+    "additional_info": "nice product",
+    "created_at": "2025-12-23T13:09:06.544Z",
+    "updated_at": "2026-04-29T10:53:17.690Z",
+    "thumbnail": "9f31e282-4d88-4e60-afb7-ca9502fd285f"
+  }
+},
+{
+  "model": "admin_dashboard.product",
+  "pk": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+  "fields": {
+    "name": "Homepage",
+    "description": "<p>dfekjdfkldlksd</p>",
+    "category": "5ac55c5b-650f-4ecd-b605-e3dca7791205",
+    "customer_price": "0.00",
+    "wholesaler_price": "0.00",
+    "retailer_price": "0.00",
+    "hospital_price": "0.00",
+    "pharmacy_price": "0.00",
+    "price": "2300.00",
+    "discount": 0,
+    "stock": 1025,
+    "weight_kg": "1.00",
+    "sku": null,
+    "is_best_seller": true,
+    "is_male": true,
+    "is_female": false,
+    "is_general": false,
+    "additional_info": "djd",
+    "created_at": "2025-12-13T00:00:41.739Z",
+    "updated_at": "2025-12-23T13:07:17.573Z",
+    "thumbnail": "48deb397-58cb-44cd-8fc0-ea0234168582"
+  }
+},
+{
+  "model": "admin_dashboard.product",
+  "pk": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+  "fields": {
+    "name": "Product 1",
+    "description": "Nice and great product",
+    "category": "5ac55c5b-650f-4ecd-b605-e3dca7791205",
+    "customer_price": "0.00",
+    "wholesaler_price": "0.00",
+    "retailer_price": "0.00",
+    "hospital_price": "0.00",
+    "pharmacy_price": "0.00",
+    "price": "15000.00",
+    "discount": 0,
+    "stock": 5,
+    "weight_kg": "1.00",
+    "sku": null,
+    "is_best_seller": true,
+    "is_male": false,
+    "is_female": false,
+    "is_general": true,
+    "additional_info": "Cool",
+    "created_at": "2025-12-12T23:57:11.132Z",
+    "updated_at": "2025-12-18T11:51:51.345Z",
+    "thumbnail": "d736dfc0-59a8-4d3b-9f0e-266d2cfd8834"
+  }
+},
+{
+  "model": "admin_dashboard.product",
+  "pk": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+  "fields": {
+    "name": "Eseosa Idemudia2",
+    "description": "<p>ddddjdsksdd</p>",
+    "category": "46b04d83-0115-45d7-9677-c330f57817de",
+    "customer_price": "0.00",
+    "wholesaler_price": "0.00",
+    "retailer_price": "0.00",
+    "hospital_price": "0.00",
+    "pharmacy_price": "0.00",
+    "price": "23500.00",
+    "discount": 0,
+    "stock": 10,
+    "weight_kg": "1.00",
+    "sku": null,
+    "is_best_seller": true,
+    "is_male": false,
+    "is_female": false,
+    "is_general": true,
+    "additional_info": "nicest",
+    "created_at": "2025-12-04T20:28:16.651Z",
+    "updated_at": "2025-12-23T14:58:30.344Z",
+    "thumbnail": "7fefb32b-3fba-4c3c-a15b-a9e138edd7df"
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "0ad7da17-51a5-4a76-ab20-c9848ce44264",
+  "fields": {
+    "product": "1a7a1ddc-36d4-4bea-aaf3-6b87cd8b7210",
+    "image": "products/magn.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "19a2138c-b2bc-4e89-9f31-15934c8add16",
+  "fields": {
+    "product": "1a7a1ddc-36d4-4bea-aaf3-6b87cd8b7210",
+    "image": "products/GLYCERIN_3Xgtlwu.jpg",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "3c9654f6-1268-4480-9554-67a5f59cbd45",
+  "fields": {
+    "product": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+    "image": "products/About_VreATeo.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "48deb397-58cb-44cd-8fc0-ea0234168582",
+  "fields": {
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "image": "products/WhatsApp_Image_2025-11-19_at_09.27.38.jpeg",
+    "is_thumbnail": true
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "6779a141-fd8c-49b5-8c24-bdd566683c86",
+  "fields": {
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "image": "products/blog.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "76e53e73-38ce-4647-99b5-d31395ac5f57",
+  "fields": {
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "image": "products/VITAMIN_E_DARK_GREEN_CAP_TRANSPARENT_PET_.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "7ef215f7-ca26-4d73-9575-92c056a41144",
+  "fields": {
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "image": "products/Frame_1411068191.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "7fefb32b-3fba-4c3c-a15b-a9e138edd7df",
+  "fields": {
+    "product": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+    "image": "products/colla.png",
+    "is_thumbnail": true
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "81f00a18-3dfe-4243-8377-42ef087e8f04",
+  "fields": {
+    "product": "1a7a1ddc-36d4-4bea-aaf3-6b87cd8b7210",
+    "image": "products/about1_kHIybOB.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "91b9d54e-e7ae-4e76-9e1b-6ab90db65384",
+  "fields": {
+    "product": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+    "image": "products/GLYCERIN_bePkgbc.jpg",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "9c802fb2-0ee9-4fa3-950c-0dc2d8e3e97c",
+  "fields": {
+    "product": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+    "image": "products/probiotics_WulBSwB.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "9e0086ff-4354-4675-8f4a-f677d406a67c",
+  "fields": {
+    "product": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+    "image": "products/GLYCERIN_S9B1ZWU.jpg",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "9f31e282-4d88-4e60-afb7-ca9502fd285f",
+  "fields": {
+    "product": "5a2da4c1-9793-4b49-a4fb-ee59f9d2feaf",
+    "image": "products/Carton.png",
+    "is_thumbnail": true
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "aba932a6-f683-4f30-9181-e4d18a68b29a",
+  "fields": {
+    "product": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "image": "products/WhatsApp_Image_2025-11-06_at_08.53.57.jpeg",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "b16e952e-5585-4457-b65c-577a21ff763f",
+  "fields": {
+    "product": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+    "image": "products/vitac.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "d736dfc0-59a8-4d3b-9f0e-266d2cfd8834",
+  "fields": {
+    "product": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+    "image": "products/download.jpeg",
+    "is_thumbnail": true
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "dadff543-a306-490e-ae84-f30f3be9e88d",
+  "fields": {
+    "product": "1a7a1ddc-36d4-4bea-aaf3-6b87cd8b7210",
+    "image": "products/colla_1hTutwW.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "e8cab890-1e14-4f47-aee4-91b0462715e7",
+  "fields": {
+    "product": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+    "image": "products/about1_8qKIzMy.png",
+    "is_thumbnail": false
+  }
+},
+{
+  "model": "admin_dashboard.productimage",
+  "pk": "e99eb00e-fa04-494e-9d43-724b68812d04",
+  "fields": {
+    "product": "1a7a1ddc-36d4-4bea-aaf3-6b87cd8b7210",
+    "image": "products/probiotics_Tjr15Pb.png",
+    "is_thumbnail": true
+  }
+},
+{
+  "model": "admin_dashboard.blogcategory",
+  "pk": "1342f3f8-f19f-46d4-9752-9372eecf6cda",
+  "fields": {
+    "name": "First organization",
+    "slug": "first-organization",
+    "created_at": "2025-12-20T18:08:50.704Z",
+    "updated_at": "2025-12-20T18:08:50.704Z"
+  }
+},
+{
+  "model": "admin_dashboard.blogcategory",
+  "pk": "37ed297f-b99e-4d7c-bb91-19a0cfbc313b",
+  "fields": {
+    "name": "Preorder",
+    "slug": "preorder",
+    "created_at": "2025-12-23T13:16:14.388Z",
+    "updated_at": "2025-12-23T13:16:14.388Z"
+  }
+},
+{
+  "model": "admin_dashboard.blogpost",
+  "pk": "d867f561-10e8-4474-ae37-3c48e7d7fe67",
+  "fields": {
+    "title": "Albert b log",
+    "slug": "albert-b-log",
+    "content": "<p>dfjadlvvfhlavfjlvfjnlfvdnjklvfdjknlfdv</p><figure class=\"image\"><img style=\"aspect-ratio:2938/1850;\" src=\"/media/Screenshot%202025-12-23%20at%2009.36.37.png\" width=\"2938\" height=\"1850\"></figure>",
+    "cover_image": "blog/Frame_1411068191.png",
+    "is_published": true,
+    "category": "1342f3f8-f19f-46d4-9752-9372eecf6cda",
+    "parent": null,
+    "author": [
+      "admin@gmail.com"
+    ],
+    "created_at": "2025-12-23T09:15:39.650Z",
+    "updated_at": "2025-12-23T09:16:13.331Z"
+  }
+},
+{
+  "model": "admin_dashboard.blogpost",
+  "pk": "d97d745d-d30c-4583-92aa-61f0dcb13e40",
+  "fields": {
+    "title": "Our products landing",
+    "slug": "our-products-landing",
+    "content": "<p>dhdhdjdkdkd</p><figure class=\"image\"><img style=\"aspect-ratio:583/583;\" src=\"/media/Arthorshield.png\" width=\"583\" height=\"583\"></figure><p><br><br>nice to espect this</p>",
+    "cover_image": "blog/blog.png",
+    "is_published": false,
+    "category": "37ed297f-b99e-4d7c-bb91-19a0cfbc313b",
+    "parent": null,
+    "author": [
+      "admin@gmail.com"
+    ],
+    "created_at": "2025-12-23T13:17:24.003Z",
+    "updated_at": "2025-12-23T13:17:47.082Z"
+  }
+},
+{
+  "model": "admin_dashboard.blogpost",
+  "pk": "e6ff2825-8008-4d6f-ba0f-37b76a8383e3",
+  "fields": {
+    "title": "Blog Title",
+    "slug": "blog-title",
+    "content": "<p>Hello dear, so now that the blog is set, i want to test it out</p><figure class=\"image\"><img style=\"aspect-ratio:2890/302;\" src=\"/media/Screenshot%202025-12-20%20at%2008.58.55.png\" width=\"2890\" height=\"302\"></figure><p>Now i have tested the upload image part, so what next do i do?<br><strong>Thing is : </strong>I probably love writing</p>",
+    "cover_image": "blog/Screenshot_2025-12-20_at_09.54.28.png",
+    "is_published": true,
+    "category": "1342f3f8-f19f-46d4-9752-9372eecf6cda",
+    "parent": null,
+    "author": [
+      "admin@gmail.com"
+    ],
+    "created_at": "2025-12-20T14:57:08.720Z",
+    "updated_at": "2025-12-22T15:18:55.111Z"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 1,
+  "fields": {
+    "action_time": "2025-11-28T14:34:16.876Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "users",
+      "user"
+    ],
+    "object_id": "a335a3ed-437f-4db2-bf0a-553e4144ca50",
+    "object_repr": "admin@gmail.com (administrator)",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Role\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 2,
+  "fields": {
+    "action_time": "2025-12-04T17:08:00.817Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "admin_dashboard",
+      "product"
+    ],
+    "object_id": "cf8812a5-6eb1-495f-8fb3-0dad217db903",
+    "object_repr": "None",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 3,
+  "fields": {
+    "action_time": "2025-12-04T18:48:52.426Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "admin_dashboard",
+      "product"
+    ],
+    "object_id": "0cbf9e5d-67b7-4f99-a751-09cdf637da98",
+    "object_repr": "Eseosa Idemudia",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 4,
+  "fields": {
+    "action_time": "2025-12-04T18:48:52.426Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "admin_dashboard",
+      "product"
+    ],
+    "object_id": "0cab4bc2-5eb0-433e-beb4-d57c3904a6f4",
+    "object_repr": "Homepage",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 5,
+  "fields": {
+    "action_time": "2025-12-04T20:27:36.416Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "admin_dashboard",
+      "product"
+    ],
+    "object_id": "0293853c-fec6-4ccd-8f83-e93e90e9b94b",
+    "object_repr": "Eseosa Idemudia",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 6,
+  "fields": {
+    "action_time": "2025-12-18T11:51:35.996Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "admin_dashboard",
+      "product"
+    ],
+    "object_id": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+    "object_repr": "Eseosa Idemudia2",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Is best seller\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 7,
+  "fields": {
+    "action_time": "2025-12-18T11:51:44.434Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "admin_dashboard",
+      "product"
+    ],
+    "object_id": "9c1e9358-21e1-4078-9b38-dc7e76e39602",
+    "object_repr": "Homepage",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Is best seller\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 8,
+  "fields": {
+    "action_time": "2025-12-18T11:51:51.347Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "admin_dashboard",
+      "product"
+    ],
+    "object_id": "b297d1a7-d348-4ba7-aa7a-0cce47d0d2da",
+    "object_repr": "Product 1",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Is best seller\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 9,
+  "fields": {
+    "action_time": "2025-12-18T11:51:59.184Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "admin_dashboard",
+      "product"
+    ],
+    "object_id": "1a7a1ddc-36d4-4bea-aaf3-6b87cd8b7210",
+    "object_repr": "Product 11",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Is best seller\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 10,
+  "fields": {
+    "action_time": "2025-12-18T22:54:47.409Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "admin_dashboard",
+      "product"
+    ],
+    "object_id": "e0de91bf-a7d1-48dc-a36a-da93a9cef393",
+    "object_repr": "Eseosa Idemudia2",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Is best seller\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 11,
+  "fields": {
+    "action_time": "2025-12-19T17:49:58.945Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "users",
+      "user"
+    ],
+    "object_id": "fe6356f9-62c5-4063-9852-c8a96d6ca0fe",
+    "object_repr": "marvellousidemudia@gmail.com (distributor)",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 12,
+  "fields": {
+    "action_time": "2025-12-23T17:05:40.453Z",
+    "user": [
+      "admin@gmail.com"
+    ],
+    "content_type": [
+      "users",
+      "user"
+    ],
+    "object_id": "fff655df-3e7b-4db8-8cd6-60c4e2e2c103",
+    "object_repr": "marvellousidemudia@gmail.com (wholesaler)",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Role\"]}}]"
+  }
+}
+]

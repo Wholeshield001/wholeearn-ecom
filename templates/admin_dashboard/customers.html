@@ -160,6 +160,8 @@
               <span class="px-2 py-1 rounded-full text-xs bg-emerald-50 text-emerald-600 font-medium">Pharmacy</span>
             {% elif user.role == 'end_user' %}
               <span class="px-2 py-1 rounded-full text-xs bg-green-50 text-green-600 font-medium">End User</span>
+            {% elif user.role == 'online_vendor' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-purple-50 text-purple-600 font-medium">Online Vendor</span>
             {% else %}
               <span class="px-2 py-1 rounded-full text-xs bg-gray-50 text-gray-600 font-medium">Unknown</span>
             {% endif %}

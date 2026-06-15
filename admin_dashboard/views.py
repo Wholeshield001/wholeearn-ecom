@@ -105,11 +105,11 @@ def admin_dashboard(request):
     # Get statistics
     total_orders = Order.objects.count()
     pending_orders = Order.objects.filter(status='pending').count()
-    total_users = User.objects.count()
+    total_users = User.objects.filter(is_superuser=False).count()
     total_revenue = Order.objects.filter(
         payment_status='completed'
     ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
-    total_points_issued = User.objects.aggregate(total=Sum('reward_points'))['total'] or 0
+    total_points_issued = User.objects.filter(is_superuser=False).aggregate(total=Sum('reward_points'))['total'] or 0
     successful_referral_orders = Order.objects.filter(
         payment_status='completed',
         referrer__isnull=False,
@@ -122,7 +122,7 @@ def admin_dashboard(request):
         date__gte=today_local - timedelta(days=6),
         date__lte=today_local,
     ).aggregate(total=Sum('total_visits'))['total'] or 0
-    top_referrers = User.objects.annotate(
+    top_referrers = User.objects.filter(is_superuser=False).annotate(
         referral_orders_count=Count('referred_orders', filter=Q(referred_orders__payment_status='completed')),
     ).filter(referral_orders_count__gt=0).order_by('-referral_orders_count', '-reward_points')[:5]
     
@@ -448,8 +448,8 @@ def reward_settings(request):
         'page_title': 'Reward Settings',
         'form': form,
         'config': config,
-        'users_with_points': User.objects.filter(reward_points__gt=0).count(),
-        'total_points_issued': User.objects.aggregate(total=Sum('reward_points'))['total'] or 0,
+        'users_with_points': User.objects.filter(reward_points__gt=0, is_superuser=False).count(),
+        'total_points_issued': User.objects.filter(is_superuser=False).aggregate(total=Sum('reward_points'))['total'] or 0,
         'total_referral_orders': Order.objects.filter(payment_status='completed', referrer__isnull=False).count(),
     }
     return render(request, 'admin_dashboard/reward_settings.html', context)
@@ -712,7 +712,7 @@ def wholesalers_page(request):
     search_query = request.GET.get('q', '').strip()
     
     # Get all wholesalers
-    wholesalers = User.objects.filter(role=User.WHOLESALER).annotate(
+    wholesalers = User.objects.filter(role=User.WHOLESALER, is_superuser=False).annotate(
         total_orders=Count('orders'),
         total_spent=Sum('orders__total_amount')
     ).order_by('-date_joined')
@@ -729,14 +729,14 @@ def wholesalers_page(request):
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(email__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(company_name__icontains=search_query)
+            Q(phone__icontains=search_query) |
+            Q(kyc_submission__business_name__icontains=search_query)
         )
     
     # Calculate statistics
-    total_wholesalers = User.objects.filter(role=User.WHOLESALER).count()
-    inactive_wholesalers = User.objects.filter(role=User.WHOLESALER, is_active=False).count()
-    active_wholesalers = User.objects.filter(role=User.WHOLESALER, is_active=True).count()
+    total_wholesalers = User.objects.filter(role=User.WHOLESALER, is_superuser=False).count()
+    inactive_wholesalers = User.objects.filter(role=User.WHOLESALER, is_active=False, is_superuser=False).count()
+    active_wholesalers = User.objects.filter(role=User.WHOLESALER, is_active=True, is_superuser=False).count()
     
     # Get total products distributed (sum of all order items quantities for wholesalers)
     from ecom.models import OrderItem
@@ -764,7 +764,7 @@ def export_wholesalers_csv(request):
     from django.db.models import Sum, Count
 
     status_filter = request.GET.get('status', 'all')
-    qs = User.objects.filter(role=User.WHOLESALER).annotate(
+    qs = User.objects.filter(role=User.WHOLESALER, is_superuser=False).annotate(
         total_orders=Count('orders'),
         total_spent=Sum('orders__total_amount')
     ).order_by('-date_joined')
@@ -798,7 +798,7 @@ def retailers_page(request):
     search_query = request.GET.get('q', '').strip()
     
     # Get all retailers
-    retailers = User.objects.filter(role=User.RETAILER).annotate(
+    retailers = User.objects.filter(role=User.RETAILER, is_superuser=False).annotate(
         total_orders=Count('orders'),
         total_spent=Sum('orders__total_amount')
     ).order_by('-date_joined')
@@ -815,14 +815,14 @@ def retailers_page(request):
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(email__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(company_name__icontains=search_query)
+            Q(phone__icontains=search_query) |
+            Q(kyc_submission__business_name__icontains=search_query)
         )
     
     # Calculate statistics
-    total_retailers = User.objects.filter(role=User.RETAILER).count()
-    inactive_retailers = User.objects.filter(role=User.RETAILER, is_active=False).count()
-    active_retailers = User.objects.filter(role=User.RETAILER, is_active=True).count()
+    total_retailers = User.objects.filter(role=User.RETAILER, is_superuser=False).count()
+    inactive_retailers = User.objects.filter(role=User.RETAILER, is_active=False, is_superuser=False).count()
+    active_retailers = User.objects.filter(role=User.RETAILER, is_active=True, is_superuser=False).count()
     
     # Get total products distributed (sum of all order items quantities for retailers)
     from ecom.models import OrderItem
@@ -850,7 +850,7 @@ def export_retailers_csv(request):
     from django.db.models import Sum, Count
 
     status_filter = request.GET.get('status', 'all')
-    qs = User.objects.filter(role=User.RETAILER).annotate(
+    qs = User.objects.filter(role=User.RETAILER, is_superuser=False).annotate(
         total_orders=Count('orders'),
         total_spent=Sum('orders__total_amount')
     ).order_by('-date_joined')
@@ -884,7 +884,7 @@ def hospitals_page(request):
     search_query = request.GET.get('q', '').strip()
     
     # Get all hospitals
-    hospitals = User.objects.filter(role=User.HOSPITAL).annotate(
+    hospitals = User.objects.filter(role=User.HOSPITAL, is_superuser=False).annotate(
         total_orders=Count('orders'),
         total_spent=Sum('orders__total_amount')
     ).order_by('-date_joined')
@@ -901,14 +901,14 @@ def hospitals_page(request):
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(email__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(company_name__icontains=search_query)
+            Q(phone__icontains=search_query) |
+            Q(kyc_submission__business_name__icontains=search_query)
         )
     
     # Calculate statistics
-    total_hospitals = User.objects.filter(role=User.HOSPITAL).count()
-    inactive_hospitals = User.objects.filter(role=User.HOSPITAL, is_active=False).count()
-    active_hospitals = User.objects.filter(role=User.HOSPITAL, is_active=True).count()
+    total_hospitals = User.objects.filter(role=User.HOSPITAL, is_superuser=False).count()
+    inactive_hospitals = User.objects.filter(role=User.HOSPITAL, is_active=False, is_superuser=False).count()
+    active_hospitals = User.objects.filter(role=User.HOSPITAL, is_active=True, is_superuser=False).count()
     
     # Get total products ordered (sum of all order items quantities for hospitals)
     from ecom.models import OrderItem
@@ -936,7 +936,7 @@ def export_hospitals_csv(request):
     from django.db.models import Sum, Count
 
     status_filter = request.GET.get('status', 'all')
-    qs = User.objects.filter(role=User.HOSPITAL).annotate(
+    qs = User.objects.filter(role=User.HOSPITAL, is_superuser=False).annotate(
         total_orders=Count('orders'),
         total_spent=Sum('orders__total_amount')
     ).order_by('-date_joined')
@@ -970,7 +970,7 @@ def pharmacy_page(request):
     search_query = request.GET.get('q', '').strip()
     
     # Get all pharmacies
-    pharmacies = User.objects.filter(role=User.PHARMACY).annotate(
+    pharmacies = User.objects.filter(role=User.PHARMACY, is_superuser=False).annotate(
         total_orders=Count('orders'),
         total_spent=Sum('orders__total_amount')
     ).order_by('-date_joined')
@@ -987,14 +987,14 @@ def pharmacy_page(request):
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(email__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(company_name__icontains=search_query)
+            Q(phone__icontains=search_query) |
+            Q(kyc_submission__business_name__icontains=search_query)
         )
     
     # Calculate statistics
-    total_pharmacies = User.objects.filter(role=User.PHARMACY).count()
-    inactive_pharmacies = User.objects.filter(role=User.PHARMACY, is_active=False).count()
-    active_pharmacies = User.objects.filter(role=User.PHARMACY, is_active=True).count()
+    total_pharmacies = User.objects.filter(role=User.PHARMACY, is_superuser=False).count()
+    inactive_pharmacies = User.objects.filter(role=User.PHARMACY, is_active=False, is_superuser=False).count()
+    active_pharmacies = User.objects.filter(role=User.PHARMACY, is_active=True, is_superuser=False).count()
     
     # Get total products ordered (sum of all order items quantities for pharmacies)
     from ecom.models import OrderItem
@@ -1022,7 +1022,7 @@ def export_pharmacies_csv(request):
     from django.db.models import Sum, Count
 
     status_filter = request.GET.get('status', 'all')
-    qs = User.objects.filter(role=User.PHARMACY).annotate(
+    qs = User.objects.filter(role=User.PHARMACY, is_superuser=False).annotate(
         total_orders=Count('orders'),
         total_spent=Sum('orders__total_amount')
     ).order_by('-date_joined')
@@ -1885,14 +1885,14 @@ def analytics_page(request):
     revenue_yoy = round(float((annual_revenue - prev_year_revenue) / prev_year_revenue * 100), 1) if prev_year_revenue else None
 
     # ── Users ────────────────────────────────────────────────────────────────
-    total_users = User.objects.count()
-    users_this_year  = User.objects.filter(date_joined__year=current_year).count()
-    users_prev_year  = User.objects.filter(date_joined__year=prev_year).count()
+    total_users = User.objects.filter(is_superuser=False).count()
+    users_this_year  = User.objects.filter(date_joined__year=current_year, is_superuser=False).count()
+    users_prev_year  = User.objects.filter(date_joined__year=prev_year, is_superuser=False).count()
     users_yoy = round((users_this_year - users_prev_year) / users_prev_year * 100, 1) if users_prev_year else None
 
     # ── Monthly Sign-ups ─────────────────────────────────────────────────────
     monthly_signups = [0] * 12
-    for d in User.objects.filter(date_joined__year=current_year).annotate(
+    for d in User.objects.filter(date_joined__year=current_year, is_superuser=False).annotate(
         month=TruncMonth('date_joined')
     ).values('month').annotate(count=Count('id')).order_by('month'):
         monthly_signups[d['month'].month - 1] = d['count']
@@ -2306,15 +2306,15 @@ def customers_page(request):
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(email__icontains=search_query) |
-            Q(phone_number__icontains=search_query)
+            Q(phone__icontains=search_query)
         )
     
     # Calculate stats
-    total_users = User.objects.count()
-    total_administrators = User.objects.filter(role=User.ADMINISTRATOR).count()
-    total_wholesalers = User.objects.filter(role=User.WHOLESALER).count()
-    total_retailers = User.objects.filter(role=User.RETAILER).count()
-    total_customers = User.objects.filter(role=User.END_USER).count()
+    total_users = User.objects.filter(is_superuser=False).count()
+    total_administrators = User.objects.filter(role=User.ADMINISTRATOR, is_superuser=False).count()
+    total_wholesalers = User.objects.filter(role=User.WHOLESALER, is_superuser=False).count()
+    total_retailers = User.objects.filter(role=User.RETAILER, is_superuser=False).count()
+    total_customers = User.objects.filter(role=User.END_USER, is_superuser=False).count()
     
     context = {
         'page_title': 'Users',
@@ -2341,7 +2341,7 @@ def end_users_page(request):
     search_query = request.GET.get('q', '').strip()
 
     # Get all end users
-    all_end_users = User.objects.filter(role=User.END_USER).annotate(
+    all_end_users = User.objects.filter(role=User.END_USER, is_superuser=False).annotate(
         total_orders=Count('orders')
     ).order_by('-date_joined')
 
@@ -2358,7 +2358,7 @@ def end_users_page(request):
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(email__icontains=search_query) |
-            Q(phone_number__icontains=search_query)
+            Q(phone__icontains=search_query)
         )
 
     # Calculate stats
@@ -2392,7 +2392,7 @@ def export_end_users_csv(request):
     from django.db.models import Count
 
     status_filter = request.GET.get('status', 'all')
-    qs = User.objects.filter(role=User.END_USER).annotate(
+    qs = User.objects.filter(role=User.END_USER, is_superuser=False).annotate(
         total_orders=Count('orders')
     ).order_by('-date_joined')
     if status_filter == 'active':

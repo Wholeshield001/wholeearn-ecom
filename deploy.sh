@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Deployment script for wholeearn-ecom
 # This script automates the deployment to VPS
@@ -29,11 +30,11 @@ fi
 
 # Build Tailwind CSS
 echo -e "${YELLOW}Building Tailwind CSS...${NC}"
-python manage.py tailwind build
+env/bin/python manage.py tailwind build
 
 # Collect static files
 echo -e "${YELLOW}Collecting static files...${NC}"
-python manage.py collectstatic --noinput
+env/bin/python manage.py collectstatic --noinput
 
 # Run tests (optional - comment out if needed)
 # echo -e "${YELLOW}Running tests...${NC}"

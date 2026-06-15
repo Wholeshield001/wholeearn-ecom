@@ -5,8 +5,32 @@
 <head>
   <meta charset="utf-8">
   <title>{% block title %}WholeShield - Shop{% endblock %}</title>
+  
+  <!-- SEO Meta Tags -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% block meta %}
+  <meta name="description" content="Shop premium health and wellness supplements from WholeShield Wellness. High-quality vitamins, minerals, probiotics, and targeted formulas for total body protection.">
+  <meta name="keywords" content="WholeShield, wellness, supplements, health, vitamins, minerals, probiotics, joint support, buy vitamins online">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="WholeShield Wellness - Premium Health & Wellness Shop">
+  <meta property="og:description" content="Shop premium health and wellness supplements. High-quality vitamins, minerals, and targeted formulas for total body protection.">
+  <meta property="og:image" content="{% static 'images/Logo.png' %}">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="WholeShield Wellness - Premium Health & Wellness Shop">
+  <meta property="twitter:description" content="Shop premium health and wellness supplements. High-quality vitamins, minerals, and targeted formulas for total body protection.">
+  <meta property="twitter:image" content="{% static 'images/Logo.png' %}">
+  {% endblock %}
+
+  <!-- Favicon -->
   <link rel="icon" type="image/png" href="{% static 'images/Logo.png' %}">
+  <link rel="shortcut icon" type="image/png" href="{% static 'images/Logo.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/Logo.png' %}">
+  
   {% tailwind_css %}
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />

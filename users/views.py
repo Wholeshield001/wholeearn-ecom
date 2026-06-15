@@ -974,6 +974,7 @@ def submit_kyc(request):
     context = {
         'form': form,
         'existing_kyc': existing_kyc,
+        'active_tab': 'kyc',
     }
     return render(request, 'users/submit_kyc.html', context)
 
@@ -996,6 +997,7 @@ def kyc_status(request):
         'kyc_status': request.user.kyc_status,
         'kyc_rejection_reason': request.user.kyc_rejection_reason,
         'can_skip': can_skip,
+        'active_tab': 'kyc',
     }
     return render(request, 'users/kyc_status.html', context)
 

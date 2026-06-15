@@ -4,10 +4,13 @@
 {% block title %}KYC Status | WholeShield{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-linear-to-br from-pink-50 to-white py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">KYC Verification Status</h1>
+<section class="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+    {% include "partials/users/dashboard_header.html" with show_greeting=False page_title='KYC Status' active_tab='kyc' %}
+
+    <div class="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
+        <div class="mb-8 border-b border-gray-100 pb-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">KYC Verification Status</h2>
             <p class="text-gray-600">Check your Know Your Customer (KYC) verification status</p>
         </div>
 
@@ -113,5 +116,6 @@
             </div>
         {% endif %}
     </div>
-</div>
+  </div>
+</section>
 {% endblock %}

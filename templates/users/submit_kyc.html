@@ -4,10 +4,13 @@
 {% block title %}Submit KYC | WholeShield{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">KYC Verification</h1>
+<section class="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+    {% include "partials/users/dashboard_header.html" with show_greeting=False page_title='Submit KYC' active_tab='kyc' %}
+
+    <div class="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
+        <div class="mb-8 border-b border-gray-100 pb-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">KYC Verification</h2>
             <p class="text-gray-600">Please submit your business documents for verification</p>
         </div>
 
@@ -89,37 +92,57 @@
             {% endif %}
 
                         <div class="flex gap-4">
-                                <button type="submit" class="flex-1 bg-[#ec3183] hover:bg-[#d72874] border border-[#ec3183] text-white font-bold py-3 rounded-lg transition duration-200 shadow-sm">
-                    Submit KYC
+                                <button id="submitKycBtn" type="submit" class="flex-1 bg-[#ec3183] hover:bg-[#d72874] border border-[#ec3183] text-white font-bold py-3 rounded-lg transition duration-200 shadow-sm cursor-pointer flex items-center justify-center gap-2">
+                    <span id="btnText">Submit KYC</span>
+                    <span id="btnSpinner" class="hidden animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
                 </button>
-                                <a href="{% url 'kyc-status' %}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 font-bold py-3 rounded-lg transition duration-200 text-center">
+                                <a href="{% url 'kyc-status' %}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 font-bold py-3 rounded-lg transition duration-200 text-center cursor-pointer">
                     View Status
                 </a>
             </div>
         </form>
                     {% else %}
                     <div class="mt-6 flex gap-4">
-                        <a href="{% url 'kyc-status' %}" class="flex-1 bg-[#ec3183] hover:bg-[#d72874] border border-[#ec3183] text-white font-bold py-3 rounded-lg transition duration-200 text-center">
+                        <a href="{% url 'kyc-status' %}" class="flex-1 bg-[#ec3183] hover:bg-[#d72874] border border-[#ec3183] text-white font-bold py-3 rounded-lg transition duration-200 text-center cursor-pointer">
                             View KYC Status
                         </a>
-                        <a href="{% url 'dashboard' %}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 font-bold py-3 rounded-lg transition duration-200 text-center">
+                        <a href="{% url 'dashboard' %}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 font-bold py-3 rounded-lg transition duration-200 text-center cursor-pointer">
                             Back to Dashboard
                         </a>
                     </div>
                     {% endif %}
     </div>
-</div>
+  </div>
+</section>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const input = document.getElementById('id_cac_document');
         const fileName = document.getElementById('selectedFileName');
-        if (!input || !fileName) return;
+        if (input && fileName) {
+            input.addEventListener('change', function () {
+                const selected = input.files && input.files.length ? input.files[0].name : 'No file chosen';
+                fileName.textContent = selected;
+            });
+        }
 
-        input.addEventListener('change', function () {
-            const selected = input.files && input.files.length ? input.files[0].name : 'No file chosen';
-            fileName.textContent = selected;
-        });
+        const form = document.querySelector('form');
+        const submitBtn = document.getElementById('submitKycBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+
+        if (form && submitBtn && btnText && btnSpinner) {
+            form.addEventListener('submit', function () {
+                // Disable button to prevent double submissions and show loading spinner
+                setTimeout(() => {
+                    submitBtn.disabled = true;
+                }, 0); // Timeout allows form submission to proceed in standard HTML forms
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                submitBtn.classList.remove('cursor-pointer');
+                btnText.textContent = 'Submitting...';
+                btnSpinner.classList.remove('hidden');
+            });
+        }
     });
 </script>
 {% endblock %}

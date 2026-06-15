@@ -1,0 +1,16 @@
+[Unit]
+Description=Celery worker daemon for wholeearn-ecom shop
+After=network.target redis-server.service
+Requires=redis-server.service
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/srv/shop_app/current
+Environment="PATH=/srv/shop_app/venv/bin"
+EnvironmentFile=-/srv/shop_app/.env
+ExecStart=/srv/shop_app/venv/bin/celery -A core worker --loglevel=info --concurrency=2
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

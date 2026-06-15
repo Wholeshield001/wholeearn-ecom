@@ -1,0 +1,16 @@
+[Unit]
+Description=Celery beat scheduler daemon for wholeearn-ecom shop
+After=network.target redis-server.service wholeearn-celery.service
+Requires=redis-server.service
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/srv/shop_app/current
+Environment="PATH=/srv/shop_app/venv/bin"
+EnvironmentFile=-/srv/shop_app/.env
+ExecStart=/srv/shop_app/venv/bin/celery -A core beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

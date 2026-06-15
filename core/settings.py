@@ -50,8 +50,14 @@ INSTALLED_APPS = [
     "django_celery_beat",
 ]
 
+USE_CLOUDFLARE_R2 = config('USE_CLOUDFLARE_R2', cast=bool, default=False)
+if USE_CLOUDFLARE_R2:
+    INSTALLED_APPS += [
+        'storages',
+    ]
+
 USE_CLOUDINARY_MEDIA = config('USE_CLOUDINARY_MEDIA', cast=bool, default=True)
-if USE_CLOUDINARY_MEDIA:
+if USE_CLOUDINARY_MEDIA and not USE_CLOUDFLARE_R2:
     INSTALLED_APPS += [
         'cloudinary_storage',
         'cloudinary',
@@ -195,7 +201,26 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-if USE_CLOUDINARY_MEDIA:
+if USE_CLOUDFLARE_R2:
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
+    AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL', default='')
+    AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default='')
+    AWS_S3_REGION_NAME = 'auto'
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_S3_FILE_OVERWRITE = False
+
+    STORAGES = {
+        'default': {
+            'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
+elif USE_CLOUDINARY_MEDIA:
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
         'API_KEY': config('CLOUDINARY_API_KEY', default=''),

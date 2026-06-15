@@ -126,15 +126,33 @@ jobs:
             mkdir -p "$VPS_PATH/logs"
 
 
-            # Gunicorn service configuration
+            # Gunicorn and Celery service configuration
             sudo cp "$RELEASE_PATH/deployment/gunicorn.service" /etc/systemd/system/wholeearn-shop.service
+            sudo cp "$RELEASE_PATH/deployment/celery.service" /etc/systemd/system/wholeearn-celery.service
+            sudo cp "$RELEASE_PATH/deployment/celery-beat.service" /etc/systemd/system/wholeearn-celery-beat.service
             sudo systemctl daemon-reload
+            
             sudo systemctl enable wholeearn-shop
+            sudo systemctl enable wholeearn-celery
+            sudo systemctl enable wholeearn-celery-beat
+            
             sudo systemctl restart wholeearn-shop || {
               echo === GUNICORN STATUS ===
               sudo systemctl status wholeearn-shop --no-pager || true
               echo === GUNICORN LOGS ===
               sudo journalctl -xeu wholeearn-shop --no-pager -n 100 || true
+              exit 1
+            }
+
+            sudo systemctl restart wholeearn-celery || {
+              echo === CELERY WORKER STATUS ===
+              sudo systemctl status wholeearn-celery --no-pager || true
+              exit 1
+            }
+
+            sudo systemctl restart wholeearn-celery-beat || {
+              echo === CELERY BEAT STATUS ===
+              sudo systemctl status wholeearn-celery-beat --no-pager || true
               exit 1
             }
 

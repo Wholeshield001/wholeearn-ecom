@@ -74,19 +74,19 @@ jobs:
           VPS_HOST: ${{ secrets.HOSTINGER_VPS_HOST }}
           VPS_PATH: /srv/shop_app
         run: |
-          # Create new release directory on VPS
           RELEASE_DATE=$(date +%Y%m%d_%H%M%S)
-          ssh $VPS_USER@$VPS_HOST "mkdir -p $VPS_PATH/releases/$RELEASE_DATE"
           
-          # Upload tarball and systemd/nginx configs
-          scp deploy.tar.gz $VPS_USER@$VPS_HOST:$VPS_PATH/releases/$RELEASE_DATE/
-          scp deployment/gunicorn.service $VPS_USER@$VPS_HOST:/tmp/
-          scp deployment/nginx.conf $VPS_USER@$VPS_HOST:/tmp/
+          # Upload tarball directly to the base project folder (requires only 1 SCP connection)
+          scp deploy.tar.gz $VPS_USER@$VPS_HOST:$VPS_PATH/
           
-          # Run the extraction and configuration script on remote VPS
+          # Run the extraction and configuration script on remote VPS inside a single SSH connection
           ssh $VPS_USER@$VPS_HOST "
             set -e
             RELEASE_PATH=\"$VPS_PATH/releases/$RELEASE_DATE\"
+            
+            # Create release directory and move the tarball there
+            mkdir -p \$RELEASE_PATH
+            mv $VPS_PATH/deploy.tar.gz \$RELEASE_PATH/
             
             cd \$RELEASE_PATH
             tar -xzf deploy.tar.gz
@@ -98,7 +98,6 @@ jobs:
               python3 -m venv --without-pip $VPS_PATH/venv
               curl -sS https://bootstrap.pypa.io/get-pip.py | $VPS_PATH/venv/bin/python3
             fi
-
             
             source $VPS_PATH/venv/bin/activate
             pip install --upgrade pip
@@ -114,7 +113,7 @@ jobs:
               echo ALLOWED_HOSTS=shop.wholeshieldwellness.com >> $VPS_PATH/.env
               echo CSRF_TRUSTED_ORIGINS=https://shop.wholeshieldwellness.com >> $VPS_PATH/.env
             fi
-
+            
             # Reuse the existing .env file
             ln -sf $VPS_PATH/.env \$RELEASE_PATH/.env
             
@@ -129,28 +128,28 @@ jobs:
             mkdir -p $VPS_PATH/logs
             
             # Gunicorn service configuration
-            sudo cp /tmp/gunicorn.service /etc/systemd/system/wholeearn-shop.service
+            sudo cp \$RELEASE_PATH/deployment/gunicorn.service /etc/systemd/system/wholeearn-shop.service
             sudo systemctl daemon-reload
             sudo systemctl enable wholeearn-shop
             sudo systemctl restart wholeearn-shop || {
-              echo "=== GUNICORN STATUS ==="
+              echo === GUNICORN STATUS ===
               sudo systemctl status wholeearn-shop --no-pager || true
-              echo "=== GUNICORN LOGS ==="
+              echo === GUNICORN LOGS ===
               sudo journalctl -xeu wholeearn-shop --no-pager -n 100 || true
               exit 1
             }
             
             # Nginx configuration
-            sudo cp /tmp/nginx.conf /etc/nginx/sites-available/shop.wholeshieldwellness.com
+            sudo cp \$RELEASE_PATH/deployment/nginx.conf /etc/nginx/sites-available/shop.wholeshieldwellness.com
             sudo ln -sf /etc/nginx/sites-available/shop.wholeshieldwellness.com /etc/nginx/sites-enabled/
-            echo "=== TESTING NGINX CONFIGURATION ==="
+            echo === TESTING NGINX CONFIGURATION ===
             sudo nginx -t || {
-              echo "=== NGINX CONFIG TEST FAILED ==="
+              echo === NGINX CONFIG TEST FAILED ===
               exit 1
             }
-            echo "=== RELOADING NGINX ==="
+            echo === RELOADING NGINX ===
             sudo systemctl reload nginx || {
-              echo "=== NGINX RELOAD FAILED ==="
+              echo === NGINX RELOAD FAILED ===
               sudo systemctl status nginx --no-pager || true
               sudo journalctl -xeu nginx --no-pager -n 100 || true
               exit 1

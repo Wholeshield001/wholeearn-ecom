@@ -81,3 +81,48 @@ class WebsiteVisitTrackingMiddleware:
         except (OperationalError, ProgrammingError):
             # Database table may not exist yet during deployment before migrations.
             return
+
+
+class SiteMaintenanceMiddleware:
+    """
+    Checks if the storefront is enabled.
+    If disabled, renders a maintenance page for non-staff users.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        path = request.path
+
+        # Always allow requests to admin, admin-dashboard, static, media, etc.
+        if (
+            path.startswith('/admin/') or
+            path.startswith('/myaccessadmin/') or
+            path.startswith('/admin-dashboard/') or
+            path.startswith('/static/') or
+            path.startswith('/media/') or
+            path.startswith('/favicon.ico') or
+            path.startswith('/ckeditor5/')
+        ):
+            return self.get_response(request)
+
+        # Always allow staff and superusers to bypass maintenance mode
+        if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+            return self.get_response(request)
+
+        try:
+            from ecom.models import SiteConfiguration
+            config = SiteConfiguration.get_solo()
+            if not config.is_enabled:
+                from django.shortcuts import render
+                return render(
+                    request,
+                    'maintenance.html',
+                    {'message': config.maintenance_message},
+                    status=503
+                )
+        except Exception:
+            # Table might not exist yet during initial migrations
+            pass
+
+        return self.get_response(request)

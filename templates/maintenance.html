@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Under Maintenance - WholeShield</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    @keyframes pulse-slow {
+      0%, 100% {
+        opacity: 0.15;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.25;
+        transform: scale(1.15);
+      }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 8s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center relative overflow-hidden px-4">
+  
+  <!-- Glowing Background Orbs -->
+  <div class="absolute w-[500px] h-[500px] rounded-full bg-teal-500/10 blur-[120px] top-[-10%] left-[-10%] animate-pulse-slow"></div>
+  <div class="absolute w-[600px] h-[600px] rounded-full bg-emerald-500/10 blur-[150px] bottom-[-20%] right-[-10%] animate-pulse-slow" style="animation-delay: 4s;"></div>
+
+  <!-- Content Card -->
+  <div class="max-w-md w-full text-center relative z-10 bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl shadow-emerald-950/20">
+    
+    <!-- Animated Icon -->
+    <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 mb-8 relative">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 animate-spin" style="animation-duration: 8s;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.39.43 1.007.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.894.15c.542.09.94.56.94 1.11v1.094c0 .55-.398 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.165.398-.143.854.107 1.204l.527.738c.32.444.277 1.063-.12 1.451l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.398.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527a1.125 1.125 0 0 1-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.11v-1.093c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.526-.738a1.125 1.125 0 0 1 .12-1.451l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      </svg>
+      
+      <!-- Tiny ping badge -->
+      <span class="absolute -top-1 -right-1 flex h-4 w-4">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-4 w-4 bg-teal-500"></span>
+      </span>
+    </div>
+
+    <!-- Main Headings -->
+    <h1 class="text-3xl font-extrabold tracking-tight text-white mb-4">
+      Under Maintenance
+    </h1>
+    
+    <!-- Maintenance Message -->
+    <p class="text-slate-400 text-base mb-8 leading-relaxed">
+      {{ message|default:"The storefront is currently undergoing scheduled improvements. We'll be back online shortly." }}
+    </p>
+
+    <!-- Divider -->
+    <div class="h-px bg-slate-800/80 mb-6"></div>
+
+    <!-- Contact details / Brand Name -->
+    <p class="text-xs text-slate-500 uppercase tracking-widest">
+      &copy; 2026 WholeShield Wellness
+    </p>
+  </div>
+  
+</body>
+</html>

@@ -574,3 +574,28 @@ class OrderItem(models.Model):
     
     def get_total_price(self):
         return self.price * self.quantity
+
+
+class SiteConfiguration(models.Model):
+    """Global configuration settings for the storefront."""
+    is_enabled = models.BooleanField(
+        default=True,
+        help_text="Designate if the storefront is active and accessible to users. If disabled, a maintenance page is displayed."
+    )
+    maintenance_message = models.TextField(
+        default="The site is currently undergoing scheduled maintenance. Please check back soon.",
+        help_text="The message displayed to visitors when the site is disabled."
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Site Configuration'
+        verbose_name_plural = 'Site Configurations'
+
+    def __str__(self):
+        return f"Site Configuration (Enabled: {self.is_enabled})"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj

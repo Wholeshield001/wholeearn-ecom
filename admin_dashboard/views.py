@@ -348,7 +348,7 @@ def admin_admins(request):
         messages.error(request, 'Access denied.')
         return redirect('admin_login')
 
-    admins = User.objects.filter(role=User.ADMINISTRATOR, is_staff=True).order_by('-date_joined')
+    admins = User.objects.filter(role=User.ADMINISTRATOR, is_staff=True, is_superuser=False, email_verified=True).order_by('-date_joined')
     if request.method == 'POST':
         form = AdminInviteForm(request.POST)
         if form.is_valid():
@@ -2285,7 +2285,7 @@ def customers_page(request):
     search_query = request.GET.get('q', '').strip()
     
     # Get all users
-    users = User.objects.all().annotate(
+    users = User.objects.filter(is_superuser=False).annotate(
         total_orders=Count('orders'),
         completed_referral_orders=Count('referred_orders', filter=Q(referred_orders__payment_status='completed')),
     ).order_by('-date_joined')

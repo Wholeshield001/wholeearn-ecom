@@ -12,6 +12,7 @@ from .models import (
     RewardConversion,
     WalletBankAccount,
     WalletWithdrawalRequest,
+    SiteConfiguration,
 )
 from unfold.admin import ModelAdmin
 
@@ -145,6 +146,12 @@ class BuyerLimitConfigAdmin(ModelAdmin):
         'updated_by',
         'updated_at',
     )
+    readonly_fields = ('updated_at',)
+
+
+@admin.register(SiteConfiguration)
+class SiteConfigurationAdmin(ModelAdmin):
+    list_display = ('is_enabled', 'updated_at')
     readonly_fields = ('updated_at',)
 
 

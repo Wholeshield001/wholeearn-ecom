@@ -81,7 +81,6 @@
       </div>
     </a>
 
-    <!-- Add to Cart Button (Outside link) -->
     <div class="p-4 pt-0">
       {% if request.user.is_authenticated %}
       {% with min_qty=product|min_quantity_for_role:request.user.role %}
@@ -103,10 +102,21 @@
       </form>
       {% endwith %}
       {% else %}
-      <a href="{% url 'login' %}?next={{ request.path }}"
-        class="flex items-center justify-center text-center w-full min-h-[44px] py-2 px-3 bg-[#ec3183] hover:bg-[#d41e6e] text-white font-semibold rounded-lg hover:shadow-lg transition-all text-xs sm:text-sm md:text-base">
-        Login to Add to Cart
-      </a>
+      <form method="post" action="{% url 'add-to-cart' product.id %}" class="cart-form">
+        {% csrf_token %}
+        <input type="hidden" name="quantity" value="1">
+        {% if product.stock > 0 %}
+        <button type="submit" hx-post="{% url 'add-to-cart' product.id %}" hx-include="[name='quantity']" hx-swap="none"
+          class="w-full py-2 bg-[#ec3183] hover:bg-[#d41e6e] text-white font-semibold rounded-lg hover:shadow-lg transition-all text-sm sm:text-base">
+          Add to Cart
+        </button>
+        {% else %}
+        <button type="button" disabled
+          class="w-full py-2 bg-gray-300 text-gray-500 font-semibold rounded-lg cursor-not-allowed text-sm sm:text-base">
+          Out of Stock
+        </button>
+        {% endif %}
+      </form>
       {% endif %}
     </div>
   </div>

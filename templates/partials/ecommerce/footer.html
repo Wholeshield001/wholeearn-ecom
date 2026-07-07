@@ -60,7 +60,10 @@
         <a href="{% url 'return-policy' %}" class="hover:underline" style="color: #C2185B;">Return Policy</a>
         <a href="{% url 'delivery-policy' %}" class="hover:underline" style="color: #C2185B;">Delivery Policy</a>
       </div>
-      <div style="color: #ec3183;">2025 WholeShield</div>
+      <div style="color: #ec3183;">&copy; <span id="copyright-year">2025</span> WholeShield</div>
+      <script>
+        document.getElementById('copyright-year').textContent = new Date().getFullYear();
+      </script>
     </div>
   </div>
 </footer>

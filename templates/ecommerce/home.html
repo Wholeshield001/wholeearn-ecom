@@ -6,9 +6,31 @@
 {% block content %}
 
 <!-- Hero Section -->
-<section class="relative overflow-hidden min-h-[85vh] bg-white reveal flex items-center justify-center pt-24 pb-0">
+<section class="relative overflow-hidden reveal flex items-center justify-center pt-20 sm:pt-24 pb-0 hero-section-bg">
+
+  <div class="absolute inset-0 z-10" style="background-color: rgba(255, 255, 255, 0.12); backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px);"></div>
 
   <style>
+    .hero-section-bg {
+      background-image: url('{% static "images/wholehero.jpg" %}');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 72vh;
+    }
+
+    @media (min-width: 640px) {
+      .hero-section-bg {
+        min-height: 85vh;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-section-bg {
+        background-position: 28% center;
+      }
+    }
+
     .hero-side-bottle {
       position: absolute;
       z-index: 10;
@@ -141,32 +163,13 @@
     }
   </style>
 
-  <!-- Left Bottle (ReproShield) -->
-  <div class="hero-side-bottle left-bottle">
-    <img src="{% static 'images/Reposhield.png' %}" alt="ReproShield Men bottle"
-      style="filter: drop-shadow(0 25px 25px rgba(0,0,0,0.15)); width: 100%;" />
-  </div>
-
-  <!-- Right Bottle (Arthorshield) -->
-  <div class="hero-side-bottle right-bottle">
-    <img src="{% static 'images/Arthorshield.png' %}" alt="Arthorshield bottle"
-      style="filter: drop-shadow(0 25px 25px rgba(0,0,0,0.15)); width: 100%;" />
-  </div>
-
   <!-- Center hero content -->
   <div class="max-w-4xl mx-auto px-4 text-center relative z-20 w-full pt-4">
 
-    <!-- Top Center Bottle (Magnesium) -->
-    <div class="flex justify-center mb-6 sm:mb-8">
-      <img src="{% static 'images/Magnesium.png' %}" alt="Magnesium bottle"
-        style="height: 180px; filter: drop-shadow(0 15px 15px rgba(0,0,0,0.1)); transition: transform 0.5s;"
-        class="hover:-translate-y-2" />
-    </div>
-
-    <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1] mb-8 sm:mb-12">
+    <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1] mb-8 sm:mb-12" style="text-shadow: 0 2px 10px rgba(255, 255, 255, 0.95), 0 1px 2px rgba(255, 255, 255, 0.95);">
       <span style="color: #E91E63; display: block;">Welcome to the </span>
       <span class="relative inline-block" style="color: #009688;">
-        whole
+        <img src="{% static 'images/Shield.png' %}" alt="W" style="height: 0.85em !important; width: auto !important; display: inline-block !important; vertical-align: middle; margin-top: -0.15em;" />hole
         <!-- Hand-drawn SVG underline -->
         <svg class="absolute w-full h-3 sm:h-4 -bottom-1 sm:-bottom-2 left-0" style="color: #009688;"
           viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="4"
@@ -180,14 +183,8 @@
     <div class="relative z-30 mb-6 sm:mb-8">
       <a href="{% url 'products' %}"
         class="inline-flex items-center justify-center text-white font-semibold text-base sm:text-lg shadow-xl hover:shadow-2xl hero-cta-button hover:-translate-y-1">
-        Complete Your Whole Health
+        SHOP NOW
       </a>
-    </div>
-
-    <!-- Bottom decorative element (Vitamin C Cap) -->
-    <div class="hero-bottom-cap-container">
-      <img src="{% static 'images/VitaminC.png' %}" alt="Vitamin C"
-        class="w-48 sm:w-64 md:w-80 h-auto object-contain" />
     </div>
   </div>
 </section>
@@ -211,6 +208,128 @@
     </div>
   </div>
 </div>
+
+<!-- Shop Bestsellers Section -->
+<section class="pt-4 pb-16 sm:pt-6 sm:pb-20 bg-white reveal w-full overflow-hidden">
+  <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16">
+    <!-- Section Header -->
+    <div class="flex items-center justify-between pb-12">
+      <h2 class="text-2xl sm:text-3xl font-medium text-[#ec3183]">Shop Bestsellers</h2>
+      <a href="{% url 'products' %}" class="text-[#ec3183] hover:opacity-80 font-medium">Shop All</a>
+    </div>
+    <!-- Products Marquee -->
+    {% if bestsellers %}
+    <style>
+      @keyframes marquee {
+        0% {
+          transform: translateX(0);
+        }
+
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      .marquee-wrapper {
+        overflow: hidden;
+        width: 100%;
+        margin: 0 auto;
+      }
+
+      .marquee-content {
+        display: flex;
+        gap: 32px;
+        animation: marquee 40s linear infinite;
+        width: max-content;
+      }
+
+      .marquee-content:hover {
+        animation-play-state: paused;
+      }
+
+      .product-card-marquee {
+        width: 300px;
+        flex-shrink: 0;
+      }
+
+      @media (max-width: 768px) {
+        .product-card-marquee {
+          width: 220px;
+        }
+      }
+    </style>
+    <div class="marquee-wrapper">
+      <div class="marquee-content">
+        <!-- First set of products -->
+        {% for product in bestsellers %}
+        <a href="{% url 'product-detail' product.id %}" class="group block flex-none product-card-marquee">
+          <div class="rounded-xl overflow-hidden bg-white shadow border border-pink-100" style="height: 340px;">
+            {% if product.thumbnail and product.thumbnail.image %}
+            <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% elif product.images.first %}
+            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% else %}
+            <img src="{% static 'images/Arthorshield.png' %}" alt="{{ product.name|default:'Product' }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% endif %}
+          </div>
+          <div class="mt-4 px-2">
+            <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
+            <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
+            <p class="mt-2 text-[#ec3183] font-medium text-base">
+              {% if product.price %}₦{{ product.price }}{% else %}—{% endif %}
+            </p>
+          </div>
+        </a>
+        {% endfor %}
+        <!-- Duplicate set for seamless loop -->
+        {% for product in bestsellers %}
+        <a href="{% url 'product-detail' product.id %}" class="group block flex-none product-card-marquee">
+          <div class="rounded-xl overflow-hidden bg-white shadow border border-pink-100" style="height: 340px;">
+            {% if product.thumbnail and product.thumbnail.image %}
+            <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% elif product.images.first %}
+            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% else %}
+            <img src="{% static 'images/Arthorshield.png' %}" alt="{{ product.name|default:'Product' }}"
+              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
+            {% endif %}
+          </div>
+          <div class="mt-4 px-2">
+            <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
+            <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
+            <p class="mt-2 text-[#ec3183] font-medium text-base">
+              {% if product.price %}₦{{ product.price }}{% else %}—{% endif %}
+            </p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <!-- Placeholder cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+      {% for i in "1234" %}
+      <div class="group">
+        <div class="aspect-[3/4] rounded-xl overflow-hidden bg-white shadow border border-pink-100">
+          <img src="{% static 'images/Arthorshield.png' %}" alt="Arthorshield"
+            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+        </div>
+        <div class="mt-3">
+          <p class="text-[#ec3183] font-semibold">Arthorshield</p>
+          <p class="text-[#ec3183] opacity-80">Joint Health</p>
+          <p class="mt-1 text-[#ec3183] font-medium">₦33</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
 
 <!-- Partner Registration Banner -->
 <style>
@@ -257,11 +376,14 @@
             Partner Program
           </div>
           <h2 class="text-xl sm:text-3xl font-extrabold leading-tight mb-2">Join us as a partner and scale faster</h2>
-          <p class="text-pink-100 text-sm sm:text-base leading-relaxed max-w-2xl">Get wholesale pricing, bulk discounts, and priority support designed for growing pharmacies, hospitals, retailers, and online vendors.</p>
+          <p class="text-pink-100 text-sm sm:text-base leading-relaxed max-w-2xl">Purchase and resell premium Wholeshield products with competitive wholesale pricing, bulk discounts, reliable supply and dedicated partner support.</p>
           <div class="mt-4 sm:mt-5 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-white/90">
-            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="background-color: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2);">Wholesale rates</span>
-            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="background-color: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); animation-delay: .35s;">Bulk discounts</span>
-            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="background-color: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); animation-delay: .7s;">Priority support</span>
+            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="background-color: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2);">Wholesalers</span>
+            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="background-color: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); animation-delay: .35s;">Retailers</span>
+            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="background-color: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); animation-delay: .7s;">Distributors</span>
+            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="background-color: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); animation-delay: .7s;">Pharmacies</span>
+            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="background-color: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); animation-delay: .7s;">Hospitals</span>
+            <span class="partner-pill-float inline-flex items-center rounded-full bg-white/12 border border-white/20 px-3 py-1" style="background-color: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.2); animation-delay: .7s;">Online Vendors</span>
           </div>
         </div>
 
@@ -277,134 +399,6 @@
   </div>
 </section>
 
-<!-- Shop Bestsellers Section -->
-<section class="pt-4 pb-16 sm:pt-6 sm:pb-20 bg-white reveal">
-  <div class="max-w-7xl mx-auto px-4">
-    <!-- Section Header -->
-    <div class="flex items-center justify-between pb-12">
-      <h2 class="text-2xl sm:text-3xl font-medium text-[#ec3183]">Shop Bestsellers</h2>
-      <a href="{% url 'products' %}" class="text-[#ec3183] hover:opacity-80 font-medium">Shop All</a>
-    </div>
-    <!-- Products Marquee -->
-    {% if bestsellers %}
-    <style>
-      @keyframes marquee {
-        0% {
-          transform: translateX(0);
-        }
-
-        100% {
-          transform: translateX(-50%);
-        }
-      }
-
-      .marquee-wrapper {
-        overflow: hidden;
-        max-width: 1280px;
-        margin: 0 auto;
-      }
-
-      .marquee-content {
-        display: flex;
-        gap: 32px;
-        animation: marquee 40s linear infinite;
-        width: max-content;
-      }
-
-      .marquee-content:hover {
-        animation-play-state: paused;
-      }
-
-      .product-card-marquee {
-        width: calc((1280px - 96px) / 4);
-        min-width: 260px;
-      }
-
-      @media (max-width: 1280px) {
-        .product-card-marquee {
-          width: calc((100vw - 128px) / 4);
-        }
-      }
-
-      @media (max-width: 768px) {
-        .product-card-marquee {
-          width: calc((100vw - 96px) / 2);
-          min-width: 200px;
-        }
-      }
-    </style>
-    <div class="marquee-wrapper">
-      <div class="marquee-content">
-        <!-- First set of products -->
-        {% for product in bestsellers %}
-        <a href="{% url 'product-detail' product.id %}" class="group block flex-none product-card-marquee">
-          <div class="rounded-xl overflow-hidden bg-white shadow border border-pink-100" style="height: 340px;">
-            {% if product.thumbnail and product.thumbnail.image %}
-            <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
-              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-            {% elif product.images.first %}
-            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
-              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-            {% else %}
-            <img src="{% static 'images/Arthorshield.png' %}" alt="{{ product.name|default:'Product' }}"
-              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-            {% endif %}
-          </div>
-          <div class="mt-4">
-            <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
-            <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
-            <p class="mt-2 text-[#ec3183] font-medium text-base">
-              {% if product.price %}₦{{ product.price }}{% else %}—{% endif %}
-            </p>
-          </div>
-        </a>
-        {% endfor %}
-        <!-- Duplicate set for seamless loop -->
-        {% for product in bestsellers %}
-        <a href="{% url 'product-detail' product.id %}" class="group block flex-none product-card-marquee">
-          <div class="rounded-xl overflow-hidden bg-white shadow border border-pink-100" style="height: 340px;">
-            {% if product.thumbnail and product.thumbnail.image %}
-            <img src="{{ product.thumbnail.image.url }}" alt="{{ product.name }}"
-              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-            {% elif product.images.first %}
-            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}"
-              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-            {% else %}
-            <img src="{% static 'images/Arthorshield.png' %}" alt="{{ product.name|default:'Product' }}"
-              class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.03]" />
-            {% endif %}
-          </div>
-          <div class="mt-4">
-            <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
-            <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
-            <p class="mt-2 text-[#ec3183] font-medium text-base">
-              {% if product.price %}₦{{ product.price }}{% else %}—{% endif %}
-            </p>
-          </div>
-        </a>
-        {% endfor %}
-      </div>
-    </div>
-    {% else %}
-    <!-- Placeholder cards -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
-      {% for i in "1234" %}
-      <div class="group">
-        <div class="aspect-[3/4] rounded-xl overflow-hidden bg-white shadow border border-pink-100">
-          <img src="{% static 'images/Arthorshield.png' %}" alt="Arthorshield"
-            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
-        </div>
-        <div class="mt-3">
-          <p class="text-[#ec3183] font-semibold">Arthorshield</p>
-          <p class="text-[#ec3183] opacity-80">Joint Health</p>
-          <p class="mt-1 text-[#ec3183] font-medium">₦33</p>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-  </div>
-</section>
 
 <!-- Trust & Certifications Section -->
 <section class="py-16 sm:py-24 bg-white reveal">
@@ -520,26 +514,52 @@
   </div>
 </section>
 
-<!-- Maximum Protection Section -->
+<!-- Latest Blog Posts Section -->
 <section class="py-16 sm:py-24 bg-white reveal">
-  <div class="max-w-6xl mx-auto px-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-      <!-- Left: Text Content -->
+  <div class="max-w-7xl mx-auto px-4">
+    <!-- Section Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
       <div>
-        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#ec3183] mb-6">
-          Maximum Protection:<br />Your Daily Dose of WholeShielding
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#ec3183] mb-4">
+          Latest from our Blog
         </h2>
-        <p class="text-base sm:text-lg text-[#ed3e8b] leading-relaxed">
-          Every capsule, tablet, and softgel in this collection is an investment in your long-term vitality. Consider
-          this your daily upgrade—everything you need, nothing you don't.
+        <p class="text-base sm:text-lg text-[#ed3e8b]">
+          Insights, advice, and tips from our wellness experts.
         </p>
       </div>
+      <a href="{% url 'blog' %}" class="inline-flex items-center gap-2 text-pink-600 font-semibold hover:text-pink-700 transition-colors">
+        View All Posts
+        <span class="material-symbols-outlined text-xl">arrow_forward</span>
+      </a>
+    </div>
 
-      <!-- Right: Product Image -->
-      <div class="flex justify-center md:justify-end">
-        <img src="{% static 'images/Pills.png' %}" alt="WholeShield Capsules"
-          class="h-64 sm:h-80 md:h-96 drop-shadow-xl" />
+    <!-- Blog Posts Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {% for post in latest_posts %}
+      <article class="group cursor-pointer">
+        <a href="{% url 'blog-detail' post.slug %}" class="block">
+          <div class="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden mb-4 shadow-sm hover:shadow-md transition-shadow">
+            {% if post.cover_image %}
+              <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            {% else %}
+              <div class="w-full h-full flex items-center justify-center text-gray-400">
+                <span class="text-6xl">📝</span>
+              </div>
+            {% endif %}
+          </div>
+          {% if post.category %}
+          <span class="text-xs font-semibold text-pink-600 tracking-wider uppercase mb-2 block">{{ post.category.name }}</span>
+          {% endif %}
+          <h3 class="text-lg font-bold text-[#ec3183] mb-2 group-hover:text-pink-700 transition-colors line-clamp-2">{{ post.title }}</h3>
+          <p class="text-sm text-gray-600 line-clamp-2 mb-4">{{ post.content|striptags|truncatewords:20 }}</p>
+          <span class="text-xs text-gray-400 block">{{ post.created_at|date:"F d, Y" }}</span>
+        </a>
+      </article>
+      {% empty %}
+      <div class="col-span-full text-center py-12 text-gray-500">
+        No blog posts published yet. Stay tuned!
       </div>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -582,20 +602,26 @@
 
 
 <!-- Join The Whole Crew Section -->
-<section class="py-16 sm:py-20 bg-white text-center reveal">
-  <div class="max-w-3xl mx-auto px-4">
-    <h2 class="text-3xl sm:text-4xl font-bold text-[#ec3183] mb-3">
-      Join The Whole Crew
-    </h2>
-    <p class="text-base sm:text-lg text-[#ed3e8b] mb-8">
-      Help Us Shield More Communities.
-    </p>
-    <div>
-      <a href="{% url 'signup' %}"
-        class="inline-flex items-center justify-center rounded-full px-6 sm:px-8 py-3 text-white font-semibold shadow-md hover:shadow-lg transition-shadow"
-        style="background-color: #C2185B !important;">
-        Come on in
-      </a>
+<section class="relative mt-8 sm:mt-12 mb-16 sm:mb-24 reveal px-4">
+  <div class="max-w-7xl mx-auto">
+    <div class="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#ec3183] via-[#d31f72] to-[#9f1756] shadow-lg sm:shadow-2xl py-12 sm:py-16 text-center" style="background: linear-gradient(135deg, #ec3183 0%, #d31f72 50%, #9f1756 100%);">
+      <div class="partner-orb-pulse absolute -top-10 -right-8 w-36 h-36 rounded-full bg-white/20" style="background-color: rgba(255, 255, 255, 0.2);"></div>
+      <div class="partner-orb-pulse absolute -bottom-12 -left-8 w-40 h-40 rounded-full bg-yellow-300/20" style="background-color: rgba(253, 224, 71, 0.2); animation-delay: 1.2s;"></div>
+
+      <div class="relative z-10 max-w-3xl mx-auto px-4">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+          Join The Whole Crew
+        </h2>
+        <p class="text-pink-100 text-base sm:text-lg mb-8 leading-relaxed max-w-2xl mx-auto">
+          Help Us Shield More Communities.
+        </p>
+        <div>
+          <a href="{% url 'signup' %}"
+            class="inline-flex items-center justify-center bg-white text-[#c81c6c] font-extrabold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition">
+            Come on in
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </section>

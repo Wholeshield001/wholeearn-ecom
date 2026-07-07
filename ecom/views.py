@@ -245,7 +245,13 @@ def home(request):
     bestsellers = Product.objects.filter(is_best_seller=True).order_by('-created_at')[:8]
     if not bestsellers:
         bestsellers = Product.objects.order_by('-created_at')[:8]
-    return render(request, 'ecommerce/home.html', {'bestsellers': bestsellers})
+        
+    latest_posts = BlogPost.objects.filter(is_published=True).order_by('-created_at')[:3]
+    
+    return render(request, 'ecommerce/home.html', {
+        'bestsellers': bestsellers,
+        'latest_posts': latest_posts,
+    })
 
 
 @require_http_methods(["GET"])
@@ -356,6 +362,45 @@ def get_or_create_cart(request):
             session_id = request.session.session_key
         cart, created = Cart.objects.get_or_create(session_id=session_id)
     return cart
+
+
+def merge_session_cart_to_user(session_key, user):
+    """Migrate anonymous session cart items to authenticated user's cart."""
+    if not session_key:
+        return
+
+    try:
+        session_cart = Cart.objects.get(session_id=session_key)
+    except Cart.DoesNotExist:
+        return
+
+    # Get or create user's cart
+    user_cart, created = Cart.objects.get_or_create(user=user)
+
+    # Move items from session cart to user cart
+    for item in session_cart.items.all():
+        try:
+            # If product is already in user's cart, update quantity and price
+            user_item = CartItem.objects.get(cart=user_cart, product=item.product)
+            new_qty = user_item.quantity + item.quantity
+            if new_qty > item.product.stock:
+                new_qty = item.product.stock
+            user_item.quantity = new_qty
+            
+            user_role = getattr(user, 'role', None)
+            user_item.price = item.product.get_price_for_role(user_role) if user_role else item.product.customer_price
+            user_item.save()
+            item.delete()
+        except CartItem.DoesNotExist:
+            # If not in user's cart, re-associate to user's cart and update price
+            item.cart = user_cart
+            user_role = getattr(user, 'role', None)
+            item.price = item.product.get_price_for_role(user_role) if user_role else item.product.customer_price
+            item.save()
+
+    # Delete the empty session cart
+    session_cart.delete()
+
 
 
 @require_http_methods(["POST"])

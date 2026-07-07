@@ -101,6 +101,11 @@ def signup(request):
                 request.session['pending_verification_email'] = user.email
                 request.session['verification_attempts'] = 0
 
+                # Capture and store next target in session
+                next_url = request.GET.get('next') or request.POST.get('next')
+                if next_url and next_url.startswith('/'):
+                    request.session['verification_next'] = next_url
+
                 if email_sent:
                     messages.success(
                         request,
@@ -153,6 +158,9 @@ def verify_otp(request):
                 # Send welcome email
                 send_welcome_email(user)
                 
+                # Retrieve next target
+                next_target = request.session.pop('verification_next', '')
+                
                 # Clean up session
                 del request.session['pending_verification_email']
                 if 'verification_attempts' in request.session:
@@ -162,7 +170,11 @@ def verify_otp(request):
                     request,
                     'Email verified successfully! You can now log in.'
                 )
-                return redirect('login')
+                
+                login_url = reverse('login')
+                if next_target:
+                    login_url += f"?next={next_target}"
+                return redirect(login_url)
             else:
                 # Increment failed attempts
                 attempts = request.session.get('verification_attempts', 0) + 1
@@ -243,7 +255,14 @@ def login(request):
                 user = authenticate(request, username=email, password=password)
                 
                 if user is not None:
+                    # Get guest session key before logging in (session key cycles on login)
+                    guest_session_key = request.session.session_key
+                    
                     auth.login(request, user)
+                    
+                    # Merge guest cart to user cart
+                    from ecom.views import merge_session_cart_to_user
+                    merge_session_cart_to_user(guest_session_key, user)
                     
                     if not remember_me:
                         request.session.set_expiry(0)  # Session expires when browser closes
@@ -252,7 +271,11 @@ def login(request):
                     
                     messages.success(request, f'Welcome back, {user.first_name}!')
                     
-                    # Redirect to dashboard or home based on user role
+                    # Redirect to next_url if safe, otherwise default to role-based dashboard/home
+                    next_url = request.GET.get('next') or request.POST.get('next')
+                    if next_url and next_url.startswith('/'):
+                        return redirect(next_url)
+                        
                     if user.role == 'administrator':
                         return redirect('admin_dashboard')
                     else:

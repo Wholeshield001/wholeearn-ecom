@@ -9,7 +9,7 @@
 
     <div class="flex items-center gap-4">
       {% if user.is_authenticated %}
-      <a href="{% url 'user-dashboard' %}" class="inline-flex" aria-label="My Dashboard">
+      <a href="{% url 'user-dashboard' %}" class="hidden md:inline-flex" aria-label="My Dashboard">
         <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#31dec4] ring-2 ring-[#31dec4]/30 hover:ring-[#31dec4]/60 transition-all" style="background-color: #31dec4; flex-shrink: 0;">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-white" aria-hidden="true">
             <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.76-3.58-5-8-5Z" />
@@ -17,7 +17,7 @@
         </span>
       </a>
       {% else %}
-      <a href="{% url 'login' %}" class="inline-flex" aria-label="Login">
+      <a href="{% url 'login' %}" class="hidden md:inline-flex" aria-label="Login">
         <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#31dec4] ring-2 ring-[#31dec4]/30 hover:ring-[#31dec4]/60 transition-all" style="background-color: #31dec4; flex-shrink: 0;">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-white" aria-hidden="true">
             <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.76-3.58-5-8-5Z" />
@@ -25,6 +25,12 @@
         </span>
       </a>
       {% endif %}
+
+      <!-- Search Icon Button -->
+      <button id="openSearchBtn" class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+        aria-label="Search products">
+        <span class="material-symbols-outlined text-[#ec3183]">search</span>
+      </button>
 
       <!-- Cart Icon with Badge -->
       <button id="openCartBtn" class="relative p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
@@ -65,8 +71,18 @@
     <!-- Drawer Container - using translate instead of absolute positioning -->
     <div id="drawerContainer"
       class="fixed top-0 left-0 h-screen w-80 max-w-[85vw] bg-white shadow-2xl transition-transform duration-300 -translate-x-full overflow-y-auto flex flex-col">
-      <!-- Close Button -->
-      <div class="flex justify-end items-center p-6 pb-4 border-b border-gray-200 shrink-0">
+      <!-- Drawer Header -->
+      <div class="flex justify-between items-center p-6 pb-4 border-b border-gray-200 shrink-0">
+        {% if user.is_authenticated %}
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-semibold text-gray-700 truncate max-w-[180px]">{{ user.first_name|default:user.email }}</span>
+        </div>
+        {% else %}
+        <a href="{% url 'login' %}" class="flex items-center gap-2 hover:opacity-85">
+          <span class="text-sm font-semibold text-gray-700">Log In</span>
+        </a>
+        {% endif %}
+
         <button id="closeMenuBtn" class="p-2 rounded-lg hover:bg-gray-50 transition-colors">
           <span class="material-symbols-outlined text-[#ec3183] text-3xl">close</span>
         </button>
@@ -122,6 +138,31 @@
     </div>
   </div>
 
+  <!-- Search Overlay Modal -->
+  <div id="searchOverlay" class="hidden fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4">
+    <!-- Backdrop -->
+    <div id="searchBackdrop" class="absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-200"></div>
+    
+    <!-- Modal Container -->
+    <div id="searchContainer" class="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 transition-all transform -translate-y-10 scale-95 opacity-0">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
+        <h3 class="text-lg font-bold text-[#ec3183]">Search Products</h3>
+        <button id="closeSearchBtn" class="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+          <span class="material-symbols-outlined text-gray-500">close</span>
+        </button>
+      </div>
+      <form action="{% url 'products' %}" method="GET" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        <div class="relative flex-1">
+          <input type="text" name="q" id="searchInput" placeholder="Search for vitamins, supplements, brands..."
+            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#ec3183] focus:ring-1 focus:ring-[#ec3183] text-gray-900 text-base font-medium" />
+        </div>
+        <button type="submit" class="bg-[#ec3183] hover:bg-[#c81c6c] text-white px-6 py-3 rounded-xl text-base font-semibold transition-colors flex-shrink-0 text-center w-full sm:w-auto">
+          Search
+        </button>
+      </form>
+    </div>
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const menuBtn = document.getElementById('menuBtn');
@@ -152,9 +193,45 @@
       closeMenuBtn.addEventListener('click', closeMenu);
       menuBackdrop.addEventListener('click', closeMenu);
 
+      // Search Modal DOM Elements
+      const openSearchBtn = document.getElementById('openSearchBtn');
+      const closeSearchBtn = document.getElementById('closeSearchBtn');
+      const searchOverlay = document.getElementById('searchOverlay');
+      const searchBackdrop = document.getElementById('searchBackdrop');
+      const searchContainer = document.getElementById('searchContainer');
+      const searchInput = document.getElementById('searchInput');
+
+      function openSearch() {
+        searchOverlay.classList.remove('hidden');
+        setTimeout(() => {
+          searchBackdrop.classList.remove('opacity-0');
+          searchContainer.classList.remove('-translate-y-10', 'scale-95', 'opacity-0');
+          searchInput.focus();
+        }, 10);
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSearch() {
+        searchBackdrop.classList.add('opacity-0');
+        searchContainer.classList.add('-translate-y-10', 'scale-95', 'opacity-0');
+        setTimeout(() => {
+          searchOverlay.classList.add('hidden');
+        }, 200);
+        document.body.style.overflow = '';
+      }
+
+      if (openSearchBtn) openSearchBtn.addEventListener('click', openSearch);
+      if (closeSearchBtn) closeSearchBtn.addEventListener('click', closeSearch);
+      if (searchBackdrop) searchBackdrop.addEventListener('click', closeSearch);
+
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !menuDrawer.classList.contains('hidden')) {
-          closeMenu();
+        if (e.key === 'Escape') {
+          if (!menuDrawer.classList.contains('hidden')) {
+            closeMenu();
+          }
+          if (searchOverlay && !searchOverlay.classList.contains('hidden')) {
+            closeSearch();
+          }
         }
       });
 

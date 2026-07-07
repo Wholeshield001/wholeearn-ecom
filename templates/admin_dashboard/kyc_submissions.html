@@ -4,6 +4,50 @@
 {% block title %}KYC Submissions | Admin Dashboard{% endblock %}
 
 {% block content %}
+<style>
+  .kyc-desktop-view {
+    display: block;
+  }
+  .kyc-mobile-view {
+    display: none;
+  }
+  .kyc-filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+  }
+  .kyc-filter-input {
+    width: 100% !important;
+  }
+  .kyc-filter-select {
+    width: 100% !important;
+  }
+  .kyc-filter-btn {
+    width: 100% !important;
+  }
+  @media (max-width: 1023px) {
+    .kyc-desktop-view {
+      display: none !important;
+    }
+    .kyc-mobile-view {
+      display: block !important;
+    }
+  }
+  @media (min-width: 1024px) {
+    .kyc-filter-input {
+      flex: 1 !important;
+      width: auto !important;
+    }
+    .kyc-filter-select {
+      width: auto !important;
+    }
+    .kyc-filter-btn {
+      width: auto !important;
+    }
+  }
+</style>
 <div class="p-6">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-gray-900">KYC Submissions</h1>
@@ -11,32 +55,32 @@
 
     <!-- Filters and Search -->
     <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-        <form method="get" class="flex gap-4 flex-wrap">
+        <form method="get" class="kyc-filter-form">
             <input 
                 type="text" 
                 name="search" 
                 value="{{ search_query }}"
                 placeholder="Search by email or business name..."
-                class="flex-1 min-w-xs px-4 py-2 rounded-lg border-2 border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                class="kyc-filter-input px-4 py-2 rounded-lg border-2 border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm"
             />
             <select 
                 name="status"
-                class="px-4 py-2 rounded-lg border-2 border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                class="kyc-filter-select px-4 py-2 rounded-lg border-2 border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm"
             >
                 <option value="">All Statuses</option>
                 {% for value, label in status_choices %}
                     <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
-            <button type="submit" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-6 rounded-lg transition">
+            <button type="submit" class="kyc-filter-btn bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-6 rounded-lg transition text-sm">
                 Filter
             </button>
         </form>
     </div>
 
     {% if kyc_list %}
-    <!-- KYC List -->
-    <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+    <!-- KYC List (Desktop Table View) -->
+    <div class="kyc-desktop-view bg-white rounded-lg shadow-md overflow-x-auto mb-6">
         <table class="min-w-full">
             <thead class="bg-gray-50">
                 <tr>
@@ -79,6 +123,40 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- KYC List (Mobile Cards View) -->
+    <div class="kyc-mobile-view space-y-4 mb-6">
+        {% for kyc in kyc_list %}
+            <div class="bg-white rounded-xl shadow p-4 border border-gray-100">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
+                        {% if kyc.status == 'approved' %}
+                            bg-green-100 text-green-800
+                        {% elif kyc.status == 'rejected' %}
+                            bg-red-100 text-red-800
+                        {% else %}
+                            bg-yellow-100 text-yellow-800
+                        {% endif %}
+                    ">
+                        {{ kyc.get_status_display }}
+                    </span>
+                    <span class="text-xs text-gray-500">{{ kyc.created_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="mb-4">
+                    <div class="text-sm font-bold text-gray-900">{{ kyc.business_name }}</div>
+                    <div class="text-xs text-gray-500">{{ kyc.get_user_type_display }}</div>
+                    <div class="text-sm text-pink-600 truncate mt-1">
+                        <a href="mailto:{{ kyc.user.email }}">{{ kyc.user.email }}</a>
+                    </div>
+                </div>
+                <div class="flex justify-end pt-3 border-t border-gray-100">
+                    <a href="{% url 'kyc-detail' kyc.id %}" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-lg text-xs transition">
+                        Review
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 
     {% else %}

@@ -112,14 +112,22 @@ def send_kyc_submitted_email(user, kyc_submission):
 def send_kyc_submitted_admin_email(user, kyc_submission):
     """Send admin notification when KYC is submitted"""
     from django.contrib.auth import get_user_model
+    from django.db.models import Q
     User = get_user_model()
     
-    # Get all admin users
-    admins = User.objects.filter(role=User.ADMINISTRATOR)
+    # Get all admin users, superusers, and staff
+    admins = User.objects.filter(Q(role=User.ADMINISTRATOR) | Q(is_superuser=True) | Q(is_staff=True))
     admin_emails = list(admins.values_list('email', flat=True))
     
+    # Add settings.ADMINS email addresses if configured
+    if hasattr(settings, 'ADMINS') and settings.ADMINS:
+        for name, email in settings.ADMINS:
+            if email and email not in admin_emails:
+                admin_emails.append(email)
+                
     if not admin_emails:
-        return False
+        logger.warning("No administrator, superuser, staff, or settings.ADMINS emails found to receive KYC submission notification.")
+        return True  # Return True so Celery task does not fail/retry endlessly due to empty recipients
     
     context = {
         'user': user,

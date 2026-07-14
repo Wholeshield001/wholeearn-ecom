@@ -1,0 +1,155 @@
+<!-- Edit User Modal -->
+<div id="editUserModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-lg max-w-md w-full animate-in overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-gray-200 p-6">
+      <h2 class="text-lg font-semibold text-gray-900">Edit User Details</h2>
+      <button onclick="closeEditUserModal()" class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form id="editUserForm" onsubmit="submitEditUserForm(event)" class="p-6 space-y-4">
+      <input type="hidden" id="editUserId" name="id">
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">First Name</label>
+          <input type="text" id="editFirstName" name="first_name" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Last Name</label>
+          <input type="text" id="editLastName" name="last_name" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Email</label>
+        <input type="email" id="editEmail" name="email" required
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Phone</label>
+        <input type="text" id="editPhone" name="phone"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Role</label>
+          <select id="editRole" name="role" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">
+            <option value="administrator">Administrator</option>
+            <option value="wholesaler">Wholesaler</option>
+            <option value="retailer">Retailer</option>
+            <option value="hospital">Hospital</option>
+            <option value="pharmacy">Pharmacy</option>
+            <option value="end_user">End User</option>
+            <option value="online_vendor">Online Vendor</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Reward Points</label>
+          <input type="number" id="editRewardPoints" name="reward_points" min="0" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <input type="checkbox" id="editIsActive" name="is_active"
+          class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 h-4 w-4">
+        <label for="editIsActive" class="text-sm font-medium text-gray-700 select-none">Active Account</label>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex gap-3 border-t border-gray-200 pt-6 mt-6">
+        <button type="button" onclick="closeEditUserModal()" 
+          class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" id="saveEditUserBtn" 
+          class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let editUserId = null;
+
+  function openEditUserModal(user) {
+    editUserId = user.id;
+    document.getElementById('editUserId').value = user.id;
+    document.getElementById('editFirstName').value = user.first_name || '';
+    document.getElementById('editLastName').value = user.last_name || '';
+    document.getElementById('editEmail').value = user.email || '';
+    document.getElementById('editPhone').value = user.phone || '';
+    document.getElementById('editRole').value = user.role || 'end_user';
+    document.getElementById('editRewardPoints').value = user.reward_points || 0;
+    document.getElementById('editIsActive').checked = !!user.is_active;
+
+    document.getElementById('editUserModal').classList.remove('hidden');
+  }
+
+  function closeEditUserModal() {
+    document.getElementById('editUserModal').classList.add('hidden');
+    editUserId = null;
+  }
+
+  function submitEditUserForm(event) {
+    event.preventDefault();
+    if (!editUserId) return;
+
+    const btn = document.getElementById('saveEditUserBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const payload = {
+      first_name: document.getElementById('editFirstName').value,
+      last_name: document.getElementById('editLastName').value,
+      email: document.getElementById('editEmail').value,
+      phone: document.getElementById('editPhone').value,
+      role: document.getElementById('editRole').value,
+      reward_points: document.getElementById('editRewardPoints').value,
+      is_active: document.getElementById('editIsActive').checked
+    };
+
+    fetch(`/admin-dashboard/users/${editUserId}/edit/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert(data.message || 'Failed to update user.');
+        btn.disabled = false;
+        btn.textContent = 'Save Changes';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while updating the user.');
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+    });
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('editUserModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeEditUserModal();
+    }
+  });
+</script>

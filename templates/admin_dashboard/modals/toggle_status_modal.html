@@ -1,0 +1,141 @@
+<!-- Toggle Status Modal -->
+<div id="toggleStatusModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-lg max-w-sm w-full overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-gray-200 p-6">
+      <h2 class="text-lg font-semibold text-gray-900" id="toggleStatusTitle">Toggle Status</h2>
+      <button onclick="closeToggleStatusModal()" class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6 space-y-4">
+      <div class="flex items-start gap-3">
+        <!-- Deactivate Icon Container -->
+        <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 hidden" id="deactivateIconContainer">
+          <span class="material-symbols-outlined text-amber-600">block</span>
+        </div>
+        <!-- Activate Icon Container -->
+        <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-green-100 hidden" id="activateIconContainer">
+          <span class="material-symbols-outlined text-green-600">check_circle</span>
+        </div>
+        <div>
+          <h3 class="font-medium text-gray-900">Are you sure?</h3>
+          <p class="text-sm text-gray-600 mt-1" id="toggleStatusText"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex gap-3 border-t border-gray-200 p-6">
+      <button onclick="closeToggleStatusModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <!-- Deactivate Button -->
+      <button id="confirmDeactivateBtn" onclick="confirmToggleStatus()" class="hidden flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+        Deactivate
+      </button>
+      <!-- Activate Button -->
+      <button id="confirmActivateBtn" onclick="confirmToggleStatus()" class="hidden flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">
+        Activate
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let toggleStatusData = null;
+
+  function openToggleStatusModal(userId, userName, isActive) {
+    toggleStatusData = { userId, userName, isActive };
+    const title = isActive ? 'Deactivate Account' : 'Activate Account';
+    const text = isActive 
+      ? `Are you sure you want to deactivate the account for ${userName}? They will no longer be able to log in or place orders.`
+      : `Are you sure you want to activate the account for ${userName}?`;
+    
+    document.getElementById('toggleStatusTitle').textContent = title;
+    document.getElementById('toggleStatusText').textContent = text;
+    
+    if (isActive) {
+      document.getElementById('deactivateIconContainer').classList.remove('hidden');
+      document.getElementById('activateIconContainer').classList.add('hidden');
+      document.getElementById('confirmDeactivateBtn').classList.remove('hidden');
+      document.getElementById('confirmActivateBtn').classList.add('hidden');
+    } else {
+      document.getElementById('deactivateIconContainer').classList.add('hidden');
+      document.getElementById('activateIconContainer').classList.remove('hidden');
+      document.getElementById('confirmDeactivateBtn').classList.add('hidden');
+      document.getElementById('confirmActivateBtn').classList.remove('hidden');
+    }
+    
+    document.getElementById('toggleStatusModal').classList.remove('hidden');
+  }
+
+  function closeToggleStatusModal() {
+    document.getElementById('toggleStatusModal').classList.add('hidden');
+    toggleStatusData = null;
+  }
+
+  function confirmToggleStatus() {
+    if (!toggleStatusData) return;
+    
+    const { userId, isActive } = toggleStatusData;
+    const btn = isActive 
+      ? document.getElementById('confirmDeactivateBtn')
+      : document.getElementById('confirmActivateBtn');
+      
+    btn.disabled = true;
+    btn.textContent = isActive ? 'Deactivating...' : 'Activating...';
+
+    fetch(`/admin-dashboard/users/${userId}/toggle-status/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        if (typeof showToast === 'function') {
+          showToast('error', data.message || 'Failed to update user status.');
+        }
+        btn.disabled = false;
+        btn.textContent = isActive ? 'Deactivate' : 'Activate';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      if (typeof showToast === 'function') {
+        showToast('error', 'Failed to update user status');
+      }
+      btn.disabled = false;
+      btn.textContent = isActive ? 'Deactivate' : 'Activate';
+    });
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('toggleStatusModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeToggleStatusModal();
+    }
+  });
+</script>

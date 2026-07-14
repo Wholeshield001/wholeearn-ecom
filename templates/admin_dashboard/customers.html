@@ -188,10 +188,19 @@
                 <a href="{% url 'user_detail' user.id %}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                   <span class="material-symbols-outlined text-blue-600 text-base">visibility</span> View Details
                 </a>
-                <a href="" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                <button type="button" @click="open=false; openEditUserModal({
+                  id: '{{ user.id }}',
+                  first_name: '{{ user.first_name|default:""|escapejs }}',
+                  last_name: '{{ user.last_name|default:""|escapejs }}',
+                  email: '{{ user.email|escapejs }}',
+                  phone: '{{ user.phone|default:""|escapejs }}',
+                  role: '{{ user.role|escapejs }}',
+                  reward_points: {{ user.reward_points|default:0 }},
+                  is_active: {% if user.is_active %}true{% else %}false{% endif %}
+                })" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                   <span class="material-symbols-outlined text-green-600 text-base">edit</span> Edit
-                </a>
-                <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                </button>
+                <button type="button" @click="open=false; openDeleteUserModal('{{ user.id }}', '{{ user.first_name|default:""|escapejs }} {{ user.last_name|default:""|escapejs }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                   <span class="material-symbols-outlined text-base">delete</span> Delete
                 </button>
               </div>
@@ -212,4 +221,9 @@
     </table>
   </div>
 </div>
+
+<!-- Modals -->
+{% include 'admin_dashboard/modals/delete_user_modal.html' %}
+{% include 'admin_dashboard/modals/edit_user_modal.html' %}
+
 {% endblock %}

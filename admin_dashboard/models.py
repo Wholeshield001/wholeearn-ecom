@@ -98,6 +98,11 @@ class Product(models.Model):
         }
         return min_quantity_map.get(role, config.end_user_limit)
 
+    def save(self, *args, **kwargs):
+        # Sync legacy price field with customer_price for storefront/visitor compatibility
+        self.price = self.customer_price
+        super().save(*args, **kwargs)
+
 
 
 class ProductImage(models.Model):

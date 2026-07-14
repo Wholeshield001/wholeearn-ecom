@@ -17,11 +17,6 @@
   </div>
 
   <div class="flex items-center gap-2">
-    <a href="{% url 'admin_reward_settings' %}" class="flex items-center gap-1 px-3 py-2 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition border border-indigo-200">
-      <span class="material-symbols-outlined text-base">workspace_premium</span>
-      Reward Settings
-    </a>
-
     <form id="deleteUserForm" method="post">
       {% csrf_token %}
       <input type="hidden" name="action" value="delete">

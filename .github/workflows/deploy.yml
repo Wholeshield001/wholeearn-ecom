@@ -40,7 +40,7 @@ jobs:
 
       - name: Create deployment package
         run: |
-          tar -czf ../deploy.tar.gz \
+          tar --warning=no-file-changed -czf ../deploy.tar.gz \
             --exclude='env' \
             --exclude='*.pyc' \
             --exclude='__pycache__' \

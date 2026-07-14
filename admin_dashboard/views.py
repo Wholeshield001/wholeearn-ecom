@@ -788,6 +788,92 @@ def export_wholesalers_csv(request):
 
 
 @admin_required
+def online_vendors_page(request):
+    """Online Vendors management page"""
+    from ecom.models import Order
+    from django.db.models import Sum, Count, Q
+    
+    # Get filter and search parameters
+    status_filter = request.GET.get('status', 'all')
+    search_query = request.GET.get('q', '').strip()
+    
+    # Get all online vendors
+    online_vendors = User.objects.filter(role=User.ONLINE_VENDOR, is_superuser=False).annotate(
+        total_orders=Count('orders'),
+        total_spent=Sum('orders__total_amount')
+    ).order_by('-date_joined')
+    
+    # Apply status filter
+    if status_filter == 'active':
+        online_vendors = online_vendors.filter(is_active=True)
+    elif status_filter == 'inactive':
+        online_vendors = online_vendors.filter(is_active=False)
+    
+    # Apply search filter
+    if search_query:
+        online_vendors = online_vendors.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(kyc_submission__business_name__icontains=search_query)
+        )
+    
+    # Calculate statistics
+    total_vendors = User.objects.filter(role=User.ONLINE_VENDOR, is_superuser=False).count()
+    inactive_vendors = User.objects.filter(role=User.ONLINE_VENDOR, is_active=False, is_superuser=False).count()
+    active_vendors = User.objects.filter(role=User.ONLINE_VENDOR, is_active=True, is_superuser=False).count()
+    
+    # Get total products distributed (sum of all order items quantities for online vendors)
+    from ecom.models import OrderItem
+    products_distributed = OrderItem.objects.filter(
+        order__user__role=User.ONLINE_VENDOR
+    ).aggregate(total=Sum('quantity'))['total'] or 0
+    
+    context = {
+        'page_title': 'Online Vendors',
+        'online_vendors': online_vendors,
+        'total_vendors': total_vendors,
+        'inactive_vendors': inactive_vendors,
+        'active_vendors': active_vendors,
+        'products_distributed': products_distributed,
+        'status_filter': status_filter,
+        'search_query': search_query,
+    }
+    return render(request, 'admin_dashboard/online_vendors.html', context)
+
+
+@admin_required
+def export_online_vendors_csv(request):
+    """Export online vendors list to CSV respecting status filter"""
+    import csv
+    from django.db.models import Sum, Count
+
+    status_filter = request.GET.get('status', 'all')
+    qs = User.objects.filter(role=User.ONLINE_VENDOR, is_superuser=False).annotate(
+        total_orders=Count('orders'),
+        total_spent=Sum('orders__total_amount')
+    ).order_by('-date_joined')
+    if status_filter == 'active':
+        qs = qs.filter(is_active=True)
+    elif status_filter == 'inactive':
+        qs = qs.filter(is_active=False)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="online_vendors.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Active', 'Joined', 'Total Orders', 'Total Spent', 'Unique Code', 'Referral Code', 'Reward Points'])
+    for u in qs:
+        writer.writerow([
+            str(u.id), u.first_name, u.last_name, u.email, u.phone or '', 'online_vendor',
+            'yes' if u.is_active else 'no', u.date_joined.strftime('%Y-%m-%d %H:%M'),
+            int(u.total_orders or 0), float(u.total_spent or 0),
+            u.unique_code or '', u.referral_code or '', u.reward_points,
+        ])
+    return response
+
+
+@admin_required
 def retailers_page(request):
     """Retailers management page"""
     from ecom.models import Order
@@ -2427,6 +2513,7 @@ def delete_user_admin(request, user_id):
                 }, status=400)
             
             user.delete()
+            messages.success(request, 'User deleted successfully.')
             return JsonResponse({
                 'success': True,
                 'message': 'User deleted successfully'
@@ -2437,6 +2524,107 @@ def delete_user_admin(request, user_id):
                 'message': str(e)
             }, status=400)
     
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
+
+
+@admin_required
+def edit_user_admin(request, user_id):
+    """Edit a user via AJAX/API endpoint"""
+    if request.method == 'POST':
+        try:
+            import json
+            user = get_object_or_404(User, id=user_id)
+            
+            if request.content_type == 'application/json':
+                data = json.loads(request.body)
+            else:
+                data = request.POST
+                
+            first_name = data.get('first_name')
+            last_name = data.get('last_name')
+            email = data.get('email')
+            phone = data.get('phone')
+            role = data.get('role')
+            reward_points = data.get('reward_points')
+            is_active = data.get('is_active')
+            
+            if email:
+                if User.objects.exclude(id=user.id).filter(email=email).exists():
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'A user with this email already exists.'
+                    }, status=400)
+                user.email = email
+            
+            if first_name is not None:
+                user.first_name = first_name
+            if last_name is not None:
+                user.last_name = last_name
+            if phone is not None:
+                user.phone = phone
+            if role is not None:
+                if role in dict(User.ROLE_CHOICES):
+                    user.role = role
+                else:
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Invalid role: {role}'
+                    }, status=400)
+            if reward_points is not None:
+                try:
+                    user.reward_points = int(reward_points)
+                except ValueError:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Reward points must be an integer.'
+                    }, status=400)
+            if is_active is not None:
+                if isinstance(is_active, str):
+                    user.is_active = is_active.lower() in ['on', 'true', '1']
+                else:
+                    user.is_active = bool(is_active)
+                    
+            user.save()
+            messages.success(request, 'User updated successfully.')
+            return JsonResponse({
+                'success': True,
+                'message': 'User updated successfully'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=400)
+            
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
+
+
+@admin_required
+def toggle_user_status_admin(request, user_id):
+    """Toggle a user's is_active status via AJAX"""
+    if request.method == 'POST':
+        try:
+            user = get_object_or_404(User, id=user_id)
+            if user.id == request.user.id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'You cannot deactivate yourself!'
+                }, status=400)
+            
+            user.is_active = not user.is_active
+            user.save()
+            action_str = "activated" if user.is_active else "deactivated"
+            messages.success(request, f'User {action_str} successfully.')
+            return JsonResponse({
+                'success': True,
+                'message': f'User {action_str} successfully'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=400)
+            
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
 
 
@@ -2606,6 +2794,46 @@ def blog_toggle_publish(request, post_id):
     return redirect('admin_blog_list')
 
 
+# Online Vendor Detail View
+@admin_required
+def online_vendor_detail(request, vendor_id):
+    if request.user.role != User.ADMINISTRATOR or not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('admin_login')
+    
+    # Handle status toggle (activation/deactivation)
+    if request.method == 'POST' and request.POST.get('action') == 'toggle_status':
+        vendor = get_object_or_404(User, id=vendor_id, role=User.ONLINE_VENDOR)
+        vendor.is_active = not vendor.is_active
+        vendor.save()
+        action_str = "activated" if vendor.is_active else "deactivated"
+        messages.success(request, f'Online Vendor {action_str} successfully!')
+        return redirect('online_vendor_detail', vendor_id=vendor.id)
+    
+    vendor = get_object_or_404(User, id=vendor_id, role=User.ONLINE_VENDOR)
+    
+    # Get orders for this vendor
+    from ecom.models import Order, OrderItem
+    from django.db.models import Sum, Count
+    
+    orders = Order.objects.filter(user=vendor).prefetch_related('items__product').order_by('-created_at')
+    
+    # Calculate stats
+    total_orders = orders.count()
+    total_revenue = orders.aggregate(total=Sum('total_amount'))['total'] or 0
+    total_items_sold = OrderItem.objects.filter(order__user=vendor).aggregate(total=Sum('quantity'))['total'] or 0
+    
+    context = {
+        'vendor': vendor,
+        'orders': orders[:10],  # Recent 10 orders
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'total_items_sold': total_items_sold,
+        'page_title': f"{vendor.first_name} {vendor.last_name}",
+    }
+    return render(request, 'admin_dashboard/online_vendor_detail.html', context)
+
+
 # Wholesaler Detail View
 @admin_required
 def wholesaler_detail(request, wholesaler_id):
@@ -2613,12 +2841,14 @@ def wholesaler_detail(request, wholesaler_id):
         messages.error(request, 'Access denied.')
         return redirect('admin_login')
     
-    # Handle deletion
-    if request.method == 'POST' and request.POST.get('action') == 'delete':
+    # Handle status toggle (activation/deactivation)
+    if request.method == 'POST' and request.POST.get('action') == 'toggle_status':
         wholesaler = get_object_or_404(User, id=wholesaler_id, role=User.WHOLESALER)
-        wholesaler.delete()
-        messages.success(request, 'Wholesaler deleted successfully!')
-        return redirect('admin_wholesalers')
+        wholesaler.is_active = not wholesaler.is_active
+        wholesaler.save()
+        action_str = "activated" if wholesaler.is_active else "deactivated"
+        messages.success(request, f'Wholesaler {action_str} successfully!')
+        return redirect('wholesaler_detail', wholesaler_id=wholesaler.id)
     
     wholesaler = get_object_or_404(User, id=wholesaler_id, role=User.WHOLESALER)
     
@@ -2651,12 +2881,14 @@ def retailer_detail(request, retailer_id):
         messages.error(request, 'Access denied.')
         return redirect('admin_login')
     
-    # Handle deletion
-    if request.method == 'POST' and request.POST.get('action') == 'delete':
+    # Handle status toggle (activation/deactivation)
+    if request.method == 'POST' and request.POST.get('action') == 'toggle_status':
         retailer = get_object_or_404(User, id=retailer_id, role=User.RETAILER)
-        retailer.delete()
-        messages.success(request, 'Retailer deleted successfully!')
-        return redirect('admin_retailers')
+        retailer.is_active = not retailer.is_active
+        retailer.save()
+        action_str = "activated" if retailer.is_active else "deactivated"
+        messages.success(request, f'Retailer {action_str} successfully!')
+        return redirect('retailer_detail', retailer_id=retailer.id)
     
     retailer = get_object_or_404(User, id=retailer_id, role=User.RETAILER)
     
@@ -2689,12 +2921,14 @@ def hospital_detail(request, hospital_id):
         messages.error(request, 'Access denied.')
         return redirect('admin_login')
     
-    # Handle deletion
-    if request.method == 'POST' and request.POST.get('action') == 'delete':
+    # Handle status toggle (activation/deactivation)
+    if request.method == 'POST' and request.POST.get('action') == 'toggle_status':
         hospital = get_object_or_404(User, id=hospital_id, role=User.HOSPITAL)
-        hospital.delete()
-        messages.success(request, 'Hospital deleted successfully!')
-        return redirect('admin_hospitals')
+        hospital.is_active = not hospital.is_active
+        hospital.save()
+        action_str = "activated" if hospital.is_active else "deactivated"
+        messages.success(request, f'Hospital {action_str} successfully!')
+        return redirect('hospital_detail', hospital_id=hospital.id)
     
     hospital = get_object_or_404(User, id=hospital_id, role=User.HOSPITAL)
     
@@ -2727,12 +2961,14 @@ def pharmacy_detail(request, pharmacy_id):
         messages.error(request, 'Access denied.')
         return redirect('admin_login')
     
-    # Handle deletion
-    if request.method == 'POST' and request.POST.get('action') == 'delete':
+    # Handle status toggle (activation/deactivation)
+    if request.method == 'POST' and request.POST.get('action') == 'toggle_status':
         pharmacy = get_object_or_404(User, id=pharmacy_id, role=User.PHARMACY)
-        pharmacy.delete()
-        messages.success(request, 'Pharmacy deleted successfully!')
-        return redirect('admin_pharmacies')
+        pharmacy.is_active = not pharmacy.is_active
+        pharmacy.save()
+        action_str = "activated" if pharmacy.is_active else "deactivated"
+        messages.success(request, f'Pharmacy {action_str} successfully!')
+        return redirect('pharmacy_detail', pharmacy_id=pharmacy.id)
     
     pharmacy = get_object_or_404(User, id=pharmacy_id, role=User.PHARMACY)
     

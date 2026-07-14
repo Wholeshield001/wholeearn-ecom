@@ -84,6 +84,11 @@ urlpatterns = [
     path('customers/', views.customers_page, name='admin_customers'),
     path('customers/<uuid:user_id>/detail/', views.user_detail, name='user_detail'),
     path('users/<uuid:user_id>/delete/', views.delete_user_admin, name='admin_delete_user'),
+    path('users/<uuid:user_id>/edit/', views.edit_user_admin, name='admin_edit_user'),
+    path('users/<uuid:user_id>/toggle-status/', views.toggle_user_status_admin, name='admin_toggle_user_status'),
+    path('online-vendors/', views.online_vendors_page, name='admin_online_vendors'),
+    path('online-vendors/<uuid:vendor_id>/detail/', views.online_vendor_detail, name='online_vendor_detail'),
+    path('online-vendors/export/', views.export_online_vendors_csv, name='admin_export_online_vendors'),
 
     # End Users (regular customers)
     path('end-users/', views.end_users_page, name='admin_end_users'),

@@ -58,7 +58,7 @@
     btn.disabled = true;
     btn.textContent = 'Deleting...';
 
-    fetch(`/admin/users/${userId}/delete/`, {
+    fetch(`/admin-dashboard/users/${userId}/delete/`, {
       method: 'POST',
       headers: {
         'X-CSRFToken': getCookie('csrftoken'),

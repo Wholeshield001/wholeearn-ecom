@@ -232,7 +232,7 @@ class ProductForm(forms.ModelForm):
         fields = [
             'name', 'description', 'category', 'customer_price', 'wholesaler_price', 
             'retailer_price', 'hospital_price', 'pharmacy_price', 'online_vendor_price', 'discount', 'checkout_code_discount_percent', 'checkout_code_points', 'stock', 'weight_kg',
-            'is_best_seller', 'is_male', 'is_female', 'is_general', 'additional_info'
+            'sku', 'is_best_seller', 'is_male', 'is_female', 'is_general', 'additional_info'
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
@@ -249,6 +249,7 @@ class ProductForm(forms.ModelForm):
             'checkout_code_points': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0','placeholder':'0'}),
             'stock': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0'}),
             'weight_kg': forms.NumberInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','min':'0.01','step':'0.01','placeholder':'1.00'}),
+            'sku': forms.TextInput(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','placeholder':'SKU-12345'}),
             'is_best_seller': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
             'is_male': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
             'is_female': forms.CheckboxInput(attrs={'class':'w-4 h-4 text-teal-600 border-gray-300 rounded'}),

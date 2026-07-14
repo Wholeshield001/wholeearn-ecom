@@ -79,6 +79,14 @@
       Pharmacies
     </a>
 
+    <!-- Online Vendors -->
+    <a href="{% url 'admin_online_vendors' %}"
+       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+       {% if current == 'admin_online_vendors' or current == 'online_vendor_detail' %} bg-teal-50 text-teal-600 {% else %} text-gray-700 hover:bg-gray-50 {% endif %}">
+      <span class="material-symbols-outlined {% if current == 'admin_online_vendors' or current == 'online_vendor_detail' %}text-teal-600{% else %}text-gray-400{% endif %}">devices</span>
+      Online Vendors
+    </a>
+
     <!-- Orders -->
     <a href="{% url 'admin_orders' %}"
       class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg

@@ -15,12 +15,16 @@
     </a>
     <span class="text-gray-700 font-semibold">Hospital Details</span>
   </div>
-  <button onclick="openDeleteHospitalModal({{ hospital.id }}, '{{ hospital.first_name }} {{ hospital.last_name }}')" class="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition">
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-    </svg>
-    <span>Delete</span>
+  <button onclick="openToggleStatusModal('{{ hospital.id }}', '{{ hospital.first_name|escapejs }} {{ hospital.last_name|escapejs }}', {% if hospital.is_active %}true{% else %}false{% endif %})" 
+    class="flex items-center gap-2 px-4 py-2 rounded-lg transition border 
+    {% if hospital.is_active %} text-amber-600 border-amber-200 hover:bg-amber-50 {% else %} text-green-600 border-green-200 hover:bg-green-50 {% endif %}">
+    <span class="material-symbols-outlined text-lg">{% if hospital.is_active %}block{% else %}check_circle{% endif %}</span>
+    <span>{% if hospital.is_active %}Deactivate{% else %}Activate{% endif %}</span>
   </button>
+  <form id="toggleStatusForm" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="toggle_status">
+  </form>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -152,114 +156,87 @@
   </div>
 </div>
 
-<!-- Delete Hospital Modal -->
-<div id="deleteHospitalModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-lg max-w-sm w-full animate-in">
-    <!-- Header -->
+<!-- Toggle Status Confirmation Modal -->
+<div id="toggleStatusModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-lg max-w-sm w-full overflow-hidden">
     <div class="flex items-center justify-between border-b border-gray-200 p-6">
-      <h2 class="text-lg font-semibold text-gray-900">Delete Hospital</h2>
-      <button onclick="closeDeleteHospitalModal()" class="text-gray-400 hover:text-gray-600">
+      <h2 class="text-lg font-semibold text-gray-900" id="toggleStatusTitle">Toggle Status</h2>
+      <button type="button" onclick="closeToggleStatusModal()" class="text-gray-400 hover:text-gray-600">
         <span class="material-symbols-outlined text-xl">close</span>
       </button>
     </div>
-
-    <!-- Content -->
     <div class="p-6 space-y-4">
       <div class="flex items-start gap-3">
-        <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
-          <span class="material-symbols-outlined text-red-600">warning</span>
+        <!-- Deactivate Icon Container -->
+        <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 hidden" id="deactivateIconContainer">
+          <span class="material-symbols-outlined text-amber-600">block</span>
+        </div>
+        <!-- Activate Icon Container -->
+        <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-green-100 hidden" id="activateIconContainer">
+          <span class="material-symbols-outlined text-green-600">check_circle</span>
         </div>
         <div>
           <h3 class="font-medium text-gray-900">Are you sure?</h3>
-          <p class="text-sm text-gray-600 mt-1">
-            This will permanently delete the hospital <strong id="deleteHospitalName"></strong> and all associated data. This action cannot be undone.
-          </p>
+          <p class="text-sm text-gray-600 mt-1" id="toggleStatusText"></p>
         </div>
       </div>
     </div>
-
-    <!-- Footer -->
     <div class="flex gap-3 border-t border-gray-200 p-6">
-      <button onclick="closeDeleteHospitalModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
-        Cancel
+      <button type="button" onclick="closeToggleStatusModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
+      <!-- Deactivate Button -->
+      <button id="confirmDeactivateBtn" onclick="confirmToggleStatus()" class="hidden flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+        Deactivate
       </button>
-      <button id="confirmDeleteHospitalBtn" onclick="confirmDeleteHospital()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors">
-        Delete Hospital
+      <!-- Activate Button -->
+      <button id="confirmActivateBtn" onclick="confirmToggleStatus()" class="hidden flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">
+        Activate
       </button>
     </div>
   </div>
 </div>
 
 <script>
-  let deleteHospitalData = null;
+  let toggleStatusData = null;
 
-  function openDeleteHospitalModal(hospitalId, hospitalName) {
-    deleteHospitalData = { hospitalId, hospitalName };
-    document.getElementById('deleteHospitalName').textContent = hospitalName;
-    document.getElementById('deleteHospitalModal').classList.remove('hidden');
-  }
-
-  function closeDeleteHospitalModal() {
-    document.getElementById('deleteHospitalModal').classList.add('hidden');
-    deleteHospitalData = null;
-  }
-
-  function confirmDeleteHospital() {
-    if (!deleteHospitalData) return;
+  function openToggleStatusModal(userId, userName, isActive) {
+    toggleStatusData = { userId, userName, isActive };
+    const title = isActive ? 'Deactivate Account' : 'Activate Account';
+    const text = isActive 
+      ? `Are you sure you want to deactivate the account for ${userName}? They will no longer be able to log in or place orders.`
+      : `Are you sure you want to activate the account for ${userName}?`;
     
-    const { hospitalId } = deleteHospitalData;
-    const btn = document.getElementById('confirmDeleteHospitalBtn');
-    btn.disabled = true;
-    btn.textContent = 'Deleting...';
-
-    fetch(`/admin/hospitals/${hospitalId}/delete/`, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': getCookie('csrftoken'),
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        location.reload();
-      } else {
-        if (typeof showToast === 'function') {
-          showToast('error', data.message || 'Failed to delete hospital.');
-        }
-        btn.disabled = false;
-        btn.textContent = 'Delete Hospital';
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      if (typeof showToast === 'function') {
-        showToast('error', 'Failed to delete hospital');
-      }
-      btn.disabled = false;
-      btn.textContent = 'Delete Hospital';
-    });
+    document.getElementById('toggleStatusTitle').textContent = title;
+    document.getElementById('toggleStatusText').textContent = text;
+    
+    if (isActive) {
+      document.getElementById('deactivateIconContainer').classList.remove('hidden');
+      document.getElementById('activateIconContainer').classList.add('hidden');
+      document.getElementById('confirmDeactivateBtn').classList.remove('hidden');
+      document.getElementById('confirmActivateBtn').classList.add('hidden');
+    } else {
+      document.getElementById('deactivateIconContainer').classList.add('hidden');
+      document.getElementById('activateIconContainer').classList.remove('hidden');
+      document.getElementById('confirmDeactivateBtn').classList.add('hidden');
+      document.getElementById('confirmActivateBtn').classList.remove('hidden');
+    }
+    
+    document.getElementById('toggleStatusModal').classList.remove('hidden');
   }
 
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
+  function closeToggleStatusModal() {
+    document.getElementById('toggleStatusModal').classList.add('hidden');
+    toggleStatusData = null;
+  }
+
+  function confirmToggleStatus() {
+    if (!toggleStatusData) return;
+    document.getElementById('toggleStatusForm').submit();
   }
 
   // Close modal when clicking outside
-  document.getElementById('deleteHospitalModal')?.addEventListener('click', function(e) {
+  document.getElementById('toggleStatusModal')?.addEventListener('click', function(e) {
     if (e.target === this) {
-      closeDeleteHospitalModal();
+      closeToggleStatusModal();
     }
   });
 </script>

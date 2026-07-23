@@ -1,5 +1,6 @@
 {% extends "ecommerce_base.html" %}
 {% load static %}
+{% load ecom_tags %}
 
 {% block title %}WholeShield | Welcome{% endblock %}
 
@@ -279,7 +280,9 @@
             <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
             <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
             <p class="mt-2 text-[#ec3183] font-medium text-base">
-              {% if product.price %}₦{{ product.price }}{% else %}—{% endif %}
+              {% with display_price=product|price_for_user:request.user %}
+                {% if display_price %}₦{{ display_price }}{% else %}—{% endif %}
+              {% endwith %}
             </p>
           </div>
         </a>
@@ -303,7 +306,9 @@
             <p class="text-[#ec3183] font-semibold text-base">{{ product.name|default:'Product' }}</p>
             <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
             <p class="mt-2 text-[#ec3183] font-medium text-base">
-              {% if product.price %}₦{{ product.price }}{% else %}—{% endif %}
+              {% with display_price=product|price_for_user:request.user %}
+                {% if display_price %}₦{{ display_price }}{% else %}—{% endif %}
+              {% endwith %}
             </p>
           </div>
         </a>

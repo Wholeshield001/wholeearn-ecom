@@ -26,3 +26,10 @@ def min_quantity_for_role(product, role):
         return 1
     return product.get_min_quantity_for_role(role)
 
+
+@register.filter(name='price_for_user')
+def price_for_user(product, user):
+    if not user or not user.is_authenticated:
+        return product.customer_price
+    return product.get_price_for_role(user.role)
+

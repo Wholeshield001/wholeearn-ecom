@@ -1488,6 +1488,10 @@ def edit_product(request, product_id):
             form.save()
             messages.success(request, 'Product updated successfully!')
             return redirect('edit_product', product_id=product.id)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field.replace('_', ' ').title()}: {error}")
     else:
         form = ProductForm(instance=product)
     
@@ -1601,16 +1605,20 @@ def edit_category(request, category_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Category updated successfully!')
-            return redirect('admin_categories')
+            resp = HttpResponse('')
+            resp['HX-Redirect'] = reverse('admin_categories')
+            return resp
+        return render(request, 'partials/admin_dashboard/category_form.html', {'form': form, 'category': category})
     else:
         form = CategoryForm(instance=category)
-    return render(request, 'admin_dashboard/partials/category_form.html', {'form': form, 'category': category})
+    return render(request, 'partials/admin_dashboard/category_form.html', {'form': form, 'category': category})
 
 @admin_required
 def delete_category(request, category_id):
     if request.method == 'DELETE':
         category = get_object_or_404(Category, id=category_id)
         category.delete()
+        messages.success(request, 'Category deleted successfully!')
         return JsonResponse({'success': True, 'message': 'Category deleted successfully'})
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
 

@@ -126,3 +126,37 @@ class CartMergingTests(TestCase):
 		self.assertFalse(Cart.objects.filter(session_id="guest_session_123").exists())
 
 
+class AdminProductEditTests(TestCase):
+	def test_edit_product_price_saves_successfully(self):
+		admin_user = User.objects.create_superuser(
+			email='admin_test@example.com',
+			password='strong-pass-123',
+		)
+		from admin_dashboard.models import Product
+		product = Product.objects.create(
+			name="Product to Edit",
+			customer_price=Decimal("100.00"),
+			stock=50
+		)
+		self.client.login(email='admin_test@example.com', password='strong-pass-123')
+		
+		# Submit POST to edit product details
+		response = self.client.post(
+			f'/admin-dashboard/products/{product.id}/edit/',
+			data={
+				'name': 'Updated Product Name',
+				'customer_price': '150.00',
+				'stock': '40',
+				'weight_kg': '1.50',
+			}
+		)
+		self.assertEqual(response.status_code, 302)
+		
+		# Verify changes in DB
+		product.refresh_from_db()
+		self.assertEqual(product.name, 'Updated Product Name')
+		self.assertEqual(product.customer_price, Decimal('150.00'))
+		self.assertEqual(product.price, Decimal('150.00'))  # Verify legacy price synced
+		self.assertEqual(product.stock, 40)
+
+

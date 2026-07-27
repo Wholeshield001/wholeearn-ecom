@@ -257,6 +257,32 @@ class ProductForm(forms.ModelForm):
             'additional_info': forms.Textarea(attrs={'class':'w-full px-4 py-3 border border-gray-300 rounded-lg','rows':4}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from decimal import Decimal
+        optional_fields = ['discount', 'checkout_code_discount_percent', 'checkout_code_points', 'weight_kg']
+        for field in optional_fields:
+            if field in self.fields:
+                self.fields[field].required = False
+
+    def clean_discount(self):
+        val = self.cleaned_data.get('discount')
+        return val if val is not None else 0
+
+    def clean_checkout_code_discount_percent(self):
+        from decimal import Decimal
+        val = self.cleaned_data.get('checkout_code_discount_percent')
+        return val if val is not None else Decimal('0.00')
+
+    def clean_checkout_code_points(self):
+        val = self.cleaned_data.get('checkout_code_points')
+        return val if val is not None else 0
+
+    def clean_weight_kg(self):
+        from decimal import Decimal
+        val = self.cleaned_data.get('weight_kg')
+        return val if val is not None else Decimal('1.00')
+
 
 class ProductImageForm(forms.Form):
     images = forms.FileField(

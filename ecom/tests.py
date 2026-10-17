@@ -160,3 +160,33 @@ class AdminProductEditTests(TestCase):
 		self.assertEqual(product.stock, 40)
 
 
+class ProductPaginationTests(TestCase):
+	def test_htmx_pagination_returns_single_container_and_updates_page(self):
+		from admin_dashboard.models import Product
+		# Create 14 products to produce 2 pages (12 per page)
+		for i in range(14):
+			Product.objects.create(
+				name=f"Product {i+1}",
+				customer_price=Decimal("100.00"),
+				stock=10
+			)
+
+		# Initial load (standard GET)
+		response = self.client.get('/products/')
+		self.assertEqual(response.status_code, 200)
+		content = response.content.decode('utf-8')
+		self.assertEqual(content.count('id="productsGrid"'), 1)
+		self.assertEqual(content.count('id="paginationContainer"'), 1)
+		self.assertIn('Page 1 of 2', content)
+
+		# HTMX page 2 request
+		htmx_response = self.client.get('/products/?page=2', HTTP_HX_REQUEST='true')
+		self.assertEqual(htmx_response.status_code, 200)
+		htmx_content = htmx_response.content.decode('utf-8')
+		# The partial response itself must contain exactly 1 #productsGrid and 1 #paginationContainer
+		self.assertEqual(htmx_content.count('id="productsGrid"'), 1)
+		self.assertEqual(htmx_content.count('id="paginationContainer"'), 1)
+		self.assertIn('Page 2 of 2', htmx_content)
+
+
+

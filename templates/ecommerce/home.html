@@ -7,115 +7,52 @@
 {% block content %}
 
 <!-- Hero Section -->
-<section class="relative overflow-hidden reveal flex items-center justify-center pt-20 sm:pt-24 pb-0 hero-section-bg">
+<!-- Hero Section -->
+<section class="relative overflow-hidden reveal flex items-center justify-center pt-16 sm:pt-24 pb-4 sm:pb-0 hero-section-bg">
 
   <style>
     .hero-section-bg {
       background-image: url('{% static "images/websitehero.png" %}');
+      background-image: image-set(
+        url('{% static "images/websitehero.webp" %}') type("image/webp"),
+        url('{% static "images/websitehero.png" %}') type("image/png")
+      );
       background-size: cover;
-      background-position: center;
       background-repeat: no-repeat;
-      min-height: 72vh;
+      background-position: 32% center;
+      min-height: clamp(380px, 52vh, 460px);
     }
 
     @media (min-width: 640px) {
       .hero-section-bg {
-        min-height: 85vh;
+        background-position: 45% center;
+        min-height: 65vh;
       }
     }
 
-    @media (max-width: 640px) {
+    @media (min-width: 1024px) {
       .hero-section-bg {
-        background-position: 28% center;
+        background-position: center center;
+        min-height: 82vh;
       }
-    }
-
-    .hero-side-bottle {
-      position: absolute;
-      z-index: 10;
-      transition: transform 0.5s ease-out;
-      width: 180px;
-      /* Mobile size */
-    }
-
-    .left-bottle {
-      left: -60px;
-      top: 15%;
-      transform: rotate(-12deg);
-    }
-
-    .right-bottle {
-      right: -60px;
-      top: 15%;
-      transform: rotate(12deg);
-    }
-
-    .left-bottle:hover {
-      transform: translateY(-8px) rotate(-6deg);
-    }
-
-    .right-bottle:hover {
-      transform: translateY(-8px) rotate(6deg);
     }
 
     .hero-cta-button {
       background-color: #C2185B;
-      padding: 14px 28px;
+      padding: 10px 24px;
       border-radius: 9999px;
       transition: all 0.3s ease;
     }
 
     @media (min-width: 640px) {
       .hero-cta-button {
-        padding: 16px 40px;
+        padding: 14px 34px;
       }
     }
 
     @media (min-width: 1024px) {
-      .hero-side-bottle {
-        width: 420px;
-      }
-
-      .left-bottle {
-        left: 2%;
-        top: 18%;
-      }
-
-      .right-bottle {
-        right: 2%;
-        top: 18%;
-      }
-    }
-
-    @media (min-width: 1536px) {
-      .left-bottle {
-        left: 5%;
-      }
-
-      .right-bottle {
-        right: 5%;
-      }
-    }
-
-    .hero-bottom-cap-container {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      overflow: hidden;
-      height: 90px;
-      margin-top: 24px;
-    }
-
-    @media (min-width: 640px) {
-      .hero-bottom-cap-container {
-        height: 130px;
-        margin-top: 32px;
-      }
-    }
-
-    @media (min-width: 768px) {
-      .hero-bottom-cap-container {
-        height: 160px;
+      .hero-cta-button {
+        padding: 16px 40px;
       }
     }
 
@@ -163,14 +100,14 @@
   </style>
 
   <!-- Center hero content -->
-  <div class="max-w-4xl mx-auto px-4 text-center relative z-20 w-full pt-4">
+  <div class="w-full max-w-[220px] xs:max-w-[260px] sm:max-w-xl md:max-w-3xl lg:max-w-4xl mx-auto px-2 sm:px-4 text-center relative z-20 pt-2 sm:pt-4">
 
-    <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1] mb-8 sm:mb-12" style="text-shadow: 0 2px 10px rgba(255, 255, 255, 0.95), 0 1px 2px rgba(255, 255, 255, 0.95);">
+    <h1 class="text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tight leading-[1.14] sm:leading-[1.1] mb-4 sm:mb-8 md:mb-10" style="text-shadow: 0 2px 10px rgba(255, 255, 255, 0.98), 0 1px 2px rgba(255, 255, 255, 0.98);">
       <span style="color: #E91E63; display: block;">Welcome to the </span>
       <span class="relative inline-block" style="color: #009688;">
         <img src="{% static 'images/Shield.png' %}" alt="W" style="height: 0.85em !important; width: auto !important; display: inline-block !important; vertical-align: middle; margin-top: -0.15em;" />hole
         <!-- Hand-drawn SVG underline -->
-        <svg class="absolute w-full h-3 sm:h-4 -bottom-1 sm:-bottom-2 left-0" style="color: #009688;"
+        <svg class="absolute w-full h-2 sm:h-3 md:h-4 -bottom-1 sm:-bottom-2 left-0" style="color: #009688;"
           viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="4"
           stroke-linecap="round">
           <path d="M5,15 Q50,5 100,10 T195,5" />
@@ -179,9 +116,9 @@
       <span style="color: #E91E63;"> side of life!</span>
     </h1>
 
-    <div class="relative z-30 mb-6 sm:mb-8">
+    <div class="relative z-30 mb-4 sm:mb-8">
       <a href="{% url 'products' %}"
-        class="inline-flex items-center justify-center text-white font-semibold text-base sm:text-lg shadow-xl hover:shadow-2xl hero-cta-button hover:-translate-y-1">
+        class="inline-flex items-center justify-center text-white font-semibold text-xs xs:text-sm sm:text-base md:text-lg shadow-xl hover:shadow-2xl hero-cta-button hover:-translate-y-1">
         SHOP NOW
       </a>
     </div>

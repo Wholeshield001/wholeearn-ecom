@@ -1,0 +1,116 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Contact Messages{% endblock %}
+{% block page_title %}Contact Messages{% endblock %}
+
+{% block content %}
+<!-- Summary Stats -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <p class="text-sm text-gray-600">Total Messages</p>
+    <p class="text-3xl font-bold text-gray-900 mt-1">{{ total_messages }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <p class="text-sm text-gray-600">Unresolved</p>
+    <p class="text-3xl font-bold text-red-600 mt-1">{{ unresolved_count }}</p>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+    <p class="text-sm text-gray-600">Resolved</p>
+    <p class="text-3xl font-bold text-teal-600 mt-1">{{ resolved_count }}</p>
+  </div>
+</div>
+
+<!-- Filters & Search -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="{% url 'admin_contact_messages' %}?status=all{% if search_query %}&q={{ search_query }}{% endif %}"
+        class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {% if status_filter == 'all' %}bg-teal-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+        All ({{ total_messages }})
+      </a>
+      <a href="{% url 'admin_contact_messages' %}?status=unresolved{% if search_query %}&q={{ search_query }}{% endif %}"
+        class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {% if status_filter == 'unresolved' %}bg-teal-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+        Unresolved ({{ unresolved_count }})
+      </a>
+      <a href="{% url 'admin_contact_messages' %}?status=resolved{% if search_query %}&q={{ search_query }}{% endif %}"
+        class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {% if status_filter == 'resolved' %}bg-teal-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+        Resolved ({{ resolved_count }})
+      </a>
+    </div>
+
+    <form method="get" class="flex items-center gap-2">
+      <input type="hidden" name="status" value="{{ status_filter }}">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search name, email, subject..."
+        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 w-full md:w-64">
+      <button type="submit" class="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors">
+        Search
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Messages List -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+    <h2 class="text-lg font-semibold text-gray-900">Contact Us Submissions</h2>
+    <span class="text-xs text-gray-500">{{ contact_messages|length }} message{{ contact_messages|length|pluralize }}</span>
+  </div>
+
+  <div class="divide-y divide-gray-100">
+    {% for msg in contact_messages %}
+    <div class="p-6 hover:bg-gray-50 transition-colors">
+      <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-3">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <h3 class="text-base font-semibold text-gray-900">{{ msg.subject }}</h3>
+            {% if msg.is_resolved %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+              Resolved
+            </span>
+            {% else %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              Unresolved
+            </span>
+            {% endif %}
+          </div>
+          <p class="text-sm text-gray-600">
+            <span class="font-medium text-gray-800">{{ msg.name }}</span>
+            &bull; <a href="mailto:{{ msg.email }}" class="text-teal-600 hover:underline">{{ msg.email }}</a>
+            {% if msg.phone %}&bull; <span>{{ msg.phone }}</span>{% endif %}
+          </p>
+        </div>
+        <span class="text-xs text-gray-500 whitespace-nowrap">{{ msg.created_at|date:"d M Y, H:i" }}</span>
+      </div>
+
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-line mb-4">{{ msg.message }}</div>
+
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <a href="mailto:{{ msg.email }}?subject=Re:%20{{ msg.subject|urlencode }}"
+          class="px-3 py-1.5 rounded-lg border border-teal-200 text-teal-700 text-xs font-medium hover:bg-teal-50 transition-colors">
+          Reply via Email
+        </a>
+        <form method="post" action="{% url 'admin_toggle_contact_message' msg.id %}">
+          {% csrf_token %}
+          <button type="submit"
+            class="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-100 transition-colors">
+            {% if msg.is_resolved %}Reopen{% else %}Mark Resolved{% endif %}
+          </button>
+        </form>
+        <form method="post" action="{% url 'admin_delete_contact_message' msg.id %}" onsubmit="return confirm('Delete this message from {{ msg.name|escapejs }}?');">
+          {% csrf_token %}
+          <button type="submit"
+            class="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-xs font-medium hover:bg-red-50 transition-colors">
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+    {% empty %}
+    <div class="p-10 text-center text-sm text-gray-500">
+      No contact messages found.
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

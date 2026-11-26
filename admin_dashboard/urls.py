@@ -86,6 +86,11 @@ urlpatterns = [
     path('tickets/', views.tickets_page, name='admin_tickets'),
     path('tickets/<uuid:ticket_id>/', views.ticket_detail, name='admin_ticket_detail'),
 
+    # Contact Us Messages
+    path('contact-messages/', views.contact_messages_page, name='admin_contact_messages'),
+    path('contact-messages/<uuid:message_id>/toggle/', views.toggle_contact_message_status, name='admin_toggle_contact_message'),
+    path('contact-messages/<uuid:message_id>/delete/', views.delete_contact_message, name='admin_delete_contact_message'),
+
     # Customers
     path('customers/', views.customers_page, name='admin_customers'),
     path('customers/<uuid:user_id>/detail/', views.user_detail, name='user_detail'),

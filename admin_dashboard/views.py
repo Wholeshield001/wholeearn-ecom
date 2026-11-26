@@ -44,6 +44,7 @@ from ecom.models import (
     WalletWithdrawalRequest,
     HeroSectionConfig,
     SocialMediaLink,
+    ContactMessage,
 )
 from ecom.services.wallets import WalletOperationError
 from ecom.tasks import process_withdrawal_request_task
@@ -543,6 +544,62 @@ def delete_social_link(request, link_id):
         link.delete()
         messages.success(request, f'{name} deleted.')
     return redirect('admin_social_links')
+
+
+@admin_required
+def contact_messages_page(request):
+    """Admin page to view and manage Contact Us submissions."""
+    status_filter = request.GET.get('status', 'all')
+    search_query = (request.GET.get('q') or '').strip()
+
+    qs = ContactMessage.objects.all().order_by('-created_at')
+    if status_filter == 'unresolved':
+        qs = qs.filter(is_resolved=False)
+    elif status_filter == 'resolved':
+        qs = qs.filter(is_resolved=True)
+
+    if search_query:
+        qs = qs.filter(
+            Q(name__icontains=search_query)
+            | Q(email__icontains=search_query)
+            | Q(subject__icontains=search_query)
+            | Q(message__icontains=search_query)
+        )
+
+    total_messages = ContactMessage.objects.count()
+    unresolved_count = ContactMessage.objects.filter(is_resolved=False).count()
+    resolved_count = ContactMessage.objects.filter(is_resolved=True).count()
+
+    return render(request, 'admin_dashboard/contact_messages.html', {
+        'page_title': 'Contact Messages',
+        'contact_messages': qs,
+        'status_filter': status_filter,
+        'search_query': search_query,
+        'total_messages': total_messages,
+        'unresolved_count': unresolved_count,
+        'resolved_count': resolved_count,
+    })
+
+
+@admin_required
+def toggle_contact_message_status(request, message_id):
+    msg = get_object_or_404(ContactMessage, id=message_id)
+    if request.method == 'POST':
+        msg.is_resolved = not msg.is_resolved
+        msg.save(update_fields=['is_resolved'])
+        state = 'marked as resolved' if msg.is_resolved else 'reopened'
+        messages.success(request, f'Message from {msg.name} {state}.')
+    return redirect('admin_contact_messages')
+
+
+@admin_required
+def delete_contact_message(request, message_id):
+    msg = get_object_or_404(ContactMessage, id=message_id)
+    if request.method == 'POST':
+        sender = msg.name
+        msg.delete()
+        messages.success(request, f'Message from {sender} deleted.')
+    return redirect('admin_contact_messages')
 
 
 @admin_required

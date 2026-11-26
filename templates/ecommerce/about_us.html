@@ -1,0 +1,251 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}About Us - WholeShield Wellness{% endblock %}
+
+{% block content %}
+<style>
+  .ws-about-page {
+    background: linear-gradient(180deg, #fff5f8 0%, #ffffff 32%);
+    padding: 3.5rem 1rem 4.5rem;
+  }
+
+  .ws-about-container {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .ws-about-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .ws-about-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #009688;
+    margin-bottom: 0.75rem;
+  }
+
+  .ws-about-title {
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    font-weight: 800;
+    color: #ec3183;
+    line-height: 1.15;
+    margin: 0 0 0.9rem;
+  }
+
+  .ws-about-divider {
+    width: 64px;
+    height: 4px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #ec3183, #009688);
+    margin: 0 auto;
+  }
+
+  .ws-about-card {
+    background: #ffffff;
+    border: 1px solid #fce7f3;
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 30px rgba(236, 49, 131, 0.06);
+    padding: 2rem 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .ws-about-card {
+      padding: 2.75rem 3rem;
+    }
+  }
+
+  .ws-about-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #fce7f3;
+  }
+
+  @media (min-width: 768px) {
+    .ws-about-intro {
+      flex-direction: row;
+      align-items: center;
+      gap: 2.25rem;
+    }
+  }
+
+  .ws-about-intro-text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .ws-about-subheading {
+    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+    font-weight: 700;
+    color: #C2185B;
+    line-height: 1.25;
+    margin: 0 0 0.85rem;
+  }
+
+  .ws-about-lead {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: #374151;
+    margin: 0;
+  }
+
+  .ws-about-thumb-wrap {
+    flex: 0 0 auto;
+    width: 150px;
+    height: 150px;
+    border-radius: 1rem;
+    background: #f0fdfa;
+    border: 1px solid #ccfbf1;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+  }
+
+  @media (min-width: 768px) {
+    .ws-about-thumb-wrap {
+      width: 190px;
+      height: 190px;
+      align-self: flex-start;
+    }
+  }
+
+  .ws-about-thumb {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .ws-about-prose {
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    color: #374151;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .ws-about-prose p {
+    margin: 0;
+  }
+
+  .ws-about-pillars {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 2.25rem;
+    padding-top: 2rem;
+    border-top: 1px solid #fce7f3;
+  }
+
+  @media (min-width: 640px) {
+    .ws-about-pillars {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+
+  .ws-about-pillar {
+    background: #fff9fb;
+    border: 1px solid #fce7f3;
+    border-radius: 0.875rem;
+    padding: 1.15rem 1.25rem;
+  }
+
+  .ws-about-pillar-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #C2185B;
+    margin: 0 0 0.35rem;
+  }
+
+  .ws-about-pillar-desc {
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: #4b5563;
+    margin: 0;
+  }
+
+  .ws-about-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+</style>
+
+<section class="ws-about-page">
+  <div class="ws-about-container">
+    <div class="ws-about-header">
+      <p class="ws-about-eyebrow">Our Story</p>
+      <h1 class="ws-about-title">
+        {{ hero_config.about_page_title|default:"About WholeShield Wellness" }}
+      </h1>
+      <div class="ws-about-divider"></div>
+    </div>
+
+    <div class="ws-about-card">
+      <!-- Intro Philosophy + Compact Accent Image -->
+      <div class="ws-about-intro">
+        <div class="ws-about-intro-text">
+          <h2 class="ws-about-subheading">
+            {{ hero_config.philosophy_heading|default:"Our Philosophy: Catching The Wellness Bug." }}
+          </h2>
+          <p class="ws-about-lead">
+            {{ hero_config.philosophy_body }}
+          </p>
+        </div>
+        <div class="ws-about-thumb-wrap">
+          <img src="{% static 'images/supplementteal.png' %}" alt="WholeShield Wellness" class="ws-about-thumb" />
+        </div>
+      </div>
+
+      <!-- Spacious Full-Width Story Write-Up -->
+      <div class="ws-about-prose">
+        {% for paragraph in about_paragraphs %}
+        <p>{{ paragraph }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- Brand Pillars -->
+      <div class="ws-about-pillars">
+        <div class="ws-about-pillar">
+          <h3 class="ws-about-pillar-title">Science-Backed</h3>
+          <p class="ws-about-pillar-desc">Clean-label formulations crafted with active, research-supported ingredients.</p>
+        </div>
+        <div class="ws-about-pillar">
+          <h3 class="ws-about-pillar-title">NAFDAC &amp; EU-GMP</h3>
+          <p class="ws-about-pillar-desc">Manufactured and verified to meet strict regulatory and safety standards.</p>
+        </div>
+        <div class="ws-about-pillar">
+          <h3 class="ws-about-pillar-title">100% Traceable</h3>
+          <p class="ws-about-pillar-desc">Transparent sourcing and reliable supply for individuals and healthcare partners.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ws-about-actions">
+      <a href="{% url 'products' %}" class="ws-btn-primary text-sm sm:text-base">
+        Explore Our Products
+      </a>
+      <a href="{% url 'contact-us' %}" class="ws-btn-outline text-sm sm:text-base">
+        Contact Us
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

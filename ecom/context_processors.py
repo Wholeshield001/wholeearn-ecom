@@ -1,9 +1,11 @@
-from ecom.models import Cart
+from django.db.utils import OperationalError, ProgrammingError
+from admin_dashboard.models import Category
+from ecom.models import Cart, SocialMediaLink
 from users.models import User
 
 
 def cart_context(request):
-    """Add cart information and common user CTA state to all templates."""
+    """Add cart information, storefront navigation/footer data, and common user CTA state to all templates."""
     cart_item_count = 0
     cart_items = []
     cart_total = 0
@@ -49,10 +51,22 @@ def cart_context(request):
             except Cart.DoesNotExist:
                 cart_item_count = 0
 
+    try:
+        footer_categories = list(Category.objects.all().order_by('name'))
+    except (OperationalError, ProgrammingError):
+        footer_categories = []
+
+    try:
+        social_links = list(SocialMediaLink.objects.filter(is_active=True).order_by('display_order', 'name'))
+    except (OperationalError, ProgrammingError):
+        social_links = []
+
     return {
         'cart_item_count': cart_item_count,
         'cart_items': cart_items,
         'cart_total': cart_total,
         'show_kyc_cta': show_kyc_cta,
         'kyc_cta_url_name': kyc_cta_url_name,
+        'footer_categories': footer_categories,
+        'social_links': social_links,
     }

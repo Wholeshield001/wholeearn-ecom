@@ -17,6 +17,12 @@ urlpatterns = [
     path('reward-withdrawals/<uuid:withdrawal_id>/retry/', views.retry_reward_withdrawal, name='admin_retry_reward_withdrawal'),
     path('payment-settings/', views.payment_settings, name='admin_payment_settings'),
     path('buyer-settings/', views.buyer_settings, name='admin_buyer_settings'),
+    path('storefront-content/', views.storefront_content_settings, name='admin_storefront_content'),
+    path('social-links/', views.social_links_page, name='admin_social_links'),
+    path('social-links/add/', views.add_social_link, name='admin_add_social_link'),
+    path('social-links/<uuid:link_id>/edit/', views.edit_social_link, name='admin_edit_social_link'),
+    path('social-links/<uuid:link_id>/toggle/', views.toggle_social_link, name='admin_toggle_social_link'),
+    path('social-links/<uuid:link_id>/delete/', views.delete_social_link, name='admin_delete_social_link'),
     path('', views.admin_dashboard, name='admin_dashboard'),
 
     # Categories

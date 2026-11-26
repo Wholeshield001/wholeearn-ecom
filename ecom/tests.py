@@ -3,51 +3,106 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ecom.models import Order, RewardPointLedger
+from ecom.models import (
+    Order,
+    RewardPointConfig,
+    RewardPointLedger,
+    HeroSectionConfig,
+    SocialMediaLink,
+    NewsletterSubscriber,
+    ContactMessage,
+)
+from ecom.templatetags.ecom_tags import format_price
+from django.urls import reverse
 
 
 User = get_user_model()
 
 
-class ReferralRewardTests(TestCase):
-	def test_referrer_gets_point_on_referred_users_first_completed_purchase(self):
-		referrer = User.objects.create_user(
-			email='referrer@example.com',
+class PartnerPointsAllocationTests(TestCase):
+	def test_partner_earns_category_points_on_every_completed_purchase(self):
+		config = RewardPointConfig.get_solo()
+		config.wholesaler_points = 10
+		config.retailer_points = 5
+		config.points_per_purchase = 2
+		config.save()
+
+		wholesaler = User.objects.create_user(
+			email='wholesaler@example.com',
 			password='strong-pass-123',
-			role=User.END_USER,
-		)
-		buyer = User.objects.create_user(
-			email='buyer@example.com',
-			password='strong-pass-123',
-			role=User.END_USER,
-			referred_by=referrer,
+			role=User.WHOLESALER,
 		)
 
-		order = Order.objects.create(
-			user=buyer,
-			total_amount=Decimal('15000.00'),
+		Order.objects.create(
+			user=wholesaler,
+			total_amount=Decimal('50000.00'),
 			payment_status='completed',
 			status='pending',
 			shipping_fee=Decimal('0.00'),
-			referral_code_used=referrer.referral_code,
-			referrer=referrer,
+			shipping_address='12 Example Street',
+			shipping_city='Lagos',
+			shipping_state='Lagos',
+			shipping_phone='+2348012345678',
+		)
+		Order.objects.create(
+			user=wholesaler,
+			total_amount=Decimal('25000.00'),
+			payment_status='completed',
+			status='pending',
+			shipping_fee=Decimal('0.00'),
 			shipping_address='12 Example Street',
 			shipping_city='Lagos',
 			shipping_state='Lagos',
 			shipping_phone='+2348012345678',
 		)
 
-		referrer.refresh_from_db()
-		buyer.refresh_from_db()
-		order.refresh_from_db()
-
-		self.assertEqual(referrer.reward_points, 1)
-		self.assertEqual(buyer.reward_points, 1)
-		self.assertTrue(order.referral_points_awarded)
+		wholesaler.refresh_from_db()
+		self.assertEqual(wholesaler.reward_points, 20)
 		self.assertEqual(
-			RewardPointLedger.objects.filter(user=referrer, reason=RewardPointLedger.REFERRAL).count(),
-			1,
+			RewardPointLedger.objects.filter(user=wholesaler, reason=RewardPointLedger.PURCHASE).count(),
+			2,
 		)
+
+
+class StorefrontReviewFeaturesTests(TestCase):
+	def test_format_price_whole_number_commas(self):
+		self.assertEqual(format_price(Decimal('25000.00')), '25,000')
+		self.assertEqual(format_price(1250000), '1,250,000')
+		self.assertEqual(format_price(None), '0')
+
+	def test_about_contact_newsletter_and_footer_links(self):
+		SocialMediaLink.objects.create(name='Instagram', url='https://instagram.com/wholeshield', is_active=True)
+		hero = HeroSectionConfig.get_solo()
+		hero.headline_prefix = 'Discover the'
+		hero.save()
+
+		home_resp = self.client.get(reverse('home'))
+		self.assertEqual(home_resp.status_code, 200)
+		self.assertContains(home_resp, 'Discover the')
+		self.assertContains(home_resp, 'https://instagram.com/wholeshield')
+		self.assertContains(home_resp, 'By submitting your email, you consent to receive emails and updates from Wholeshield.')
+		self.assertContains(home_resp, 'images/Shield.png')
+
+		about_resp = self.client.get(reverse('about-us'))
+		self.assertEqual(about_resp.status_code, 200)
+
+		contact_resp = self.client.post(reverse('contact-us'), {
+			'name': 'Jane Doe',
+			'email': 'jane@example.com',
+			'phone': '08012345678',
+			'subject': 'Product inquiry',
+			'message': 'Tell me more about Optishield.',
+		})
+		self.assertRedirects(contact_resp, reverse('contact-us'))
+		self.assertEqual(ContactMessage.objects.count(), 1)
+
+		sub_resp = self.client.post(
+			reverse('newsletter-subscribe'),
+			{'email': 'crew@example.com'},
+			HTTP_HX_REQUEST='true',
+		)
+		self.assertEqual(sub_resp.status_code, 200)
+		self.assertTrue(NewsletterSubscriber.objects.filter(email='crew@example.com').exists())
 
 
 class BuyerLimitConfigTests(TestCase):

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load ecom_tags %}<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -48,7 +48,7 @@
                                                     <span style="color: #6b7280; font-size: 14px;">Quantity: {{ item.quantity }}</span>
                                                 </td>
                                                 <td align="right" style="color: #374151; font-weight: bold;">
-                                                    ₦{{ item.get_total_price|floatformat:2 }}
+                                                    ₦{{ item.get_total_price|format_price }}
                                                 </td>
                                             </tr>
                                         </table>
@@ -62,7 +62,7 @@
                                             <tr>
                                                 <td style="color: #1f2937; font-size: 18px; font-weight: bold;">Total</td>
                                                 <td align="right" style="color: #ec3183; font-size: 18px; font-weight: bold;">
-                                                    ₦{{ order.total_amount|floatformat:2 }}
+                                                    ₦{{ order.total_amount|format_price }}
                                                 </td>
                                             </tr>
                                         </table>

@@ -1,5 +1,5 @@
 {% extends "ecommerce_base.html" %}
-{% load static %}
+{% load static ecom_tags %}
 
 {% block title %}Dashboard - WholeShield{% endblock %}
 
@@ -19,7 +19,7 @@
     {% endif %}
 
     <!-- Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="bg-white shadow-sm rounded-xl p-6 border border-gray-200">
         <p class="text-sm text-[#ec3183] font-medium">Total Orders</p>
         <p class="mt-3 text-2xl font-bold text-[#ec3183]">{{ total_orders }}</p>
@@ -30,33 +30,7 @@
       </div>
       <div class="bg-white shadow-sm rounded-xl p-6 border border-gray-200">
         <p class="text-sm text-[#ec3183] font-medium">Total Revenue</p>
-        <p class="mt-3 text-2xl font-bold text-[#ec3183]">{{ total_revenue }}</p>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h2 class="text-[#ec3183] font-semibold">Your Referral Link</h2>
-          <p class="mt-1 text-sm text-gray-500">Share this link. When someone signs up with it and completes their first purchase, you earn 1 point.</p>
-        </div>
-        <div class="text-sm text-gray-500">Referral code: <span class="font-semibold text-[#ec3183]">{{ referral_code }}</span></div>
-      </div>
-      <div class="mt-4 flex flex-col gap-3 sm:flex-row">
-        <input
-          id="referral-link"
-          type="text"
-          value="{{ referral_link }}"
-          readonly
-          class="w-full rounded-full border border-pink-200 px-4 py-3 text-sm text-gray-700 focus:outline-none"
-        >
-        <button
-          type="button"
-          class="rounded-full bg-[#ec3183] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#d62a75]"
-          onclick="navigator.clipboard.writeText(document.getElementById('referral-link').value).then(() => showToast('success', 'Referral link copied.'));"
-        >
-          Copy Link
-        </button>
+        <p class="mt-3 text-2xl font-bold text-[#ec3183]">₦{{ total_revenue|format_price }}</p>
       </div>
     </div>
 
@@ -98,52 +72,6 @@
                 <td colspan="4" class="px-6 py-8 text-center text-gray-500">No products yet. Start shopping from the <a href="{% url 'products' %}" class="text-[#ec3183] font-semibold">shop</a>.</td>
               </tr>
             {% endif %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Referred Users -->
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mt-8">
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 class="text-[#ec3183] font-semibold">Referred Users</h2>
-        <span class="text-xs text-gray-400">{{ referred_users|length }} referral{{ referred_users|length|pluralize }}</span>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left font-medium text-gray-500">Name</th>
-              <th class="px-6 py-3 text-left font-medium text-gray-500">Email</th>
-              <th class="px-6 py-3 text-left font-medium text-gray-500">Joined</th>
-              <th class="px-6 py-3 text-left font-medium text-gray-500">Status</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            {% for referred in referred_users %}
-            <tr>
-              <td class="px-6 py-4 text-gray-800 font-medium">
-                {{ referred.get_full_name|default:referred.email }}
-              </td>
-              <td class="px-6 py-4 text-gray-600">{{ referred.email }}</td>
-              <td class="px-6 py-4 text-gray-500">{{ referred.date_joined|date:"d M Y" }}</td>
-              <td class="px-6 py-4">
-                {% if referred.has_purchased %}
-                  <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 text-xs font-medium">
-                    ✓ Completed
-                  </span>
-                {% else %}
-                  <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 text-xs font-medium">
-                    Pending purchase
-                  </span>
-                {% endif %}
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="4" class="px-6 py-8 text-center text-gray-500">No referrals yet. Share your referral link to earn bonus points.</td>
-            </tr>
-            {% endfor %}
           </tbody>
         </table>
       </div>

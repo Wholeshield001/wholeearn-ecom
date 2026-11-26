@@ -7,25 +7,42 @@
 {% block content %}
 
 <!-- Hero Section -->
-<!-- Hero Section -->
 <section class="relative overflow-hidden reveal flex items-center justify-center pt-16 sm:pt-24 pb-4 sm:pb-0 hero-section-bg">
 
   <style>
     .hero-section-bg {
+      {% if hero_config.mobile_image %}
+      background-image: url('{{ hero_config.mobile_image.url }}');
+      background-position: center center;
+      {% elif hero_config.desktop_image %}
+      background-image: url('{{ hero_config.desktop_image.url }}');
+      background-position: center center;
+      {% else %}
       background-image: url('{% static "images/websitehero.png" %}');
       background-image: image-set(
         url('{% static "images/websitehero.webp" %}') type("image/webp"),
         url('{% static "images/websitehero.png" %}') type("image/png")
       );
+      background-position: 32% center;
+      {% endif %}
       background-size: cover;
       background-repeat: no-repeat;
-      background-position: 32% center;
       min-height: clamp(380px, 52vh, 460px);
     }
 
     @media (min-width: 640px) {
       .hero-section-bg {
+        {% if hero_config.desktop_image %}
+        background-image: url('{{ hero_config.desktop_image.url }}');
+        background-position: center center;
+        {% else %}
+        background-image: url('{% static "images/websitehero.png" %}');
+        background-image: image-set(
+          url('{% static "images/websitehero.webp" %}') type("image/webp"),
+          url('{% static "images/websitehero.png" %}') type("image/png")
+        );
         background-position: 45% center;
+        {% endif %}
         min-height: 65vh;
       }
     }
@@ -100,12 +117,19 @@
   </style>
 
   <!-- Center hero content -->
-  <div class="w-full max-w-[220px] xs:max-w-[260px] sm:max-w-xl md:max-w-3xl lg:max-w-4xl mx-auto px-2 sm:px-4 text-center relative z-20 pt-2 sm:pt-4">
+  <div class="w-full max-w-[240px] xs:max-w-[280px] sm:max-w-xl md:max-w-3xl lg:max-w-4xl mx-auto px-2 sm:px-4 text-center relative z-20 pt-2 sm:pt-4">
 
     <h1 class="text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tight leading-[1.14] sm:leading-[1.1] mb-4 sm:mb-8 md:mb-10" style="text-shadow: 0 2px 10px rgba(255, 255, 255, 0.98), 0 1px 2px rgba(255, 255, 255, 0.98);">
-      <span style="color: #E91E63; display: block;">Welcome to the </span>
+      {% if hero_config.headline_prefix %}
+      <span style="color: #E91E63; display: block;">{{ hero_config.headline_prefix }} </span>
+      {% endif %}
+      {% if hero_config.headline_highlight %}
       <span class="relative inline-block" style="color: #009688;">
-        <img src="{% static 'images/Shield.png' %}" alt="W" style="height: 0.85em !important; width: auto !important; display: inline-block !important; vertical-align: middle; margin-top: -0.15em;" />hole
+        {% if hero_config.headline_highlight|slice:":1"|lower == "w" %}
+        <img src="{% static 'images/Shield.png' %}" alt="W" style="height: 0.85em !important; width: auto !important; display: inline-block !important; vertical-align: middle; margin-top: -0.15em;" />{{ hero_config.headline_highlight|slice:"1:" }}
+        {% else %}
+        {{ hero_config.headline_highlight }}
+        {% endif %}
         <!-- Hand-drawn SVG underline -->
         <svg class="absolute w-full h-2 sm:h-3 md:h-4 -bottom-1 sm:-bottom-2 left-0" style="color: #009688;"
           viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="4"
@@ -113,13 +137,16 @@
           <path d="M5,15 Q50,5 100,10 T195,5" />
         </svg>
       </span>
-      <span style="color: #E91E63;"> side of life!</span>
+      {% endif %}
+      {% if hero_config.headline_suffix %}
+      <span style="color: #E91E63;"> {{ hero_config.headline_suffix }}</span>
+      {% endif %}
     </h1>
 
     <div class="relative z-30 mb-4 sm:mb-8">
-      <a href="{% url 'products' %}"
+      <a href="{{ hero_config.cta_url|default:'/products/' }}"
         class="inline-flex items-center justify-center text-white font-semibold text-xs xs:text-sm sm:text-base md:text-lg shadow-xl hover:shadow-2xl hero-cta-button hover:-translate-y-1">
-        SHOP NOW
+        {{ hero_config.cta_text|default:'SHOP NOW' }}
       </a>
     </div>
   </div>
@@ -216,7 +243,7 @@
             <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
             <p class="mt-2 text-[#ec3183] font-medium text-base">
               {% with display_price=product|price_for_user:request.user %}
-                {% if display_price %}₦{{ display_price }}{% else %}—{% endif %}
+                {% if display_price %}₦{{ display_price|format_price }}{% else %}—{% endif %}
               {% endwith %}
             </p>
           </div>
@@ -242,7 +269,7 @@
             <p class="text-[#ec3183] opacity-80 text-sm">{{ product.category.name|default:'Category' }}</p>
             <p class="mt-2 text-[#ec3183] font-medium text-base">
               {% with display_price=product|price_for_user:request.user %}
-                {% if display_price %}₦{{ display_price }}{% else %}—{% endif %}
+                {% if display_price %}₦{{ display_price|format_price }}{% else %}—{% endif %}
               {% endwith %}
             </p>
           </div>
@@ -442,13 +469,16 @@
 
       <!-- Right: Philosophy Text -->
       <div>
-        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#ec3183] mb-6">
-          Our Philosophy:<br />Catching The Wellness Bug.
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#ec3183] mb-6 leading-tight">
+          {{ hero_config.philosophy_heading|default:"Our Philosophy: Catching The Wellness Bug." }}
         </h2>
-        <p class="text-base sm:text-lg text-[#ed3e8b] leading-relaxed">
-          We believe that true health isn't about simply avoiding sickness; it's about actively pursuing a state of
-          total, vibrant well-being.
+        <p class="text-base sm:text-lg text-[#ed3e8b] leading-relaxed mb-8">
+          {{ hero_config.philosophy_body|default:"We believe that true health isn't about simply avoiding sickness; it's about actively pursuing a state of total, vibrant well-being." }}
         </p>
+        <a href="{% url 'about-us' %}" class="ws-btn-primary text-sm sm:text-base">
+          {{ hero_config.about_button_text|default:"Learn More About Us" }}
+          <span class="material-symbols-outlined text-lg">arrow_forward</span>
+        </a>
       </div>
     </div>
   </div>

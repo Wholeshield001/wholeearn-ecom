@@ -2,7 +2,13 @@ from django import forms
 from django.contrib.auth import authenticate
 from users.models import User
 from .models import Category, Product, BlogPost, BlogCategory
-from ecom.models import RewardPointConfig, PaymentProviderConfig, BuyerLimitConfig
+from ecom.models import (
+    RewardPointConfig,
+    PaymentProviderConfig,
+    BuyerLimitConfig,
+    HeroSectionConfig,
+    SocialMediaLink,
+)
 from django.forms.widgets import ClearableFileInput
 from django_ckeditor_5.widgets import CKEditor5Widget
 
@@ -326,7 +332,11 @@ class RewardPointConfigForm(forms.ModelForm):
         model = RewardPointConfig
         fields = [
             'points_per_purchase',
-            'referral_bonus_points',
+            'wholesaler_points',
+            'retailer_points',
+            'hospital_points',
+            'pharmacy_points',
+            'online_vendor_points',
             'points_to_naira_rate',
             'minimum_withdrawal_amount',
         ]
@@ -335,7 +345,23 @@ class RewardPointConfigForm(forms.ModelForm):
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
                 'min': '0',
             }),
-            'referral_bonus_points': forms.NumberInput(attrs={
+            'wholesaler_points': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+            }),
+            'retailer_points': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+            }),
+            'hospital_points': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+            }),
+            'pharmacy_points': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
+                'min': '0',
+            }),
+            'online_vendor_points': forms.NumberInput(attrs={
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg',
                 'min': '0',
             }),
@@ -349,6 +375,51 @@ class RewardPointConfigForm(forms.ModelForm):
                 'min': '0',
                 'step': '0.01',
             }),
+        }
+
+
+class HeroSectionConfigForm(forms.ModelForm):
+    class Meta:
+        model = HeroSectionConfig
+        fields = [
+            'headline_prefix',
+            'headline_highlight',
+            'headline_suffix',
+            'cta_text',
+            'cta_url',
+            'desktop_image',
+            'mobile_image',
+            'philosophy_heading',
+            'philosophy_body',
+            'about_button_text',
+            'about_page_title',
+            'about_page_content',
+        ]
+        widgets = {
+            'headline_prefix': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'headline_highlight': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'headline_suffix': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'cta_text': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'cta_url': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': '/products/'}),
+            'desktop_image': forms.ClearableFileInput(attrs={'class': 'block w-full text-sm text-gray-600', 'accept': 'image/*'}),
+            'mobile_image': forms.ClearableFileInput(attrs={'class': 'block w-full text-sm text-gray-600', 'accept': 'image/*'}),
+            'philosophy_heading': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'philosophy_body': forms.Textarea(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'rows': 4}),
+            'about_button_text': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'about_page_title': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg'}),
+            'about_page_content': forms.Textarea(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'rows': 8}),
+        }
+
+
+class SocialMediaLinkForm(forms.ModelForm):
+    class Meta:
+        model = SocialMediaLink
+        fields = ['name', 'url', 'display_order', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'e.g. Instagram'}),
+            'url': forms.URLInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'placeholder': 'https://instagram.com/wholeshield'}),
+            'display_order': forms.NumberInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg', 'min': '0'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'w-4 h-4 text-teal-600 border-gray-300 rounded'}),
         }
 
 

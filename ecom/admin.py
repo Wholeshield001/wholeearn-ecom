@@ -13,6 +13,10 @@ from .models import (
     WalletBankAccount,
     WalletWithdrawalRequest,
     SiteConfiguration,
+    HeroSectionConfig,
+    SocialMediaLink,
+    NewsletterSubscriber,
+    ContactMessage,
 )
 from unfold.admin import ModelAdmin
 
@@ -153,6 +157,34 @@ class BuyerLimitConfigAdmin(ModelAdmin):
 class SiteConfigurationAdmin(ModelAdmin):
     list_display = ('is_enabled', 'updated_at')
     readonly_fields = ('updated_at',)
+
+
+@admin.register(HeroSectionConfig)
+class HeroSectionConfigAdmin(ModelAdmin):
+    list_display = ('headline_prefix', 'headline_highlight', 'cta_text', 'updated_by', 'updated_at')
+    readonly_fields = ('updated_at',)
+
+
+@admin.register(SocialMediaLink)
+class SocialMediaLinkAdmin(ModelAdmin):
+    list_display = ('name', 'url', 'is_active', 'display_order', 'updated_at')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'url')
+
+
+@admin.register(NewsletterSubscriber)
+class NewsletterSubscriberAdmin(ModelAdmin):
+    list_display = ('email', 'consented', 'created_at')
+    search_fields = ('email',)
+    readonly_fields = ('created_at',)
+
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(ModelAdmin):
+    list_display = ('name', 'email', 'subject', 'is_resolved', 'created_at')
+    list_filter = ('is_resolved', 'created_at')
+    search_fields = ('name', 'email', 'subject', 'message')
+    readonly_fields = ('created_at',)
 
 
 @admin.register(UserWallet)

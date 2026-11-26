@@ -7,7 +7,7 @@
         </div>
 
         <div class="ws-newsletter__form-wrap">
-            <form class="ws-newsletter__form" hx-post="{% url 'home' %}" hx-target="this" hx-swap="outerHTML">
+            <form class="ws-newsletter__form" method="post" action="{% url 'newsletter-subscribe' %}" hx-post="{% url 'newsletter-subscribe' %}" hx-target="this" hx-swap="outerHTML">
                 {% csrf_token %}
                 <input
                     class="ws-newsletter__input"
@@ -18,6 +18,9 @@
                 >
                 <button class="ws-newsletter__button" type="submit">Subscribe</button>
             </form>
+            <p class="ws-newsletter__disclaimer">
+                By submitting your email, you consent to receive emails and updates from Wholeshield.
+            </p>
         </div>
     </div>
 </section>
@@ -106,6 +109,13 @@
 
     .ws-newsletter__button:hover {
         opacity: 0.8;
+    }
+
+    .ws-newsletter__disclaimer {
+        margin: 10px 0 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #6b7280;
     }
 
     @media (max-width: 1024px) {

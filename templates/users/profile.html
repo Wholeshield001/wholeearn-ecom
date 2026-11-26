@@ -191,23 +191,6 @@
             </div>
             <p class="text-xs text-gray-400 mt-1">your account code</p>
           </div>
-
-          <!-- Referral Code -->
-          <div class="rounded-xl border-2 border-gray-200 p-5 text-center">
-            <p class="text-sm font-medium text-gray-500 mb-2">Your Referral Code</p>
-            <div class="flex items-center justify-center gap-2 mt-1">
-              <p id="referral-code" class="text-2xl font-bold text-gray-800 font-mono tracking-widest">{{ user.referral_code|default:"—" }}</p>
-              {% if user.referral_code %}
-              <button onclick="copyCode('referral-code', this)" title="Copy" class="text-gray-400 hover:text-[#ec3183] transition flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              {% endif %}
-            </div>
-            <p class="text-xs text-gray-400 mt-1">share to earn bonus points</p>
-          </div>
         </div>
 
         <!-- Points History -->
@@ -224,7 +207,7 @@
             <tbody id="reward-rows">
               {% if not point_ledger %}
               <tr>
-                <td colspan="3" class="py-6 px-4 text-center text-gray-400">No points earned yet — make a purchase or refer a friend!</td>
+                <td colspan="3" class="py-6 px-4 text-center text-gray-400">No points earned yet — complete a purchase to start earning!</td>
               </tr>
               {% else %}
               {% include "users/partials/reward_rows.html" %}

@@ -258,6 +258,11 @@
           {% if form.password.errors %}
           <p class="mt-1 text-xs text-red-500">{{ form.password.errors.0 }}</p>
           {% endif %}
+          <div class="mt-2 text-right">
+            <a href="{% url 'password-reset-request' %}" class="text-xs font-semibold text-[#ec3183] hover:underline">
+              Forgot password?
+            </a>
+          </div>
         </div>
 
         <button type="submit" class="login-submit">

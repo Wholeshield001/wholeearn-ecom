@@ -11,15 +11,6 @@ User = get_user_model()
 
 class SignUpForm(forms.ModelForm):
     """Simplified form for end-user signup only"""
-    referral_code_input = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500 uppercase',
-            'placeholder': 'Referral Code (Optional)',
-            'autocomplete': 'off',
-        }),
-        label='Referral Code',
-    )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500',
@@ -91,17 +82,6 @@ class SignUpForm(forms.ModelForm):
             raise ValidationError('Enter a valid phone number.')
         return phone
 
-    def clean_referral_code_input(self):
-        referral_code = (self.cleaned_data.get('referral_code_input') or '').strip().upper()
-        if not referral_code:
-            return ''
-
-        try:
-            User.objects.get(referral_code=referral_code)
-        except User.DoesNotExist as exc:
-            raise ValidationError('Invalid referral code.') from exc
-        return referral_code
-
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
@@ -110,10 +90,6 @@ class SignUpForm(forms.ModelForm):
         # Save phone explicitly since model allows null/blank but we require at form level
         user.phone = self.cleaned_data.get('phone')
 
-        referral_code = self.cleaned_data.get('referral_code_input')
-        if referral_code:
-            user.referred_by = User.objects.get(referral_code=referral_code)
-
         if commit:
             user.save()
         return user
@@ -121,15 +97,6 @@ class SignUpForm(forms.ModelForm):
 
 class PartnerRegistrationForm(forms.ModelForm):
     """Registration form for business partners (wholesalers, retailers, etc.)"""
-    referral_code_input = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500 uppercase',
-            'placeholder': 'Referral Code (Optional)',
-            'autocomplete': 'off',
-        }),
-        label='Referral Code',
-    )
     partner_type = forms.ChoiceField(
         choices=[
             (User.WHOLESALER, 'Wholesaler'),
@@ -213,27 +180,12 @@ class PartnerRegistrationForm(forms.ModelForm):
             raise ValidationError('Enter a valid phone number.')
         return phone
 
-    def clean_referral_code_input(self):
-        referral_code = (self.cleaned_data.get('referral_code_input') or '').strip().upper()
-        if not referral_code:
-            return ''
-
-        try:
-            User.objects.get(referral_code=referral_code)
-        except User.DoesNotExist as exc:
-            raise ValidationError('Invalid referral code.') from exc
-        return referral_code
-
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
         user.role = self.cleaned_data.get('partner_type')  # Set role based on selection
         user.is_active = False  # Account inactive until email verified
         user.phone = self.cleaned_data.get('phone')
-
-        referral_code = self.cleaned_data.get('referral_code_input')
-        if referral_code:
-            user.referred_by = User.objects.get(referral_code=referral_code)
 
         if commit:
             user.save()

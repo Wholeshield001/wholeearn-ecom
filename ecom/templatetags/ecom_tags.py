@@ -1,6 +1,20 @@
+from decimal import Decimal, InvalidOperation
 from django import template
 
 register = template.Library()
+
+
+@register.filter(name='format_price')
+def format_price(value):
+    """Format a numeric price as a whole number with thousands commas (e.g. 25000.00 -> 25,000)."""
+    if value is None or value == '':
+        return '0'
+    try:
+        amount = Decimal(str(value))
+        rounded = int(amount.quantize(Decimal('1')))
+        return f"{rounded:,}"
+    except (InvalidOperation, ValueError, TypeError):
+        return str(value)
 
 @register.filter(name='cloudinary_optimize')
 def cloudinary_optimize(url, transformations="f_auto,q_auto"):

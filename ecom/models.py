@@ -207,43 +207,25 @@ class Order(models.Model):
             self.inventory_deducted = True
 
     def apply_reward_points(self):
-        """Award purchase/referral points only on a user's first completed purchase."""
+        """Award role-based purchase points on every completed purchase."""
         if self.payment_status != 'completed':
             return
 
         config = RewardPointConfig.get_solo()
         with transaction.atomic():
-            is_first_purchase = not Order.objects.filter(
-                user_id=self.user_id,
-                payment_status='completed',
-            ).exclude(pk=self.pk).exists()
-
             if not self.purchase_points_awarded:
-                if is_first_purchase:
+                purchase_points = config.get_points_for_role(getattr(self.user, 'role', None))
+                if purchase_points > 0:
                     User.objects.filter(pk=self.user_id).update(
-                        reward_points=F('reward_points') + config.points_per_purchase
+                        reward_points=F('reward_points') + purchase_points
                     )
                     RewardPointLedger.objects.create(
                         user_id=self.user_id,
-                        points=config.points_per_purchase,
+                        points=purchase_points,
                         reason=RewardPointLedger.PURCHASE,
                         order=self,
                     )
                 self.purchase_points_awarded = True
-
-            if self.referrer_id and not self.referral_points_awarded:
-                # Award referral bonus only on the referred user's first completed purchase.
-                if is_first_purchase:
-                    User.objects.filter(pk=self.referrer_id).update(
-                        reward_points=F('reward_points') + config.referral_bonus_points
-                    )
-                    RewardPointLedger.objects.create(
-                        user_id=self.referrer_id,
-                        points=config.referral_bonus_points,
-                        reason=RewardPointLedger.REFERRAL,
-                        order=self,
-                    )
-                self.referral_points_awarded = True
 
             if self.checkout_code_owner_id and not self.checkout_code_points_awarded:
                 checkout_code_points = sum(
@@ -264,7 +246,6 @@ class Order(models.Model):
 
             Order.objects.filter(pk=self.pk).update(
                 purchase_points_awarded=self.purchase_points_awarded,
-                referral_points_awarded=self.referral_points_awarded,
                 checkout_code_points_awarded=self.checkout_code_points_awarded,
                 updated_at=timezone.now(),
             )
@@ -298,9 +279,32 @@ class Order(models.Model):
 
 
 class RewardPointConfig(models.Model):
-    """Configurable points awarded on completed purchases and referrals."""
-    points_per_purchase = models.PositiveIntegerField(default=1)
-    referral_bonus_points = models.PositiveIntegerField(default=1)
+    """Configurable points awarded on completed purchases per buyer/partner category."""
+    points_per_purchase = models.PositiveIntegerField(
+        default=1,
+        help_text='Points awarded to End Users per completed purchase.',
+    )
+    wholesaler_points = models.PositiveIntegerField(
+        default=1,
+        help_text='Points awarded to Wholesalers per completed purchase.',
+    )
+    retailer_points = models.PositiveIntegerField(
+        default=1,
+        help_text='Points awarded to Retailers per completed purchase.',
+    )
+    hospital_points = models.PositiveIntegerField(
+        default=1,
+        help_text='Points awarded to Hospitals per completed purchase.',
+    )
+    pharmacy_points = models.PositiveIntegerField(
+        default=1,
+        help_text='Points awarded to Pharmacies per completed purchase.',
+    )
+    online_vendor_points = models.PositiveIntegerField(
+        default=1,
+        help_text='Points awarded to Online Vendors per completed purchase.',
+    )
+    referral_bonus_points = models.PositiveIntegerField(default=0)
     checkout_code_discount_percent = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -334,9 +338,23 @@ class RewardPointConfig(models.Model):
 
     def __str__(self):
         return (
-            f"Purchase: {self.points_per_purchase} | Referral: {self.referral_bonus_points} "
-            f"| Code discount: {self.checkout_code_discount_percent}% | Rate: {self.points_to_naira_rate}"
+            f"End User: {self.points_per_purchase} | Wholesaler: {self.wholesaler_points} "
+            f"| Retailer: {self.retailer_points} | Rate: {self.points_to_naira_rate}"
         )
+
+    def get_points_for_role(self, role):
+        """Return configured purchase points for a given user role."""
+        from users.models import User as UserModel
+
+        role_points_map = {
+            UserModel.END_USER: self.points_per_purchase,
+            UserModel.WHOLESALER: self.wholesaler_points,
+            UserModel.RETAILER: self.retailer_points,
+            UserModel.HOSPITAL: self.hospital_points,
+            UserModel.PHARMACY: self.pharmacy_points,
+            UserModel.ONLINE_VENDOR: self.online_vendor_points,
+        }
+        return role_points_map.get(role, self.points_per_purchase)
 
     @classmethod
     def get_solo(cls):
@@ -599,3 +617,112 @@ class SiteConfiguration(models.Model):
     def get_solo(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+
+class HeroSectionConfig(models.Model):
+    """Admin-editable homepage hero, philosophy, and About Us content."""
+    headline_prefix = models.CharField(max_length=120, default='Welcome to the')
+    headline_highlight = models.CharField(max_length=60, default='Whole')
+    headline_suffix = models.CharField(max_length=120, default='side of life!')
+    cta_text = models.CharField(max_length=60, default='SHOP NOW')
+    cta_url = models.CharField(max_length=255, default='/products/')
+    desktop_image = models.ImageField(upload_to='hero/', blank=True, null=True)
+    mobile_image = models.ImageField(upload_to='hero/', blank=True, null=True)
+
+    # Homepage Philosophy / About Us section
+    philosophy_heading = models.CharField(
+        max_length=200,
+        default='Our Philosophy: Catching The Wellness Bug.',
+    )
+    philosophy_body = models.TextField(
+        default=(
+            "We believe that true health isn't about simply avoiding sickness; "
+            "it's about actively pursuing a state of total, vibrant well-being."
+        ),
+    )
+    about_button_text = models.CharField(max_length=60, default='Learn More About Us')
+    about_page_title = models.CharField(max_length=200, default='About WholeShield Wellness')
+    about_page_content = models.TextField(
+        blank=True,
+        default=(
+            "WholeShield Wellness is dedicated to making science-backed, NAFDAC & EU-GMP "
+            "compliant supplements accessible to individuals, families, and healthcare partners. "
+            "Full brand story coming soon."
+        ),
+    )
+
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='hero_configs_updated',
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Homepage & About Content'
+        verbose_name_plural = 'Homepage & About Content'
+
+    def __str__(self):
+        return f"Hero Config ({self.headline_prefix} {self.headline_highlight} {self.headline_suffix})"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class SocialMediaLink(models.Model):
+    """Admin-managed social media links displayed in the storefront footer."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=60)
+    url = models.URLField(max_length=500)
+    is_active = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['display_order', 'name']
+        verbose_name = 'Social Media Link'
+        verbose_name_plural = 'Social Media Links'
+
+    def __str__(self):
+        return f"{self.name} ({self.url})"
+
+
+class NewsletterSubscriber(models.Model):
+    """Stores email addresses submitted via the Join the Wholecrew newsletter form."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(unique=True)
+    consented = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Newsletter Subscriber'
+        verbose_name_plural = 'Newsletter Subscribers'
+
+    def __str__(self):
+        return self.email
+
+
+class ContactMessage(models.Model):
+    """Stores inquiries submitted via the Contact Us page."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    phone = models.CharField(max_length=30, blank=True, default='')
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    is_resolved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Contact Message'
+        verbose_name_plural = 'Contact Messages'
+
+    def __str__(self):
+        return f"{self.name} - {self.subject}"

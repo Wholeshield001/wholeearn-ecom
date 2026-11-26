@@ -1,5 +1,5 @@
 {% extends "ecommerce_base.html" %}
-{% load static %}
+{% load static ecom_tags %}
 
 {% block title %}Order Confirmed - WholeShield{% endblock %}
 
@@ -27,13 +27,13 @@
         {% for item in items %}
           <div class="flex justify-between">
             <span class="text-gray-700">{{ item.product_name }} ×{{ item.quantity }}</span>
-            <span class="font-semibold">₦{{ item.get_total_price|floatformat:2 }}</span>
+            <span class="font-semibold">₦{{ item.get_total_price|format_price }}</span>
           </div>
         {% endfor %}
       </div>
       <div class="flex justify-between text-lg font-bold">
         <span>Total</span>
-        <span class="text-[#ec3183]">₦{{ order.total_amount|floatformat:2 }}</span>
+        <span class="text-[#ec3183]">₦{{ order.total_amount|format_price }}</span>
       </div>
     </div>
 

@@ -18,7 +18,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from admin_dashboard.models import Product, Category, BlogPost, BlogCategory
-from .models import Cart, CartItem, Order, OrderItem
+from .models import (
+    Cart,
+    CartItem,
+    Order,
+    OrderItem,
+    HeroSectionConfig,
+    NewsletterSubscriber,
+    ContactMessage,
+)
 from .services.payments import PaymentGatewayError, get_active_payment_provider, get_payment_provider
 from .services.wallets import apply_withdrawal_status_update
 
@@ -247,11 +255,135 @@ def home(request):
         bestsellers = Product.objects.order_by('-created_at')[:8]
         
     latest_posts = BlogPost.objects.filter(is_published=True).order_by('-created_at')[:3]
+    hero_config = HeroSectionConfig.get_solo()
     
     return render(request, 'ecommerce/home.html', {
         'bestsellers': bestsellers,
         'latest_posts': latest_posts,
+        'hero_config': hero_config,
     })
+
+
+@require_http_methods(["GET"])
+def about_us(request):
+    """Dedicated About Us page with admin-editable content."""
+    hero_config = HeroSectionConfig.get_solo()
+    paragraphs = [
+        p.strip()
+        for p in (hero_config.about_page_content or '').split('\n\n')
+        if p.strip()
+    ]
+    return render(request, 'ecommerce/about_us.html', {
+        'hero_config': hero_config,
+        'about_paragraphs': paragraphs,
+    })
+
+
+@require_http_methods(["GET", "POST"])
+def contact_us(request):
+    """Dedicated Contact Us page with inquiry submission form."""
+    form_data = {}
+    errors = {}
+    submitted = False
+
+    if request.method == 'POST':
+        name = (request.POST.get('name') or '').strip()
+        email = (request.POST.get('email') or '').strip()
+        phone = (request.POST.get('phone') or '').strip()
+        subject = (request.POST.get('subject') or '').strip()
+        message_text = (request.POST.get('message') or '').strip()
+
+        form_data = {
+            'name': name,
+            'email': email,
+            'phone': phone,
+            'subject': subject,
+            'message': message_text,
+        }
+
+        if not name:
+            errors['name'] = 'Please enter your name.'
+        if not email or '@' not in email:
+            errors['email'] = 'Please enter a valid email address.'
+        if not subject:
+            errors['subject'] = 'Please enter a subject.'
+        if not message_text:
+            errors['message'] = 'Please enter your message.'
+
+        if not errors:
+            contact_msg = ContactMessage.objects.create(
+                name=name,
+                email=email,
+                phone=phone,
+                subject=subject,
+                message=message_text,
+            )
+            # Best-effort email notification to admin team
+            try:
+                from django.core.mail import send_mail
+                admin_emails = list(
+                    User.objects.filter(role=User.ADMINISTRATOR, is_active=True)
+                    .values_list('email', flat=True)
+                )
+                if admin_emails:
+                    send_mail(
+                        subject=f"Contact Us Inquiry: {contact_msg.subject}",
+                        message=(
+                            f"New Contact Us message from {contact_msg.name} ({contact_msg.email})\n"
+                            f"Phone: {contact_msg.phone or 'N/A'}\n\n"
+                            f"{contact_msg.message}"
+                        ),
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=admin_emails,
+                        fail_silently=True,
+                    )
+            except Exception:
+                logger.exception("Failed to send Contact Us notification email")
+
+            messages.success(request, 'Thank you for reaching out! Your message has been sent.')
+            return redirect('contact-us')
+
+    return render(request, 'ecommerce/contact_us.html', {
+        'form_data': form_data,
+        'errors': errors,
+        'submitted': submitted,
+    })
+
+
+@require_http_methods(["POST"])
+def newsletter_subscribe(request):
+    """Handle Join the Wholecrew email subscription via HTMX or standard POST."""
+    from django.http import HttpResponse
+
+    email = (request.POST.get('email') or '').strip().lower()
+    is_htmx = request.headers.get('HX-Request') == 'true'
+
+    if not email or '@' not in email:
+        if is_htmx:
+            return HttpResponse(
+                '<div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">'
+                'Please enter a valid email address.</div>',
+                status=400,
+            )
+        messages.error(request, 'Please enter a valid email address.')
+        return redirect('home')
+
+    _, created = NewsletterSubscriber.objects.get_or_create(
+        email=email,
+        defaults={'consented': True},
+    )
+    msg = (
+        'Thanks for subscribing! Welcome to the Wholecrew.'
+        if created
+        else "You're already subscribed to WholeShield updates."
+    )
+    if is_htmx:
+        return HttpResponse(
+            f'<div class="rounded-lg bg-pink-50 border border-pink-200 px-5 py-4 text-sm font-medium text-[#C2185B]">'
+            f'{msg}</div>'
+        )
+    messages.success(request, msg)
+    return redirect('home')
 
 
 @require_http_methods(["GET"])

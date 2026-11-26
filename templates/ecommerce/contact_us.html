@@ -1,0 +1,85 @@
+{% extends "ecommerce_base.html" %}
+{% load static %}
+
+{% block title %}Contact Us - WholeShield Wellness{% endblock %}
+
+{% block content %}
+<section class="py-12 px-4 sm:px-6 lg:px-8" style="background: linear-gradient(180deg, #fff5f8 0%, #ffffff 40%);">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-8">
+      <p class="text-xs font-semibold uppercase tracking-widest mb-2" style="color: #009688;">Get In Touch</p>
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-[#ec3183] mb-3">Contact Us</h1>
+      <p class="text-base text-gray-600 max-w-2xl mx-auto">
+        Have a question about our wellness products, partner programme, or an existing order? Fill out the form below and our team will respond promptly.
+      </p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-pink-100 shadow-sm p-6 sm:p-8">
+      <form method="post" action="{% url 'contact-us' %}" class="space-y-4" novalidate>
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="id_contact_name" class="block text-sm font-semibold text-gray-700 mb-1.5">Full Name *</label>
+            <input id="id_contact_name" type="text" name="name" value="{{ form_data.name|default:'' }}" required
+              placeholder="Your full name"
+              class="w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900">
+            {% if errors.name %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.name }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label for="id_contact_email" class="block text-sm font-semibold text-gray-700 mb-1.5">Email Address *</label>
+            <input id="id_contact_email" type="email" name="email" value="{{ form_data.email|default:'' }}" required
+              placeholder="you@example.com"
+              class="w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900">
+            {% if errors.email %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.email }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="id_contact_phone" class="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number (Optional)</label>
+            <input id="id_contact_phone" type="tel" name="phone" value="{{ form_data.phone|default:'' }}"
+              placeholder="+234 800 000 0000"
+              class="w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900">
+          </div>
+
+          <div>
+            <label for="id_contact_subject" class="block text-sm font-semibold text-gray-700 mb-1.5">Subject *</label>
+            <input id="id_contact_subject" type="text" name="subject" value="{{ form_data.subject|default:'' }}" required
+              placeholder="How can we help?"
+              class="w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900">
+            {% if errors.subject %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.subject }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div>
+          <label for="id_contact_message" class="block text-sm font-semibold text-gray-700 mb-1.5">Message *</label>
+          <textarea id="id_contact_message" name="message" rows="5" required
+            placeholder="Write your message here..."
+            class="w-full px-4 py-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900">{{ form_data.message|default:'' }}</textarea>
+          {% if errors.message %}
+          <p class="mt-1 text-xs text-red-600">{{ errors.message }}</p>
+          {% endif %}
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+          <p class="text-xs text-gray-500">
+            Already have an account and need order support?
+            <a href="{% if user.is_authenticated %}{% url 'create-ticket' %}{% else %}{% url 'login' %}?next={% url 'create-ticket' %}{% endif %}" class="text-[#ec3183] font-semibold hover:underline">Open a Support Ticket</a>.
+          </p>
+          <button type="submit" class="ws-btn-primary text-sm sm:text-base">
+            Send Message
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

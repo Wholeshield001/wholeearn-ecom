@@ -20,7 +20,9 @@ from .forms import (AdminLoginForm,
                     AdminPasswordChangeForm,
                     RewardPointConfigForm,
                     PaymentProviderConfigForm,
-                    BuyerLimitConfigForm)
+                    BuyerLimitConfigForm,
+                    HeroSectionConfigForm,
+                    SocialMediaLinkForm)
 from users.models import User, KYCSubmission, KYCSubmissionAuditLog
 from django.core.mail import send_mail
 from django.conf import settings
@@ -34,10 +36,18 @@ import hashlib
 import json
 import secrets
 from django.utils import timezone
-from ecom.models import RewardPointConfig, PaymentProviderConfig, BuyerLimitConfig, Order, WalletWithdrawalRequest
+from ecom.models import (
+    RewardPointConfig,
+    PaymentProviderConfig,
+    BuyerLimitConfig,
+    Order,
+    WalletWithdrawalRequest,
+    HeroSectionConfig,
+    SocialMediaLink,
+)
 from ecom.services.wallets import WalletOperationError
 from ecom.tasks import process_withdrawal_request_task
-from users.emails import send_kyc_approved_email, send_kyc_rejected_email
+from users.emails import send_kyc_approved_email, send_kyc_rejected_email, send_password_reset_email
 from users.tasks import send_kyc_status_update_email_task
 
 
@@ -450,9 +460,89 @@ def reward_settings(request):
         'config': config,
         'users_with_points': User.objects.filter(reward_points__gt=0, is_superuser=False).count(),
         'total_points_issued': User.objects.filter(is_superuser=False).aggregate(total=Sum('reward_points'))['total'] or 0,
-        'total_referral_orders': Order.objects.filter(payment_status='completed', referrer__isnull=False).count(),
     }
     return render(request, 'admin_dashboard/reward_settings.html', context)
+
+
+@admin_required
+def storefront_content_settings(request):
+    """Admin page to edit homepage hero section, mobile hero image, and About Us content."""
+    config = HeroSectionConfig.get_solo()
+
+    if request.method == 'POST':
+        form = HeroSectionConfigForm(request.POST, request.FILES, instance=config)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.updated_by = request.user
+            obj.save()
+            messages.success(request, 'Homepage & About Us content updated successfully.')
+            return redirect('admin_storefront_content')
+    else:
+        form = HeroSectionConfigForm(instance=config)
+
+    return render(request, 'admin_dashboard/storefront_content.html', {
+        'page_title': 'Homepage & About Content',
+        'form': form,
+        'config': config,
+    })
+
+
+@admin_required
+def social_links_page(request):
+    """Admin page to manage storefront social media links."""
+    links = SocialMediaLink.objects.all().order_by('display_order', 'name')
+    form = SocialMediaLinkForm()
+    return render(request, 'admin_dashboard/social_links.html', {
+        'page_title': 'Social Media Links',
+        'links': links,
+        'form': form,
+    })
+
+
+@admin_required
+def add_social_link(request):
+    if request.method == 'POST':
+        form = SocialMediaLinkForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Social media link added successfully.')
+        else:
+            messages.error(request, 'Please provide a valid platform name and URL.')
+    return redirect('admin_social_links')
+
+
+@admin_required
+def edit_social_link(request, link_id):
+    link = get_object_or_404(SocialMediaLink, id=link_id)
+    if request.method == 'POST':
+        form = SocialMediaLinkForm(request.POST, instance=link)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'{link.name} updated successfully.')
+        else:
+            messages.error(request, 'Please provide a valid platform name and URL.')
+    return redirect('admin_social_links')
+
+
+@admin_required
+def toggle_social_link(request, link_id):
+    link = get_object_or_404(SocialMediaLink, id=link_id)
+    if request.method == 'POST':
+        link.is_active = not link.is_active
+        link.save(update_fields=['is_active', 'updated_at'])
+        status_label = 'enabled' if link.is_active else 'disabled'
+        messages.success(request, f'{link.name} {status_label}.')
+    return redirect('admin_social_links')
+
+
+@admin_required
+def delete_social_link(request, link_id):
+    link = get_object_or_404(SocialMediaLink, id=link_id)
+    if request.method == 'POST':
+        name = link.name
+        link.delete()
+        messages.success(request, f'{name} deleted.')
+    return redirect('admin_social_links')
 
 
 @admin_required
@@ -509,23 +599,14 @@ def forgot_password(request):
         form = ForgotPasswordForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            user = User.objects.get(email=email, role=User.ADMINISTRATOR, is_staff=True)
-            
-            # Generate OTP
-            otp = user.generate_reset_otp()
-            
-            # Log OTP to terminal
-            print("\n" + "="*50, flush=True)
-            print(f"PASSWORD RESET OTP FOR {email}", flush=True)
-            print(f"OTP: {otp}", flush=True)
-            print(f"This code will expire in 10 minutes.", flush=True)
-            print("="*50 + "\n", flush=True)
-            sys.stdout.flush()
-            
-            messages.success(request, f'OTP has been generated. Check your terminal.')
-            # Store email in session for next step
-            request.session['reset_email'] = email
-            return redirect('verify_otp')
+            user = User.objects.get(email__iexact=email, role=User.ADMINISTRATOR, is_staff=True)
+
+            email_sent = send_password_reset_email(user)
+            if email_sent:
+                messages.success(request, 'A 6-digit verification code has been sent to your email.')
+                request.session['reset_email'] = user.email
+                return redirect('verify_otp')
+            messages.error(request, 'We could not send the verification email right now. Please try again shortly.')
     else:
         form = ForgotPasswordForm()
     
@@ -575,21 +656,14 @@ def resend_otp(request):
         return redirect('forgot_password')
     
     try:
-        user = User.objects.get(email=email, role=User.ADMINISTRATOR, is_staff=True)
-        otp = user.generate_reset_otp()
-        
-        # Log OTP to terminal
-        print("\n" + "="*50, flush=True)
-        print(f"RESENT PASSWORD RESET OTP FOR {email}", flush=True)
-        print(f"OTP: {otp}", flush=True)
-        print(f"This code will expire in 10 minutes.", flush=True)
-        print("="*50 + "\n", flush=True)
-        sys.stdout.flush()
-        
-        messages.success(request, 'OTP has been resent. Check your terminal.')
-    except Exception as e:
-        print(f"[ERROR] Failed to resend OTP: {str(e)}", flush=True)
-        messages.error(request, 'Failed to resend OTP.')
+        user = User.objects.get(email__iexact=email, role=User.ADMINISTRATOR, is_staff=True)
+        if send_password_reset_email(user):
+            messages.success(request, 'A new verification code has been sent to your email.')
+        else:
+            messages.error(request, 'Could not resend the verification email right now. Please try again.')
+    except User.DoesNotExist:
+        messages.error(request, 'Administrator account not found.')
+        return redirect('forgot_password')
     
     return redirect('verify_otp')
 

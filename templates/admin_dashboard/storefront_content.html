@@ -1,0 +1,120 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Homepage &amp; About Content{% endblock %}
+{% block page_title %}Homepage &amp; About Content{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+  <h2 class="text-xl font-semibold text-gray-900 mb-1">Homepage Hero &amp; About Us</h2>
+  <p class="text-sm text-gray-600 mb-6">
+    Edit the storefront hero banner (desktop &amp; mobile images, headline, CTA) and the Philosophy / About Us copy.
+  </p>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-8">
+    {% csrf_token %}
+
+    <!-- Hero Text & CTA -->
+    <div class="space-y-4">
+      <h3 class="text-base font-semibold text-teal-700 border-b border-gray-100 pb-2">Hero Headline &amp; Call to Action</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Headline Prefix</label>
+          {{ form.headline_prefix }}
+          <p class="text-xs text-gray-500 mt-1">Default: "Welcome to the"</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Highlighted Word</label>
+          {{ form.headline_highlight }}
+          <p class="text-xs text-gray-500 mt-1">Default: "Whole" (renders with W shield when starting with W)</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Headline Suffix</label>
+          {{ form.headline_suffix }}
+          <p class="text-xs text-gray-500 mt-1">Default: "side of life!"</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Button Label</label>
+          {{ form.cta_text }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Button Link URL</label>
+          {{ form.cta_url }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Images -->
+    <div class="space-y-4">
+      <h3 class="text-base font-semibold text-teal-700 border-b border-gray-100 pb-2">Hero Background Images</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-3">
+          <label class="block text-sm font-semibold text-gray-800">Desktop Hero Image (&ge; 640px)</label>
+          {% if config.desktop_image %}
+          <img src="{{ config.desktop_image.url }}" alt="Current Desktop Hero" class="w-full h-36 object-cover rounded-lg border border-gray-200">
+          {% else %}
+          <img src="{% static 'images/websitehero.png' %}" alt="Default Desktop Hero" class="w-full h-36 object-cover rounded-lg border border-gray-200">
+          <p class="text-xs text-gray-500">Currently using default desktop hero image.</p>
+          {% endif %}
+          {{ form.desktop_image }}
+          <p class="text-xs text-gray-500">Recommended: <strong>1920 &times; 1080 px</strong> (16:9 landscape), WebP/PNG/JPG under 500 KB.</p>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-3">
+          <label class="block text-sm font-semibold text-gray-800">Mobile Hero Image (&lt; 640px)</label>
+          {% if config.mobile_image %}
+          <img src="{{ config.mobile_image.url }}" alt="Current Mobile Hero" class="w-full h-36 object-cover rounded-lg border border-gray-200">
+          {% else %}
+          <div class="w-full h-36 rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-500 bg-white">
+            No mobile image uploaded yet (falls back to desktop image)
+          </div>
+          {% endif %}
+          {{ form.mobile_image }}
+          <p class="text-xs text-gray-500">Recommended: <strong>750 &times; 900 px</strong> or <strong>1080 &times; 1350 px</strong> (4:5 portrait) with a clean center safe zone for the headline and button.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Philosophy & About Us -->
+    <div class="space-y-4">
+      <h3 class="text-base font-semibold text-teal-700 border-b border-gray-100 pb-2">Philosophy &amp; About Us Page</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Homepage Philosophy Heading</label>
+          {{ form.philosophy_heading }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">About Us Button Text</label>
+          {{ form.about_button_text }}
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Homepage Philosophy Write-Up</label>
+        {{ form.philosophy_body }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">About Us Page Title</label>
+        {{ form.about_page_title }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">About Us Page Content</label>
+        {{ form.about_page_content }}
+        <p class="text-xs text-gray-500 mt-1">Displayed on the dedicated <code>/about/</code> page. Separate paragraphs with blank lines.</p>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+      <span class="text-xs text-gray-500">
+        Last updated: {{ config.updated_at|date:"d M Y, H:i" }}
+        {% if config.updated_by %}by {{ config.updated_by.email }}{% endif %}
+      </span>
+      <button type="submit" class="px-6 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors">
+        Save Changes
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
-    home, products, product_detail, add_to_cart, view_cart,
+    home, about_us, contact_us, newsletter_subscribe,
+    products, product_detail, add_to_cart, view_cart,
     update_cart_item, remove_from_cart, checkout, get_cart_drawer,
     process_checkout, verify_payment, retry_payment, order_confirmation, user_orders, order_detail,
     blog_list, blog_detail, terms_of_service, privacy_policy, return_policy, delivery_policy,
@@ -10,6 +11,9 @@ from .views import (
 
 urlpatterns = [
     path('', home, name='home'),
+    path('about/', about_us, name='about-us'),
+    path('contact/', contact_us, name='contact-us'),
+    path('newsletter/subscribe/', newsletter_subscribe, name='newsletter-subscribe'),
     path('products/', products, name='products'),
     path('products/<uuid:product_id>/', product_detail, name='product-detail'),
     path('cart/add/<uuid:product_id>/', add_to_cart, name='add-to-cart'),

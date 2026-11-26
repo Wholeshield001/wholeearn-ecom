@@ -81,18 +81,12 @@ def _get_signup_referral_code(request):
 @require_http_methods(["GET", "POST"])
 def signup(request):
     """Handle user registration"""
-    referral_code = _get_signup_referral_code(request)
-
     if request.method == 'POST':
-        post_data = request.POST.copy()
-        if not post_data.get('referral_code_input') and referral_code:
-            post_data['referral_code_input'] = referral_code
-        form = SignUpForm(post_data)
+        form = SignUpForm(request.POST)
         if form.is_valid():
             try:
                 user = form.save(commit=False)
                 user.save()
-                request.session.pop(REFERRAL_SESSION_KEY, None)
                 
                 # Send verification OTP email
                 email_sent = send_verification_otp_email(user)
@@ -121,7 +115,7 @@ def signup(request):
                 messages.error(request, 'An error occurred. Please try again.')
                 form = SignUpForm()
     else:
-        form = SignUpForm(initial={'referral_code_input': referral_code} if referral_code else None)
+        form = SignUpForm()
     
     return render(request, 'users/signup.html', {'form': form})
 
@@ -337,37 +331,16 @@ def dashboard(request):
         'items': items,
     }
 
-    referred_users = request.user.referred_users.annotate(
-        has_purchased=Exists(
-            Order.objects.filter(user=OuterRef('pk'), payment_status='completed')
-        )
-    ).order_by('-date_joined')
-    context['referred_users'] = referred_users
-    context['referral_code'] = request.user.referral_code
-    context['referral_link'] = request.build_absolute_uri(
-        f"{reverse('signup')}?ref={request.user.referral_code}"
-    )
-
     return render(request, 'users/dashboard.html', context)
 
 
 @login_required(login_url='login')
 @require_http_methods(["GET"])
 def reward_dashboard(request):
-    """Dedicated rewards dashboard with referral and points activity."""
+    """Dedicated rewards dashboard with points and wallet activity."""
     withdrawal_notice = request.session.pop('withdrawal_notice', None)
     withdrawal_idempotency_key = secrets.token_urlsafe(24)
     request.session['withdrawal_idempotency_key'] = withdrawal_idempotency_key
-    referral_link = request.build_absolute_uri(
-        f"{reverse('signup')}?ref={request.user.referral_code}"
-    )
-    referred_users = request.user.referred_users.annotate(
-        has_purchased=Exists(
-            Order.objects.filter(user=OuterRef('pk'), payment_status='completed')
-        )
-    ).order_by('-date_joined')
-
-    completed_referrals = referred_users.filter(has_purchased=True).count()
 
     page_size = 8
     ledger_qs = RewardPointLedger.objects.filter(user=request.user).select_related('order').order_by('-created_at')
@@ -381,16 +354,12 @@ def reward_dashboard(request):
     recent_withdrawals = WalletWithdrawalRequest.objects.filter(user=request.user).select_related('bank_account').order_by('-created_at')[:5]
 
     context = {
-        'referral_code': request.user.referral_code,
-        'referral_link': referral_link,
-        'referred_users': referred_users,
-        'total_referrals': referred_users.count(),
-        'completed_referrals': completed_referrals,
         'point_ledger': point_ledger,
         'has_more': has_more,
         'next_offset': page_size,
         'wallet': wallet,
         'reward_config': config,
+        'role_points_per_purchase': config.get_points_for_role(request.user.role),
         'bank_accounts': bank_accounts,
         'recent_conversions': recent_conversions,
         'recent_withdrawals': recent_withdrawals,
@@ -664,18 +633,18 @@ def password_reset_request(request):
     if request.method == 'POST':
         form = PasswordResetRequestForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
-            try:
-                user = User.objects.get(email=email)
+            email = (form.cleaned_data['email'] or '').strip()
+            user = User.objects.filter(email__iexact=email).first()
+            if user:
                 email_sent = send_password_reset_email(user)
-                if email_sent:
-                    request.session['reset_email'] = email
-                    messages.success(request, 'We sent a verification code to your email.')
-                    return redirect('password-reset-verify')
-                messages.error(request, 'We could not send a reset code right now. Please try again shortly.')
-                return redirect('password-reset-request')
-            except User.DoesNotExist:
-                messages.error(request, 'If that email exists, we have sent a reset code.')
+                if not email_sent:
+                    messages.error(request, 'We could not send a reset code right now. Please try again shortly.')
+                    return redirect('password-reset-request')
+                request.session['reset_email'] = user.email
+                messages.success(request, 'We sent a 6-digit verification code to your email.')
+                return redirect('password-reset-verify')
+            else:
+                messages.info(request, 'If an account exists for that email, a verification code has been sent.')
                 return redirect('password-reset-request')
     else:
         form = PasswordResetRequestForm()
@@ -691,27 +660,45 @@ def password_reset_verify(request):
         messages.warning(request, 'Start password reset first.')
         return redirect('password-reset-request')
 
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
+    user = User.objects.filter(email__iexact=email).first()
+    if not user:
         messages.error(request, 'User not found.')
         return redirect('password-reset-request')
 
     if request.method == 'POST':
         form = PasswordResetVerifyForm(request.POST)
         if form.is_valid():
-            otp = form.cleaned_data['otp']
+            otp = form.cleaned_data['otp'].strip()
             if user.verify_reset_otp(otp):
                 request.session['reset_token'] = user.reset_token
                 messages.success(request, 'Code verified. Set a new password.')
                 return redirect('password-reset-new')
             else:
-                messages.error(request, 'Invalid or expired code. Please request again.')
-                return redirect('password-reset-request')
+                messages.error(request, 'Invalid or expired code. Please try again or request a new code.')
     else:
         form = PasswordResetVerifyForm()
 
     return render(request, 'users/password_reset_verify.html', {'form': form, 'email': email})
+
+
+@require_http_methods(["POST"])
+def password_reset_resend(request):
+    """Resend password reset OTP for the active reset session."""
+    email = request.session.get('reset_email')
+    if not email:
+        messages.warning(request, 'Start password reset first.')
+        return redirect('password-reset-request')
+
+    user = User.objects.filter(email__iexact=email).first()
+    if not user:
+        messages.error(request, 'User not found.')
+        return redirect('password-reset-request')
+
+    if send_password_reset_email(user):
+        messages.success(request, 'A new verification code has been sent to your email.')
+    else:
+        messages.error(request, 'Could not resend the verification code right now. Please try again shortly.')
+    return redirect('password-reset-verify')
 
 
 @require_http_methods(["GET", "POST"])
@@ -894,18 +881,12 @@ def ticket_detail(request, ticket_id):
 @require_http_methods(["GET", "POST"])
 def partner_signup(request):
     """Handle business partner registration"""
-    referral_code = _get_signup_referral_code(request)
-
     if request.method == 'POST':
-        post_data = request.POST.copy()
-        if not post_data.get('referral_code_input') and referral_code:
-            post_data['referral_code_input'] = referral_code
-        form = PartnerRegistrationForm(post_data)
+        form = PartnerRegistrationForm(request.POST)
         if form.is_valid():
             try:
                 user = form.save(commit=False)
                 user.save()
-                request.session.pop(REFERRAL_SESSION_KEY, None)
                 
                 # Send verification OTP email
                 email_sent = send_verification_otp_email(user)
@@ -930,7 +911,7 @@ def partner_signup(request):
                 messages.error(request, 'An account with this email already exists.')
                 form = PartnerRegistrationForm()
     else:
-        form = PartnerRegistrationForm(initial={'referral_code_input': referral_code} if referral_code else None)
+        form = PartnerRegistrationForm()
     
     return render(request, 'users/partner_signup.html', {'form': form})
 

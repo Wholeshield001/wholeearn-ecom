@@ -1,5 +1,5 @@
 {% extends "ecommerce_base.html" %}
-{% load static %}
+{% load static ecom_tags %}
 
 {% block title %}Checkout - WholeShield{% endblock %}
 
@@ -94,7 +94,7 @@
           {% for item in items %}
           <div class="flex justify-between text-sm">
             <span class="text-gray-700">{{ item.product.name }} ×{{ item.quantity }}</span>
-            <span class="font-semibold text-gray-900">₦{{ item.get_total_price|floatformat:2 }}</span>
+            <span class="font-semibold text-gray-900">₦{{ item.get_total_price|format_price }}</span>
           </div>
           {% endfor %}
         </div>

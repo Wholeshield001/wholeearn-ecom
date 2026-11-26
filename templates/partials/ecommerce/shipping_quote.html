@@ -1,19 +1,20 @@
+{% load ecom_tags %}
 <div>
   <div class="space-y-3 mb-6 pb-6 border-b border-gray-200">
     <div class="flex justify-between text-sm">
       <span class="text-gray-600">Subtotal</span>
-      <span class="text-gray-900">₦{{ total_price|floatformat:2 }}</span>
+      <span class="text-gray-900">₦{{ total_price|format_price }}</span>
     </div>
     {% if checkout_discount_amount %}
     <div class="flex justify-between text-sm">
       <span class="text-gray-600">Unique code discount{% if checkout_discount_percent %} ({{ checkout_discount_percent|floatformat:2 }}%){% endif %}</span>
-      <span class="font-semibold text-green-700">-₦{{ checkout_discount_amount|floatformat:2 }}</span>
+      <span class="font-semibold text-green-700">-₦{{ checkout_discount_amount|format_price }}</span>
     </div>
     {% endif %}
     <div class="flex justify-between text-sm">
       <span class="text-gray-600">Shipping</span>
       {% if shipping_fee is not None %}
-      <span class="font-semibold text-gray-900">₦{{ shipping_fee|floatformat:2 }}</span>
+      <span class="font-semibold text-gray-900">₦{{ shipping_fee|format_price }}</span>
       {% elif shipping_pending %}
       <span class="text-gray-500 italic">Enter address to calculate</span>
       {% else %}
@@ -34,6 +35,6 @@
 
   <div class="flex justify-between items-center mb-6">
     <span class="text-lg font-bold text-gray-900">Total</span>
-    <span class="text-2xl font-bold text-[#ec3183]">₦{{ grand_total|floatformat:2 }}</span>
+    <span class="text-2xl font-bold text-[#ec3183]">₦{{ grand_total|format_price }}</span>
   </div>
 </div>
